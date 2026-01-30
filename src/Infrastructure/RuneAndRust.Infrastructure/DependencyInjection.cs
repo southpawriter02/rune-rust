@@ -163,6 +163,15 @@ public static class DependencyInjection
             return new AttributeProvider(logger, attributesPath);
         });
 
+        // Archetype provider (v0.17.3e) - loads archetype definitions, resource bonuses,
+        // starting abilities, specialization mappings, and recommended builds from JSON config
+        services.AddSingleton<IArchetypeProvider>(sp =>
+        {
+            var archetypesPath = Path.Combine(configPath, "archetypes.json");
+            var logger = sp.GetRequiredService<ILogger<ArchetypeProvider>>();
+            return new ArchetypeProvider(logger, archetypesPath);
+        });
+
         return services;
     }
 

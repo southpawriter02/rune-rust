@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "archetypes.schema.json",
     "title": "Archetypes Configuration",
-    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, resource pool bonuses, starting abilities, and available specializations. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
+    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, resource pool bonuses, starting abilities, available specializations, and recommended attribute builds. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
     "type": "object",
     "required": ["archetypes"],
     "properties": {
@@ -101,6 +101,12 @@
                 },
                 "availableSpecializations": {
                     "$ref": "#/definitions/availableSpecializations"
+                },
+                "recommendedBuilds": {
+                    "type": "array",
+                    "description": "Optional recommended attribute allocations for Simple mode character creation. Each build defines optimal attribute distributions for the archetype.",
+                    "items": { "$ref": "#/definitions/recommendedBuild" },
+                    "minItems": 1
                 }
             },
             "additionalProperties": false
@@ -209,6 +215,61 @@
                     "pattern": "^[a-z][a-z0-9-]*$",
                     "minLength": 3,
                     "maxLength": 50
+                }
+            },
+            "additionalProperties": false
+        },
+        "recommendedBuild": {
+            "type": "object",
+            "description": "A recommended attribute allocation build for Simple mode character creation. Defines optimal attribute distributions based on archetype combat role and optional lineage synergies.",
+            "required": ["name", "might", "finesse", "wits", "will", "sturdiness"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name for this build (e.g., 'Standard Warrior')",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "might": {
+                    "type": "integer",
+                    "description": "Recommended Might attribute value. Affects melee damage and physical feats.",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Recommended Finesse attribute value. Affects agility and ranged accuracy.",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Recommended Wits attribute value. Affects perception and Aether Pool.",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Recommended Will attribute value. Affects mental fortitude and Aether channeling.",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "sturdiness": {
+                    "type": "integer",
+                    "description": "Recommended Sturdiness attribute value. Affects HP and resilience.",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "optimalLineage": {
+                    "oneOf": [
+                        { "type": "null" },
+                        {
+                            "type": "string",
+                            "description": "Lineage that synergizes best with this build",
+                            "enum": ["ClanBorn", "RuneMarked", "IronBlooded", "VargrKin"]
+                        }
+                    ],
+                    "description": "Optional lineage for build optimization. Null for the default lineage-agnostic build."
                 }
             },
             "additionalProperties": false

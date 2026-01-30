@@ -1468,6 +1468,75 @@
                 "progression"
             ],
             "sortOrder": 31
+        },
+        {
+            "id": "archetype-provider",
+            "term": "Archetype Provider",
+            "definition": "The infrastructure service that loads archetype definitions from archetypes.json configuration and provides cached access to all archetype-related data: definitions (v0.17.3a), resource bonuses (v0.17.3b), starting abilities (v0.17.3c), specialization mappings (v0.17.3d), and recommended builds (v0.17.3e). Implements IArchetypeProvider with thread-safe double-checked locking initialization.",
+            "shortDefinition": "Service providing cached access to archetype definitions from JSON config.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "IArchetypeProvider",
+                "archetype service"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "recommended-build",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-resource-bonuses",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-ability-grant",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-specialization-mapping",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "infrastructure",
+                "provider",
+                "archetype"
+            ],
+            "sortOrder": 32
+        },
+        {
+            "id": "recommended-build",
+            "term": "Recommended Build",
+            "definition": "A pre-configured attribute allocation optimized for a specific archetype's combat role, used in Simple mode character creation. Each build defines values for the five core attributes (Might, Finesse, Wits, Will, Sturdiness) and may optionally specify an optimal lineage for further synergy. Standard builds: Warrior (M4 F3 Wi2 Wl2 S4, 15 pts), Skirmisher (M3 F4 Wi3 Wl2 S3, 15 pts), Mystic (M2 F3 Wi4 Wl4 S2, 15 pts), Adept (M3 F3 Wi3 Wl2 S3, 14 pts).",
+            "shortDefinition": "Pre-configured attribute allocation for quick-start character creation.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "default build",
+                "quick-start build",
+                "simple mode build"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-provider",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "archetype",
+                "value-object"
+            ],
+            "sortOrder": 33
         }
     ]
 }

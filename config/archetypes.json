@@ -48,7 +48,18 @@
                     "battle-commander"
                 ],
                 "recommendedFirst": "guardian"
-            }
+            },
+            "recommendedBuilds": [
+                {
+                    "name": "Standard Warrior",
+                    "might": 4,
+                    "finesse": 3,
+                    "wits": 2,
+                    "will": 2,
+                    "sturdiness": 4,
+                    "optimalLineage": null
+                }
+            ]
         },
         {
             "archetypeId": "Skirmisher",
@@ -95,7 +106,18 @@
                     "acrobat"
                 ],
                 "recommendedFirst": "shadow-dancer"
-            }
+            },
+            "recommendedBuilds": [
+                {
+                    "name": "Standard Skirmisher",
+                    "might": 3,
+                    "finesse": 4,
+                    "wits": 3,
+                    "will": 2,
+                    "sturdiness": 3,
+                    "optimalLineage": null
+                }
+            ]
         },
         {
             "archetypeId": "Mystic",
@@ -140,7 +162,18 @@
                     "void-weaver"
                 ],
                 "recommendedFirst": "elementalist"
-            }
+            },
+            "recommendedBuilds": [
+                {
+                    "name": "Standard Mystic",
+                    "might": 2,
+                    "finesse": 3,
+                    "wits": 4,
+                    "will": 4,
+                    "sturdiness": 2,
+                    "optimalLineage": null
+                }
+            ]
         },
         {
             "archetypeId": "Adept",
@@ -192,7 +225,18 @@
                     "chronicler"
                 ],
                 "recommendedFirst": "alchemist"
-            }
+            },
+            "recommendedBuilds": [
+                {
+                    "name": "Standard Adept",
+                    "might": 3,
+                    "finesse": 3,
+                    "wits": 3,
+                    "will": 2,
+                    "sturdiness": 3,
+                    "optimalLineage": null
+                }
+            ]
         }
     ]
 }
