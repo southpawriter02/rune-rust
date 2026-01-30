@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "archetypes.schema.json",
     "title": "Archetypes Configuration",
-    "description": "Configuration for character archetypes defining combat roles, primary resources, and display metadata. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
+    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, and resource pool bonuses. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
     "type": "object",
     "required": ["archetypes"],
     "properties": {
@@ -22,7 +22,7 @@
     "definitions": {
         "archetypeDefinition": {
             "type": "object",
-            "description": "Core definition for a single archetype including display metadata, combat role, and resource type.",
+            "description": "Core definition for a single archetype including display metadata, combat role, resource type, and resource pool bonuses.",
             "required": [
                 "archetypeId",
                 "displayName",
@@ -32,7 +32,8 @@
                 "combatRole",
                 "primaryResource",
                 "playstyleDescription",
-                "isPermanent"
+                "isPermanent",
+                "resourceBonuses"
             ],
             "properties": {
                 "archetypeId": {
@@ -85,6 +86,78 @@
                     "type": "boolean",
                     "description": "Whether the archetype choice is permanent. Must always be true.",
                     "const": true
+                },
+                "resourceBonuses": {
+                    "$ref": "#/definitions/resourceBonuses"
+                }
+            },
+            "additionalProperties": false
+        },
+        "resourceBonuses": {
+            "type": "object",
+            "description": "Resource pool bonuses provided by the archetype. These bonuses are applied during character creation and affect derived statistics.",
+            "required": [
+                "maxHpBonus",
+                "maxStaminaBonus",
+                "maxAetherPoolBonus",
+                "movementBonus"
+            ],
+            "properties": {
+                "maxHpBonus": {
+                    "type": "integer",
+                    "description": "Bonus to maximum HP. Warrior: +49, Skirmisher: +30, Mystic: +20, Adept: +30.",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "maxStaminaBonus": {
+                    "type": "integer",
+                    "description": "Bonus to maximum Stamina. Warrior: +5, Skirmisher: +5, Mystic: 0, Adept: 0.",
+                    "minimum": 0,
+                    "maximum": 50
+                },
+                "maxAetherPoolBonus": {
+                    "type": "integer",
+                    "description": "Bonus to maximum Aether Pool. Only Mystic receives +20.",
+                    "minimum": 0,
+                    "maximum": 50
+                },
+                "movementBonus": {
+                    "type": "integer",
+                    "description": "Bonus to movement speed in tiles per turn. Only Skirmisher receives +1.",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "specialBonus": {
+                    "oneOf": [
+                        { "type": "null" },
+                        { "$ref": "#/definitions/specialBonus" }
+                    ],
+                    "description": "Optional unique bonus for special effects. Only Adept uses this (+20% ConsumableEffectiveness)."
+                }
+            },
+            "additionalProperties": false
+        },
+        "specialBonus": {
+            "type": "object",
+            "description": "A unique special bonus effect that cannot be expressed as a simple numeric resource bonus.",
+            "required": ["bonusType", "bonusValue", "description"],
+            "properties": {
+                "bonusType": {
+                    "type": "string",
+                    "description": "Type identifier for the bonus. Currently only 'ConsumableEffectiveness' is supported.",
+                    "enum": ["ConsumableEffectiveness"]
+                },
+                "bonusValue": {
+                    "type": "number",
+                    "description": "Numeric value as a decimal fraction (e.g., 0.20 for +20%). Combined with base 1.0 to produce multiplier.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description for UI display",
+                    "minLength": 1,
+                    "maxLength": 200
                 }
             },
             "additionalProperties": false

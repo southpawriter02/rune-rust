@@ -1315,6 +1315,66 @@
                 "resources"
             ],
             "sortOrder": 26
+        },
+        {
+            "id": "archetype-resource-bonuses",
+            "term": "Archetype Resource Bonuses",
+            "definition": "The set of resource pool bonuses provided by each archetype during character creation. Each archetype has a distinct bonus profile affecting Max HP, Max Stamina, Max Aether Pool, and Movement Speed. Warrior: +49 HP, +5 Stamina. Skirmisher: +30 HP, +5 Stamina, +1 Movement. Mystic: +20 HP, +20 Aether Pool. Adept: +30 HP, +20% Consumable Effectiveness.",
+            "shortDefinition": "Resource pool bonuses (HP, Stamina, AP, Movement) granted by archetype.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "resource bonuses",
+                "archetype bonuses"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "resource-type",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-special-bonus",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "resources",
+                "derived-stats"
+            ],
+            "sortOrder": 27
+        },
+        {
+            "id": "archetype-special-bonus",
+            "term": "Archetype Special Bonus",
+            "definition": "A unique archetype effect that cannot be expressed as a simple numeric bonus to resource pools. Currently only the Adept archetype has a special bonus: +20% Consumable Effectiveness, which multiplies all consumable item effects by 1.20. Special bonuses are defined by a bonus type identifier, a numeric value, and a description.",
+            "shortDefinition": "Unique archetype effect beyond standard resource bonuses (e.g., Adept's +20% consumables).",
+            "categoryId": "mechanics",
+            "aliases": [
+                "special bonus",
+                "consumable effectiveness"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype-resource-bonuses",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "adept-archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "resources",
+                "archetype"
+            ],
+            "sortOrder": 28
         }
     ]
 }

@@ -10,7 +10,14 @@
             "combatRole": "Tank / Melee DPS",
             "primaryResource": "Stamina",
             "playstyleDescription": "Stand in the front, absorb damage, protect allies",
-            "isPermanent": true
+            "isPermanent": true,
+            "resourceBonuses": {
+                "maxHpBonus": 49,
+                "maxStaminaBonus": 5,
+                "maxAetherPoolBonus": 0,
+                "movementBonus": 0,
+                "specialBonus": null
+            }
         },
         {
             "archetypeId": "Skirmisher",
@@ -21,7 +28,14 @@
             "combatRole": "Mobile DPS",
             "primaryResource": "Stamina",
             "playstyleDescription": "High mobility, hit-and-run tactics, evasion",
-            "isPermanent": true
+            "isPermanent": true,
+            "resourceBonuses": {
+                "maxHpBonus": 30,
+                "maxStaminaBonus": 5,
+                "maxAetherPoolBonus": 0,
+                "movementBonus": 1,
+                "specialBonus": null
+            }
         },
         {
             "archetypeId": "Mystic",
@@ -32,7 +46,14 @@
             "combatRole": "Caster / Control",
             "primaryResource": "AetherPool",
             "playstyleDescription": "Ranged magical damage, crowd control, Aether management",
-            "isPermanent": true
+            "isPermanent": true,
+            "resourceBonuses": {
+                "maxHpBonus": 20,
+                "maxStaminaBonus": 0,
+                "maxAetherPoolBonus": 20,
+                "movementBonus": 0,
+                "specialBonus": null
+            }
         },
         {
             "archetypeId": "Adept",
@@ -43,7 +64,18 @@
             "combatRole": "Support / Utility",
             "primaryResource": "Stamina",
             "playstyleDescription": "Support allies, maximize resources, utility skills",
-            "isPermanent": true
+            "isPermanent": true,
+            "resourceBonuses": {
+                "maxHpBonus": 30,
+                "maxStaminaBonus": 0,
+                "maxAetherPoolBonus": 0,
+                "movementBonus": 0,
+                "specialBonus": {
+                    "bonusType": "ConsumableEffectiveness",
+                    "bonusValue": 0.2,
+                    "description": "+20% effectiveness from all consumable items"
+                }
+            }
         }
     ]
 }
