@@ -188,10 +188,6 @@ public class GameView
                 await HandleInvestigateAsync(investigate.Target, ct);
                 break;
 
-            case ExamineCommand examine:
-                await HandleExamineAsync(examine.Target, ct);
-                break;
-
             case TravelCommand travel:
                 await HandleTravelAsync(travel.Destination, ct);
                 break;
@@ -284,10 +280,6 @@ public class GameView
                 await _renderer.RenderMessageAsync(lookResult.ErrorMessage!, MessageType.Warning, ct);
             }
         }
-        else
-        {
-            _logger.LogWarning("HandleLookAsync: No current room available");
-        }
     }
 
     private async Task HandleInventoryAsync(CancellationToken ct)
@@ -326,20 +318,6 @@ public class GameView
         var messageType = success ? MessageType.Success : MessageType.Warning;
         _logger.LogDebug("Use item result: {ItemName}, Success: {Success}", itemName, success);
         await _renderer.RenderMessageAsync(message, messageType, ct);
-    }
-
-    private async Task HandleExamineAsync(string target, CancellationToken ct)
-    {
-        var result = _gameService.GetExamineInfo(target);
-        if (result == null)
-        {
-            _logger.LogDebug("Examine failed: target not found: {Target}", target);
-            await _renderer.RenderMessageAsync($"You don't see '{target}' here.", MessageType.Warning, ct);
-            return;
-        }
-
-        _logger.LogDebug("Examining: {Target} (Type: {TargetType})", result.Name, result.Type);
-        await _renderer.RenderExamineResultAsync(result, ct);
     }
 
     private async Task HandleStatusAsync(CancellationToken ct)
@@ -611,5 +589,18 @@ public class GameView
 
         _logger.LogDebug("User cancelled quit");
         return true;
+    }
+
+    private async Task HandleAbilitiesAsync(CancellationToken ct)
+    {
+        var abilities = _gameService.GetPlayerAbilities();
+        await _renderer.RenderAbilitiesAsync(abilities, ct);
+    }
+
+    private async Task HandleUseAbilityAsync(string abilityName, CancellationToken ct)
+    {
+        var (success, message) = _gameService.TryUseAbility(abilityName);
+        var messageType = success ? MessageType.Success : MessageType.Warning;
+        await _renderer.RenderMessageAsync(message, messageType, ct);
     }
 }

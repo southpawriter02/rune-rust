@@ -28,7 +28,6 @@ public class Room : IEntity
     /// Gets the narrative description of this room shown to the player.
     /// </summary>
     public string Description { get; private set; }
-    public Position Position { get; private set; }
     public Biome Biome { get; private set; }
 
     /// <summary>
@@ -354,13 +353,19 @@ public class Room : IEntity
         Description = null!;
     }
 
-    public Room(string name, string description, Position position, Biome biome = Biome.Citadel)
+    public Room(string name, string description, Position3D position, Biome biome = Biome.Citadel)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Position = position;
         Biome = biome;
+    }
+
+    [Obsolete("Use the Position3D constructor for new code. This exists for backwards compatibility.")]
+    public Room(string name, string description, Position position, Biome biome)
+        : this(name, description, Position3D.FromPosition2D(position), biome)
+    {
     }
 
     /// <summary>
