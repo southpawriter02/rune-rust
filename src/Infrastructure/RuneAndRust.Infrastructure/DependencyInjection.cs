@@ -352,6 +352,11 @@ public static class DependencyInjection
         // during character creation. Depends on ILineageProvider for lineage definitions.
         services.AddScoped<ILineageApplicationService, LineageApplicationService>();
 
+        // Background application service (v0.17.1e)
+        // Orchestrates applying background grants (skills, equipment) to characters
+        // during character creation. Depends on IBackgroundProvider for background definitions.
+        services.AddScoped<IBackgroundApplicationService, BackgroundApplicationService>();
+
         return services;
     }
 }

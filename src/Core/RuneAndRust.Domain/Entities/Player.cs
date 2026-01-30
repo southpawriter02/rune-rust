@@ -1942,6 +1942,72 @@ public class Player : IEntity
         SelectedLineage = lineage;
     }
 
+    // ===== Background System (v0.17.1e) =====
+
+    /// <summary>
+    /// Gets the player's selected background, or <c>null</c> if none has been chosen.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Background represents the character's pre-Silence profession and determines
+    /// starting skills and equipment. Once set, background cannot be changed.
+    /// </para>
+    /// <para>
+    /// Use <see cref="HasBackground"/> to check whether a background has been assigned
+    /// before attempting to read this value.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="SetBackground"/>
+    /// <seealso cref="HasBackground"/>
+    public Background? SelectedBackground { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether this player has a background assigned.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if <see cref="SelectedBackground"/> has been set; otherwise, <c>false</c>.
+    /// </value>
+    public bool HasBackground => SelectedBackground.HasValue;
+
+    /// <summary>
+    /// Sets the player's background during character creation.
+    /// </summary>
+    /// <param name="background">The background to assign to the player.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the player already has a background assigned.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Background is a permanent choice made during character creation.
+    /// This method enforces that it can only be set once by throwing
+    /// if <see cref="HasBackground"/> is already <c>true</c>.
+    /// </para>
+    /// <para>
+    /// This method only sets the background identifier. Use the
+    /// IBackgroundApplicationService (in the Application layer) to apply all background
+    /// grants (skill bonuses, starting equipment).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var player = new Player("TestHero");
+    /// player.SetBackground(Background.VillageSmith);
+    /// // player.HasBackground == true
+    /// // player.SelectedBackground == Background.VillageSmith
+    /// </code>
+    /// </example>
+    public void SetBackground(Background background)
+    {
+        if (HasBackground)
+        {
+            throw new InvalidOperationException(
+                $"Player '{Name}' already has background '{SelectedBackground}' assigned. " +
+                "Background cannot be changed after character creation.");
+        }
+
+        SelectedBackground = background;
+    }
+
     /// <summary>
     /// Modifies a core attribute by the specified amount.
     /// </summary>
