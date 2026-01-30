@@ -2,9 +2,9 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "attributes.schema.json",
     "title": "Attributes Configuration",
-    "description": "Configuration for core character attributes and their descriptions, plus archetype-recommended builds for Simple mode allocation. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties, relationship mappings to derived stats and skills, and pre-configured attribute allocations for each archetype.",
+    "description": "Configuration for core character attributes, archetype-recommended builds for Simple mode allocation, and point-buy cost structure for Advanced mode. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties, relationship mappings to derived stats and skills, pre-configured attribute allocations for each archetype, and the tiered cost table for point-buy allocation.",
     "type": "object",
-    "required": ["attributes", "recommendedBuilds"],
+    "required": ["attributes", "recommendedBuilds", "pointBuy"],
     "properties": {
         "$schema": {
             "type": "string",
@@ -27,6 +27,9 @@
             "items": {
                 "$ref": "#/definitions/recommendedBuild"
             }
+        },
+        "pointBuy": {
+            "$ref": "#/definitions/pointBuyConfiguration"
         }
     },
     "additionalProperties": false,
@@ -145,6 +148,83 @@
                 "totalPoints": {
                     "type": "integer",
                     "description": "Total point cost of this build. Typically 15 for most archetypes, 14 for Adept.",
+                    "minimum": 1,
+                    "maximum": 50
+                }
+            },
+            "additionalProperties": false
+        },
+        "pointBuyConfiguration": {
+            "type": "object",
+            "description": "Configuration for the point-buy attribute allocation system used in Advanced mode during character creation. Defines starting point pools, attribute value constraints, and the tiered cost table.",
+            "required": [
+                "startingPoints",
+                "adeptStartingPoints",
+                "minAttributeValue",
+                "maxAttributeValue",
+                "costTable"
+            ],
+            "properties": {
+                "startingPoints": {
+                    "type": "integer",
+                    "description": "Standard starting point pool for most archetypes (Warrior, Skirmisher, Mystic).",
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                "adeptStartingPoints": {
+                    "type": "integer",
+                    "description": "Reduced starting point pool for the Adept archetype, balancing broader utility access.",
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                "minAttributeValue": {
+                    "type": "integer",
+                    "description": "Minimum value for any attribute. All attributes start at this value in Advanced mode.",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "maxAttributeValue": {
+                    "type": "integer",
+                    "description": "Maximum value any attribute can reach through point-buy allocation.",
+                    "minimum": 5,
+                    "maximum": 20
+                },
+                "costTable": {
+                    "type": "array",
+                    "description": "Ordered cost entries for each target value above the minimum. Standard tier (values 2-8) costs 1 point each, premium tier (values 9-10) costs 2 points each.",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                        "$ref": "#/definitions/pointBuyCostEntry"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "pointBuyCostEntry": {
+            "type": "object",
+            "description": "A single entry in the point-buy cost table, defining the cost to reach a specific attribute value.",
+            "required": [
+                "targetValue",
+                "individualCost",
+                "cumulativeCost"
+            ],
+            "properties": {
+                "targetValue": {
+                    "type": "integer",
+                    "description": "The attribute value this cost applies to (2-10). Base value of 1 has no cost entry.",
+                    "minimum": 2,
+                    "maximum": 20
+                },
+                "individualCost": {
+                    "type": "integer",
+                    "description": "Points required to increment from the previous value to this value. 1 for standard tier (2-8), 2 for premium tier (9-10).",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "cumulativeCost": {
+                    "type": "integer",
+                    "description": "Total points required to reach this value from the base value of 1.",
                     "minimum": 1,
                     "maximum": 50
                 }

@@ -79,5 +79,22 @@
             "sturdiness": 3,
             "totalPoints": 14
         }
-    ]
+    ],
+    "pointBuy": {
+        "startingPoints": 15,
+        "adeptStartingPoints": 14,
+        "minAttributeValue": 1,
+        "maxAttributeValue": 10,
+        "costTable": [
+            { "targetValue": 2, "individualCost": 1, "cumulativeCost": 1 },
+            { "targetValue": 3, "individualCost": 1, "cumulativeCost": 2 },
+            { "targetValue": 4, "individualCost": 1, "cumulativeCost": 3 },
+            { "targetValue": 5, "individualCost": 1, "cumulativeCost": 4 },
+            { "targetValue": 6, "individualCost": 1, "cumulativeCost": 5 },
+            { "targetValue": 7, "individualCost": 1, "cumulativeCost": 6 },
+            { "targetValue": 8, "individualCost": 1, "cumulativeCost": 7 },
+            { "targetValue": 9, "individualCost": 2, "cumulativeCost": 9 },
+            { "targetValue": 10, "individualCost": 2, "cumulativeCost": 11 }
+        ]
+    }
 }

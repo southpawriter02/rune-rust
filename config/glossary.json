@@ -754,6 +754,53 @@
                 "resource"
             ],
             "sortOrder": 7
+        },
+        {
+            "id": "point-buy",
+            "term": "Point-Buy",
+            "definition": "The Advanced mode system for manually allocating attribute points during character creation. Each attribute starts at 1, and players spend points from a shared pool to increase individual attributes. The cost structure uses tiered pricing: values 2-8 cost 1 point each (standard tier), while values 9-10 cost 2 points each (premium tier). Most archetypes receive 15 starting points; Adept receives 14.",
+            "shortDefinition": "Manual attribute allocation using a point pool with tiered costs.",
+            "categoryId": "attributes",
+            "aliases": [
+                "point buy",
+                "attribute allocation",
+                "advanced mode"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attributes",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "allocation"
+            ],
+            "sortOrder": 8
+        },
+        {
+            "id": "premium-tier",
+            "term": "Premium Tier",
+            "definition": "Attribute values 9 and 10 in the point-buy system that cost 2 points per increment instead of the standard 1 point. Investing in premium tier values represents exceptional ability but significantly limits the points available for other attributes. The cumulative cost to reach value 10 from base is 11 points.",
+            "shortDefinition": "Attribute values 9-10 costing 2 points each instead of 1.",
+            "categoryId": "attributes",
+            "aliases": [
+                "premium cost",
+                "high-value attributes"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "point-buy",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "cost"
+            ],
+            "sortOrder": 9
         }
     ]
 }
