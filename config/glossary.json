@@ -828,6 +828,38 @@
             "sortOrder": 10
         },
         {
+            "id": "attribute-provider",
+            "term": "Attribute Provider",
+            "definition": "Service that loads and caches attribute descriptions, archetype-recommended builds, and point-buy configuration from config/attributes.json. The Attribute Provider is the centralized access point for all attribute-related data during character creation, supporting both Simple mode (recommended builds) and Advanced mode (point-buy) allocation.",
+            "shortDefinition": "Centralized service for attribute data access during character creation.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "attribute service",
+                "attribute data provider"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "simple-mode",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "advanced-mode",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "service",
+                "configuration"
+            ],
+            "sortOrder": 10
+        },
+        {
             "id": "max-hp",
             "term": "Max HP",
             "definition": "Maximum hit points determining how much damage a character can absorb before falling. Calculated as (STURDINESS × 10) + 50 + archetype bonus + lineage bonus. Warrior archetype has the highest HP bonus (+49), while Clan-Born lineage adds +5.",

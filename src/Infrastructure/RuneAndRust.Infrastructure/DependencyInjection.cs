@@ -155,6 +155,14 @@ public static class DependencyInjection
             return new BackgroundProvider(logger, backgroundsPath);
         });
 
+        // Attribute provider (v0.17.2e) - loads attribute definitions from JSON config
+        services.AddSingleton<IAttributeProvider>(sp =>
+        {
+            var attributesPath = Path.Combine(configPath, "attributes.json");
+            var logger = sp.GetRequiredService<ILogger<AttributeProvider>>();
+            return new AttributeProvider(logger, attributesPath);
+        });
+
         return services;
     }
 
