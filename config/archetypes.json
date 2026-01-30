@@ -37,7 +37,18 @@
                     "abilityType": "Passive",
                     "description": "Resistance to fear and mental effects."
                 }
-            ]
+            ],
+            "availableSpecializations": {
+                "specializations": [
+                    "guardian",
+                    "berserker",
+                    "weapon-master",
+                    "vanguard",
+                    "juggernaut",
+                    "battle-commander"
+                ],
+                "recommendedFirst": "guardian"
+            }
         },
         {
             "archetypeId": "Skirmisher",
@@ -75,7 +86,16 @@
                     "abilityType": "Passive",
                     "description": "Bonus damage when attacking from advantage."
                 }
-            ]
+            ],
+            "availableSpecializations": {
+                "specializations": [
+                    "shadow-dancer",
+                    "duelist",
+                    "ranger",
+                    "acrobat"
+                ],
+                "recommendedFirst": "shadow-dancer"
+            }
         },
         {
             "archetypeId": "Mystic",
@@ -113,7 +133,14 @@
                     "abilityType": "Passive",
                     "description": "Detect nearby Aetheric sources and anomalies."
                 }
-            ]
+            ],
+            "availableSpecializations": {
+                "specializations": [
+                    "elementalist",
+                    "void-weaver"
+                ],
+                "recommendedFirst": "elementalist"
+            }
         },
         {
             "archetypeId": "Adept",
@@ -155,7 +182,17 @@
                     "abilityType": "Passive",
                     "description": "Chance to preserve consumables when used."
                 }
-            ]
+            ],
+            "availableSpecializations": {
+                "specializations": [
+                    "alchemist",
+                    "artificer",
+                    "tactician",
+                    "herbalist",
+                    "chronicler"
+                ],
+                "recommendedFirst": "alchemist"
+            }
         }
     ]
 }

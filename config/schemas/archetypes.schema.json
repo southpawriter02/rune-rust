@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "archetypes.schema.json",
     "title": "Archetypes Configuration",
-    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, resource pool bonuses, and starting abilities. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
+    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, resource pool bonuses, starting abilities, and available specializations. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
     "type": "object",
     "required": ["archetypes"],
     "properties": {
@@ -22,7 +22,7 @@
     "definitions": {
         "archetypeDefinition": {
             "type": "object",
-            "description": "Core definition for a single archetype including display metadata, combat role, resource type, resource pool bonuses, and starting abilities.",
+            "description": "Core definition for a single archetype including display metadata, combat role, resource type, resource pool bonuses, starting abilities, and available specializations.",
             "required": [
                 "archetypeId",
                 "displayName",
@@ -34,7 +34,8 @@
                 "playstyleDescription",
                 "isPermanent",
                 "resourceBonuses",
-                "startingAbilities"
+                "startingAbilities",
+                "availableSpecializations"
             ],
             "properties": {
                 "archetypeId": {
@@ -97,6 +98,9 @@
                     "items": { "$ref": "#/definitions/abilityGrant" },
                     "minItems": 3,
                     "maxItems": 3
+                },
+                "availableSpecializations": {
+                    "$ref": "#/definitions/availableSpecializations"
                 }
             },
             "additionalProperties": false
@@ -178,6 +182,33 @@
                     "description": "Brief description of the ability's effect for tooltips and panels",
                     "minLength": 1,
                     "maxLength": 200
+                }
+            },
+            "additionalProperties": false
+        },
+        "availableSpecializations": {
+            "type": "object",
+            "description": "Specializations available to this archetype during character creation. Each archetype has a curated list of specializations and a recommended first choice for new players.",
+            "required": ["specializations", "recommendedFirst"],
+            "properties": {
+                "specializations": {
+                    "type": "array",
+                    "description": "List of available specialization IDs in kebab-case format. References specialization definitions in the Specialization System (v0.17.4).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$",
+                        "minLength": 3,
+                        "maxLength": 50
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "recommendedFirst": {
+                    "type": "string",
+                    "description": "The recommended first specialization ID for new players. Must be present in the specializations array.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 3,
+                    "maxLength": 50
                 }
             },
             "additionalProperties": false

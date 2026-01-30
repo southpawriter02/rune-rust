@@ -1435,6 +1435,39 @@
                 "archetype"
             ],
             "sortOrder": 30
+        },
+        {
+            "id": "archetype-specialization-mapping",
+            "term": "Archetype Specialization Mapping",
+            "definition": "A mapping between an archetype and its available specializations during character creation. Each archetype has access to a curated subset of specializations, with one recommended as the player's first choice. Specialization counts vary by archetype: Warrior (6: Guardian, Berserker, Weapon Master, Vanguard, Juggernaut, Battle Commander), Adept (5: Alchemist, Artificer, Tactician, Herbalist, Chronicler), Skirmisher (4: Shadow Dancer, Duelist, Ranger, Acrobat), and Mystic (2: Elementalist, Void Weaver). The first specialization is free at character creation.",
+            "shortDefinition": "Mapping of archetypes to their available specializations and recommended first choice.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "specialization mapping",
+                "available specializations",
+                "archetype specializations"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-ability-grant",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-resource-bonuses",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "archetype",
+                "progression"
+            ],
+            "sortOrder": 31
         }
     ]
 }
