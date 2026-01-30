@@ -1,0 +1,87 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "attributes.schema.json",
+    "title": "Attributes Configuration",
+    "description": "Configuration for core character attributes and their descriptions. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties and relationship mappings to derived stats and skills.",
+    "type": "object",
+    "required": ["attributes"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference for editor support"
+        },
+        "attributes": {
+            "type": "array",
+            "description": "Array of core attribute definitions. Must contain exactly 5 attributes, one for each CoreAttribute enum value.",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+                "$ref": "#/definitions/attributeDefinition"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "attributeDefinition": {
+            "type": "object",
+            "description": "Definition of a single core attribute with display properties and relationship mappings.",
+            "required": [
+                "attribute",
+                "displayName",
+                "shortDescription",
+                "detailedDescription",
+                "affectedStats",
+                "affectedSkills"
+            ],
+            "properties": {
+                "attribute": {
+                    "type": "string",
+                    "description": "The CoreAttribute enum value name. Must match the C# enum exactly.",
+                    "enum": ["Might", "Finesse", "Wits", "Will", "Sturdiness"]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Uppercase display name for UI presentation (e.g., 'MIGHT', 'FINESSE').",
+                    "pattern": "^[A-Z]+$",
+                    "minLength": 1,
+                    "maxLength": 20
+                },
+                "shortDescription": {
+                    "type": "string",
+                    "description": "One-line summary for tooltips and compact displays.",
+                    "minLength": 10,
+                    "maxLength": 100
+                },
+                "detailedDescription": {
+                    "type": "string",
+                    "description": "Full explanation for help screens and detailed views.",
+                    "minLength": 50,
+                    "maxLength": 500
+                },
+                "affectedStats": {
+                    "type": "array",
+                    "description": "Derived stats influenced by this attribute (e.g., 'Melee Damage', 'Max HP').",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                },
+                "affectedSkills": {
+                    "type": "array",
+                    "description": "Skills that use this attribute for checks (e.g., 'Combat', 'Lore').",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

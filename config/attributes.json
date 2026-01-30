@@ -1,99 +1,45 @@
 {
     "$schema": "./schemas/attributes.schema.json",
-    "version": "1.0",
-    "pointBuyRules": {
-        "startingPoints": 25,
-        "baseAttributeValue": 8,
-        "minimumAttribute": 6,
-        "maximumAttribute": 15,
-        "maximumAfterRacial": 18,
-        "costTable": [
-            {
-                "range": [
-                    6,
-                    14
-                ],
-                "costPerPoint": 1
-            },
-            {
-                "range": [
-                    15,
-                    15
-                ],
-                "costPerPoint": 2
-            }
-        ]
-    },
     "attributes": [
         {
-            "id": "might",
-            "name": "Might",
-            "abbreviation": "MIG",
-            "description": "Physical power and strength. Determines raw physical capability.",
-            "primaryEffects": [
-                "Melee weapon damage",
-                "Carrying capacity",
-                "Breaking objects",
-                "Intimidation"
-            ],
-            "sortOrder": 1,
-            "color": "#FF6B6B"
+            "attribute": "Might",
+            "displayName": "MIGHT",
+            "shortDescription": "Physical power and raw strength",
+            "detailedDescription": "Might represents your character's physical power. It affects melee damage, carrying capacity, and physical feats of strength.",
+            "affectedStats": ["Melee Damage", "Carrying Capacity", "Stamina"],
+            "affectedSkills": ["Combat", "Athletics", "Intimidation"]
         },
         {
-            "id": "fortitude",
-            "name": "Fortitude",
-            "abbreviation": "FOR",
-            "description": "Endurance and constitution. Determines stamina and resilience.",
-            "primaryEffects": [
-                "Maximum health",
-                "Poison resistance",
-                "Disease resistance",
-                "Stamina regeneration"
-            ],
-            "sortOrder": 2,
-            "color": "#4ECDC4"
+            "attribute": "Finesse",
+            "displayName": "FINESSE",
+            "shortDescription": "Agility and precision",
+            "detailedDescription": "Finesse represents your character's agility and hand-eye coordination. It affects ranged accuracy, initiative in combat, and evasion capability.",
+            "affectedStats": ["Ranged Accuracy", "Initiative", "Stamina"],
+            "affectedSkills": ["Stealth", "Acrobatics", "Lockpicking"]
         },
         {
-            "id": "will",
-            "name": "Will",
-            "abbreviation": "WIL",
-            "description": "Mental fortitude and magical aptitude. Determines willpower.",
-            "primaryEffects": [
-                "Magic power",
-                "Mind effect resistance",
-                "Focus/concentration",
-                "Mana pool"
-            ],
-            "sortOrder": 3,
-            "color": "#9B59B6"
+            "attribute": "Wits",
+            "displayName": "WITS",
+            "shortDescription": "Perception and knowledge",
+            "detailedDescription": "Wits represents your character's mental acuity and learned knowledge. It affects perception, crafting quality, and provides secondary Aether capacity.",
+            "affectedStats": ["Aether Pool", "Perception"],
+            "affectedSkills": ["Lore", "Craft", "Investigation"]
         },
         {
-            "id": "wits",
-            "name": "Wits",
-            "abbreviation": "WIT",
-            "description": "Intelligence and perception. Determines mental acuity.",
-            "primaryEffects": [
-                "Critical hit chance",
-                "Trap detection",
-                "Lore knowledge",
-                "Initiative bonus"
-            ],
-            "sortOrder": 4,
-            "color": "#F39C12"
+            "attribute": "Will",
+            "displayName": "WILL",
+            "shortDescription": "Mental fortitude and magical affinity",
+            "detailedDescription": "Will represents your character's mental fortitude and connection to the Aether. It is the primary determinant of Aether Pool and mental resistance.",
+            "affectedStats": ["Aether Pool", "Resolve"],
+            "affectedSkills": ["Rhetoric", "Concentration", "Willpower"]
         },
         {
-            "id": "finesse",
-            "name": "Finesse",
-            "abbreviation": "FIN",
-            "description": "Agility and precision. Determines physical coordination.",
-            "primaryEffects": [
-                "Attack accuracy",
-                "Dodge chance",
-                "Stealth",
-                "Lockpicking"
-            ],
-            "sortOrder": 5,
-            "color": "#1ABC9C"
+            "attribute": "Sturdiness",
+            "displayName": "STURDINESS",
+            "shortDescription": "Endurance and physical resilience",
+            "detailedDescription": "Sturdiness represents your character's toughness and endurance. It is the primary determinant of maximum HP and affects damage resistance.",
+            "affectedStats": ["Max HP", "Soak"],
+            "affectedSkills": ["Endurance", "Survival", "Fortitude"]
         }
     ]
 }

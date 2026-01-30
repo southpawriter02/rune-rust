@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // CoreAttribute.cs
 // Enum defining the five core character attributes for the character creation system.
-// Version: 0.17.0a
+// Version: 0.17.2a
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Domain.Enums;
@@ -60,6 +60,7 @@ namespace RuneAndRust.Domain.Enums;
 /// </list>
 /// </para>
 /// </remarks>
+/// <seealso cref="ValueObjects.AttributeDescription"/>
 /// <seealso cref="ValueObjects.LineageAttributeModifiers"/>
 public enum CoreAttribute
 {

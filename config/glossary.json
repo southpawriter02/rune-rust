@@ -455,6 +455,61 @@
             "sortOrder": 3
         },
         {
+            "id": "wits",
+            "term": "Wits",
+            "definition": "Mental acuity, perception, and learned knowledge. Wits affects perception checks, crafting quality, lore knowledge, and provides secondary Aether capacity. Scholars and crafters benefit most from high Wits.",
+            "shortDefinition": "Mental acuity; affects perception, crafting, and lore knowledge.",
+            "categoryId": "attributes",
+            "abbreviation": "WIT",
+            "aliases": [
+                "perception",
+                "knowledge",
+                "acuity"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "will",
+                    "relationship": "Contrast"
+                },
+                {
+                    "termId": "craft",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "attribute",
+                "mental",
+                "knowledge"
+            ],
+            "sortOrder": 4
+        },
+        {
+            "id": "sturdiness",
+            "term": "Sturdiness",
+            "definition": "Physical toughness and endurance. Sturdiness determines maximum HP, damage resistance (soak), and resistance to physical ailments. All characters who expect to endure punishment benefit from high Sturdiness.",
+            "shortDefinition": "Physical toughness; affects max HP and damage resistance.",
+            "categoryId": "attributes",
+            "abbreviation": "STU",
+            "aliases": [
+                "con",
+                "constitution",
+                "endurance",
+                "toughness"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "might",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "attribute",
+                "physical",
+                "defense"
+            ],
+            "sortOrder": 5
+        },
+        {
             "id": "burning",
             "term": "Burning",
             "definition": "A damage-over-time status effect caused by fire. Burning targets take fire damage at the start of each turn and may spread the effect to adjacent allies. Burning can be removed by water, rolling on the ground (takes an action), or specific abilities.",
