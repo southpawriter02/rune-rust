@@ -101,7 +101,7 @@ public class RoomInstantiator : IRoomInstantiator
                     baseTemplate, modifier, roomTags, random, roomFunction);
 
                 // Create room
-                var position = new Position(node.Coordinate.X, node.Coordinate.Y);
+                var position = new Position3D(node.Coordinate.X, node.Coordinate.Y, 0);
                 var room = new Room(name, description, position, biome);
 
                 // Propagate tags
@@ -131,7 +131,7 @@ public class RoomInstantiator : IRoomInstantiator
         description = template.ProcessDescription(placeholders);
 
         // Create room at node position (convert 3D to 2D for now)
-        var legacyPosition = new Position(node.Coordinate.X, node.Coordinate.Y);
+        var legacyPosition = new Position3D(node.Coordinate.X, node.Coordinate.Y, 0);
         var legacyRoom = new Room(name, description, legacyPosition, biome);
 
         // Propagate tags from template and node

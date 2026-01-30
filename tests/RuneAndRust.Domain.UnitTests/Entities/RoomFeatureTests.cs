@@ -14,7 +14,7 @@ public class RoomFeatureTests
     [SetUp]
     public void Setup()
     {
-        _room = new Room("Test Room", "A test room", new Position(0, 0), Biome.Citadel);
+        _room = new Room("Test Room", "A test room", new Position3D(0, 0, 0), Biome.Citadel);
     }
 
     [Test]
