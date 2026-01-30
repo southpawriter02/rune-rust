@@ -2,9 +2,9 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "attributes.schema.json",
     "title": "Attributes Configuration",
-    "description": "Configuration for core character attributes, archetype-recommended builds for Simple mode allocation, and point-buy cost structure for Advanced mode. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties, relationship mappings to derived stats and skills, pre-configured attribute allocations for each archetype, and the tiered cost table for point-buy allocation.",
+    "description": "Configuration for core character attributes, archetype-recommended builds for Simple mode allocation, point-buy cost structure for Advanced mode, and derived stat formulas. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties, relationship mappings to derived stats and skills, pre-configured attribute allocations for each archetype, the tiered cost table for point-buy allocation, and configurable formulas for calculating derived stats (HP, Stamina, Aether Pool, Initiative, Soak, Movement Speed, Carrying Capacity).",
     "type": "object",
-    "required": ["attributes", "recommendedBuilds", "pointBuy"],
+    "required": ["attributes", "recommendedBuilds", "pointBuy", "derivedStats"],
     "properties": {
         "$schema": {
             "type": "string",
@@ -30,6 +30,9 @@
         },
         "pointBuy": {
             "$ref": "#/definitions/pointBuyConfiguration"
+        },
+        "derivedStats": {
+            "$ref": "#/definitions/derivedStatsConfiguration"
         }
     },
     "additionalProperties": false,
@@ -227,6 +230,118 @@
                     "description": "Total points required to reach this value from the base value of 1.",
                     "minimum": 1,
                     "maximum": 50
+                }
+            },
+            "additionalProperties": false
+        },
+        "derivedStatsConfiguration": {
+            "type": "object",
+            "description": "Configuration for derived stat formulas. Each property defines a formula for calculating one derived stat from core attributes, archetype bonuses, and lineage bonuses/multipliers.",
+            "required": [
+                "maxHp",
+                "maxStamina",
+                "maxAetherPool",
+                "initiative",
+                "soak",
+                "movementSpeed",
+                "carryingCapacity"
+            ],
+            "properties": {
+                "maxHp": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for maximum hit points. Primarily scaled by Sturdiness with archetype and lineage bonuses."
+                },
+                "maxStamina": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for maximum stamina. Scaled by Finesse and Might with archetype bonuses."
+                },
+                "maxAetherPool": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for maximum Aether pool. Scaled by Will and Wits with archetype bonuses and Rune-Marked lineage multiplier."
+                },
+                "initiative": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for combat initiative. Scaled by Finesse and Wits (half)."
+                },
+                "soak": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for passive damage reduction. Scaled by Sturdiness (half) with Iron-Blooded lineage bonus."
+                },
+                "movementSpeed": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for base movement speed in tiles per turn. Base of 5 with Vargr-Kin lineage bonus."
+                },
+                "carryingCapacity": {
+                    "$ref": "#/definitions/derivedStatFormula",
+                    "description": "Formula for maximum carrying weight. Scaled by Might."
+                }
+            },
+            "additionalProperties": false
+        },
+        "derivedStatFormula": {
+            "type": "object",
+            "description": "A formula for calculating a single derived stat. Combines a base value with attribute scaling, optional archetype bonuses, optional lineage bonuses, and optional lineage multipliers.",
+            "required": [
+                "baseValue"
+            ],
+            "properties": {
+                "baseValue": {
+                    "type": "integer",
+                    "description": "The flat base value added before any scaling or bonuses (e.g., 50 for Max HP, 20 for Max Stamina, 5 for Movement Speed).",
+                    "minimum": 0,
+                    "maximum": 1000
+                },
+                "attributeScaling": {
+                    "type": "object",
+                    "description": "Mapping of CoreAttribute names to their scaling multipliers. Keys must match CoreAttribute enum values (Might, Finesse, Wits, Will, Sturdiness). Values can be integers or decimals (e.g., 10 for Sturdiness in HP, 0.5 for Wits in Initiative).",
+                    "patternProperties": {
+                        "^(Might|Finesse|Wits|Will|Sturdiness)$": {
+                            "type": "number",
+                            "description": "Scaling multiplier for this attribute. The attribute value is multiplied by this factor and added to the stat.",
+                            "minimum": 0,
+                            "maximum": 100
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "archetypeBonuses": {
+                    "type": "object",
+                    "description": "Mapping of lowercase archetype identifiers to flat bonus values added to the stat.",
+                    "patternProperties": {
+                        "^[a-z][a-z0-9-]*$": {
+                            "type": "integer",
+                            "description": "Flat bonus added for this archetype.",
+                            "minimum": 0,
+                            "maximum": 1000
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "lineageBonuses": {
+                    "type": "object",
+                    "description": "Mapping of lowercase lineage identifiers to flat bonus values added to the stat.",
+                    "patternProperties": {
+                        "^[a-z][a-z0-9-]*$": {
+                            "type": "integer",
+                            "description": "Flat bonus added for this lineage.",
+                            "minimum": 0,
+                            "maximum": 1000
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "lineageMultipliers": {
+                    "type": "object",
+                    "description": "Mapping of lowercase lineage identifiers to multiplicative factors applied after all additive bonuses. A value of 1.1 means +10%.",
+                    "patternProperties": {
+                        "^[a-z][a-z0-9-]*$": {
+                            "type": "number",
+                            "description": "Multiplicative factor for this lineage. Applied after base + scaling + bonuses.",
+                            "minimum": 0.1,
+                            "maximum": 10.0
+                        }
+                    },
+                    "additionalProperties": false
                 }
             },
             "additionalProperties": false

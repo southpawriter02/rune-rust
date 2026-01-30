@@ -96,5 +96,52 @@
             { "targetValue": 9, "individualCost": 2, "cumulativeCost": 9 },
             { "targetValue": 10, "individualCost": 2, "cumulativeCost": 11 }
         ]
+    },
+    "derivedStats": {
+        "maxHp": {
+            "baseValue": 50,
+            "attributeScaling": { "Sturdiness": 10 },
+            "archetypeBonuses": {
+                "warrior": 49,
+                "skirmisher": 30,
+                "mystic": 20,
+                "adept": 30
+            },
+            "lineageBonuses": { "clan-born": 5 }
+        },
+        "maxStamina": {
+            "baseValue": 20,
+            "attributeScaling": { "Finesse": 5, "Might": 5 },
+            "archetypeBonuses": {
+                "warrior": 5,
+                "skirmisher": 5
+            }
+        },
+        "maxAetherPool": {
+            "baseValue": 0,
+            "attributeScaling": { "Will": 10, "Wits": 5 },
+            "archetypeBonuses": {
+                "mystic": 20
+            },
+            "lineageBonuses": { "rune-marked": 5 },
+            "lineageMultipliers": { "rune-marked": 1.1 }
+        },
+        "initiative": {
+            "baseValue": 0,
+            "attributeScaling": { "Finesse": 1, "Wits": 0.5 }
+        },
+        "soak": {
+            "baseValue": 0,
+            "attributeScaling": { "Sturdiness": 0.5 },
+            "lineageBonuses": { "iron-blooded": 2 }
+        },
+        "movementSpeed": {
+            "baseValue": 5,
+            "lineageBonuses": { "vargr-kin": 1 }
+        },
+        "carryingCapacity": {
+            "baseValue": 0,
+            "attributeScaling": { "Might": 10 }
+        }
     }
 }

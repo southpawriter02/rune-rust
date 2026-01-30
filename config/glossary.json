@@ -801,6 +801,202 @@
                 "cost"
             ],
             "sortOrder": 9
+        },
+        {
+            "id": "derived-stats",
+            "term": "Derived Stats",
+            "definition": "Secondary character statistics calculated from core attributes, archetype bonuses, and lineage bonuses. Derived stats include Max HP, Max Stamina, Max Aether Pool, Initiative, Soak, Movement Speed, and Carrying Capacity. Each stat is computed using a configurable formula that combines a base value with attribute scaling multipliers and optional bonuses.",
+            "shortDefinition": "Calculated secondary stats from attributes and bonuses.",
+            "categoryId": "attributes",
+            "aliases": [
+                "secondary stats",
+                "calculated stats",
+                "derived statistics"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attributes",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "combat",
+                "stats"
+            ],
+            "sortOrder": 10
+        },
+        {
+            "id": "max-hp",
+            "term": "Max HP",
+            "definition": "Maximum hit points determining how much damage a character can absorb before falling. Calculated as (STURDINESS × 10) + 50 + archetype bonus + lineage bonus. Warrior archetype has the highest HP bonus (+49), while Clan-Born lineage adds +5.",
+            "shortDefinition": "Maximum hit points scaled by Sturdiness.",
+            "categoryId": "attributes",
+            "aliases": [
+                "maximum HP",
+                "hit points",
+                "health points"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "sturdiness",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "derived-stats",
+                "combat",
+                "resources"
+            ],
+            "sortOrder": 11
+        },
+        {
+            "id": "max-stamina",
+            "term": "Max Stamina",
+            "definition": "Maximum stamina pool for physical actions. Calculated as (FINESSE × 5) + (MIGHT × 5) + 20 + archetype bonus. Used by Warrior, Skirmisher, and Adept archetypes to power physical abilities. Warrior and Skirmisher archetypes receive a +5 bonus.",
+            "shortDefinition": "Maximum stamina scaled by Finesse and Might.",
+            "categoryId": "attributes",
+            "aliases": [
+                "maximum stamina",
+                "stamina pool"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "finesse",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "might",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "derived-stats",
+                "combat",
+                "resources"
+            ],
+            "sortOrder": 12
+        },
+        {
+            "id": "aether-pool",
+            "term": "Aether Pool",
+            "definition": "Maximum magical energy capacity for Aetheric abilities. Calculated as (WILL × 10) + (WITS × 5) + archetype bonus + lineage bonus, with an optional lineage multiplier. The Mystic archetype gains +20 bonus. Rune-Marked lineage adds +5 flat bonus then applies a ×1.10 multiplier from the Aether-Tainted trait.",
+            "shortDefinition": "Maximum magical energy scaled by Will and Wits.",
+            "categoryId": "attributes",
+            "aliases": [
+                "max aether",
+                "max AP",
+                "magical energy",
+                "aether capacity"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "will",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "wits",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "derived-stats",
+                "magic",
+                "resources"
+            ],
+            "sortOrder": 13
+        },
+        {
+            "id": "initiative",
+            "term": "Initiative",
+            "definition": "Combat turn order bonus determining when a character acts in combat rounds. Calculated as FINESSE + (WITS ÷ 2) using integer division. Higher initiative means acting earlier, providing a tactical advantage for positioning and first strikes.",
+            "shortDefinition": "Combat turn order bonus from Finesse and Wits.",
+            "categoryId": "attributes",
+            "aliases": [
+                "init",
+                "turn order",
+                "combat order"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "finesse",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "derived-stats",
+                "combat"
+            ],
+            "sortOrder": 14
+        },
+        {
+            "id": "soak",
+            "term": "Soak",
+            "definition": "Passive damage reduction applied to incoming physical damage. Calculated as (STURDINESS ÷ 2) + lineage bonus. Iron-Blooded lineage gains +2 Soak from the Hazard Acclimation trait, making them notably more resilient to physical attacks.",
+            "shortDefinition": "Flat damage reduction from Sturdiness.",
+            "categoryId": "attributes",
+            "aliases": [
+                "damage reduction",
+                "damage soak",
+                "physical resistance"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "sturdiness",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "derived-stats",
+                "combat",
+                "defense"
+            ],
+            "sortOrder": 15
+        },
+        {
+            "id": "movement-speed",
+            "term": "Movement Speed",
+            "definition": "Base number of tiles a character can move per combat turn. Base value is 5 for all characters. Vargr-Kin lineage gains +1 from the Primal Clarity trait, reflecting their primal connection and physical agility.",
+            "shortDefinition": "Tiles moved per turn, base 5.",
+            "categoryId": "attributes",
+            "aliases": [
+                "move speed",
+                "movement",
+                "speed"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "derived-stats",
+                "combat",
+                "movement"
+            ],
+            "sortOrder": 16
         }
     ]
 }
