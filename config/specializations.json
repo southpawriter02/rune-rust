@@ -86,5 +86,239 @@
             "pathType": "Coherent",
             "corruptionRisk": null
         }
+    ],
+    "definitions": [
+        {
+            "specializationId": "Berserkr",
+            "displayName": "Berserkr",
+            "tagline": "Fury Unleashed",
+            "description": "The Berserkr channels primal rage into devastating combat prowess. As fury builds, attacks become more powerful but control slips away. Those who walk this path risk losing themselves to the beast within.",
+            "selectionText": "Embrace the fury. Let rage fuel your strikes and shatter your enemies.",
+            "parentArchetype": "Warrior",
+            "pathType": "Heretical",
+            "unlockCost": 0,
+            "specialResource": {
+                "resourceId": "rage",
+                "displayName": "Rage",
+                "minValue": 0,
+                "maxValue": 100,
+                "startsAt": 0,
+                "regenPerTurn": 0,
+                "decayPerTurn": 5,
+                "description": "Fury that builds with each strike and received blow"
+            }
+        },
+        {
+            "specializationId": "IronBane",
+            "displayName": "Iron-Bane",
+            "tagline": "Hunter of Monsters",
+            "description": "The Iron-Bane dedicates their life to hunting the Blighted and other abominations. Through study of their prey and righteous determination, they become living weapons against corruption.",
+            "selectionText": "Hunt the hunters. Become the predator that monsters fear.",
+            "parentArchetype": "Warrior",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": {
+                "resourceId": "righteous-fervor",
+                "displayName": "Righteous Fervor",
+                "minValue": 0,
+                "maxValue": 50,
+                "startsAt": 0,
+                "regenPerTurn": 0,
+                "decayPerTurn": 0,
+                "description": "Zealous conviction that grows when facing abominations"
+            }
+        },
+        {
+            "specializationId": "Skjaldmaer",
+            "displayName": "Skjaldmaer",
+            "tagline": "The Living Shield",
+            "description": "The Skjaldmaer stands as an immovable bulwark between allies and harm. Through disciplined defense and protective techniques, they turn attacks aside and shelter those under their protection.",
+            "selectionText": "Be the shield that never breaks. Protect those who cannot protect themselves.",
+            "parentArchetype": "Warrior",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": {
+                "resourceId": "block-charges",
+                "displayName": "Block Charges",
+                "minValue": 0,
+                "maxValue": 3,
+                "startsAt": 3,
+                "regenPerTurn": 1,
+                "decayPerTurn": 0,
+                "description": "Stored defensive reactions ready to deflect incoming attacks"
+            }
+        },
+        {
+            "specializationId": "SkarHorde",
+            "displayName": "Skar-Horde",
+            "tagline": "Voice of the Warband",
+            "description": "The Skar-Horde leads through example and battlefield command. Their presence inspires allies to greater feats while coordinating devastating group tactics.",
+            "selectionText": "Lead from the front. Your voice rallies the fallen and breaks enemy lines.",
+            "parentArchetype": "Warrior",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "AtgeirWielder",
+            "displayName": "Atgeir-Wielder",
+            "tagline": "Master of Reach",
+            "description": "The Atgeir-Wielder turns the long-hafted spear into an extension of their will. Through disciplined technique, they control the battlefield, keeping enemies at bay while striking with precision.",
+            "selectionText": "Keep them at bay. Your reach is your advantage; let none close the distance.",
+            "parentArchetype": "Warrior",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "GorgeMaw",
+            "displayName": "Gorge-Maw",
+            "tagline": "The Consuming Hunger",
+            "description": "The Gorge-Maw has learned to draw power from defeated foes in ways that blur the line between survival and corruption. Each enemy consumed feeds an endless hunger that grants terrible strength.",
+            "selectionText": "Consume to survive. Every enemy is fuel for your terrible hunger.",
+            "parentArchetype": "Warrior",
+            "pathType": "Heretical",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "Veidimadr",
+            "displayName": "Veiðimaðr",
+            "tagline": "The Patient Stalker",
+            "description": "The Veiðimaðr is a traditional hunter who tracks and stalks prey through the wilds with patience and precision. Their knowledge of animal behavior and terrain makes them lethal ambush predators who strike before the quarry knows danger is near.",
+            "selectionText": "Stalk your prey in silence. The hunt ends with a single, perfect strike.",
+            "parentArchetype": "Skirmisher",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "MyrkGengr",
+            "displayName": "Myrk-gengr",
+            "tagline": "Shadow Walker",
+            "description": "The Myrk-gengr manipulates shadows and darkness to move unseen and strike from concealment. Their bond with the dark places between worlds grants terrible power but draws the attention of things best left undisturbed.",
+            "selectionText": "Become the shadow. Strike from the darkness where none can follow.",
+            "parentArchetype": "Skirmisher",
+            "pathType": "Heretical",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "Strandhogg",
+            "displayName": "Strandhögg",
+            "tagline": "The Lightning Raider",
+            "description": "The Strandhögg adapts naval raider tactics for land combat, emphasizing rapid strikes, tactical withdrawal, and the exploitation of confusion. They hit hard, hit fast, and vanish before the enemy can mount a coordinated response.",
+            "selectionText": "Strike like lightning. Take what you need and vanish before they rally.",
+            "parentArchetype": "Skirmisher",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "HlekkrMaster",
+            "displayName": "Hlekkr-master",
+            "tagline": "Binder of Foes",
+            "description": "The Hlekkr-master wields chains, nets, and bindings to control and restrain enemies. Through mastery of entanglement and leverage, they deny movement and dictate the terms of every engagement.",
+            "selectionText": "Bind them fast. No enemy escapes the chains of a true master.",
+            "parentArchetype": "Skirmisher",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "Seidkona",
+            "displayName": "Seiðkona",
+            "tagline": "Weaver of Aether",
+            "description": "The Seiðkona walks the boundary between worlds, shaping raw Aether into manifestations of will. Each spell risks drawing attention from forces beyond, yet the power to reshape reality proves irresistible.",
+            "selectionText": "Weave the Aether. Reality bends to your will, but the void watches.",
+            "parentArchetype": "Mystic",
+            "pathType": "Heretical",
+            "unlockCost": 0,
+            "specialResource": {
+                "resourceId": "aether-resonance",
+                "displayName": "Aether Resonance",
+                "minValue": 0,
+                "maxValue": 10,
+                "startsAt": 0,
+                "regenPerTurn": 0,
+                "decayPerTurn": 1,
+                "description": "Harmonic attunement to the Aether that enables spell combinations"
+            }
+        },
+        {
+            "specializationId": "EchoCaller",
+            "displayName": "Echo-Caller",
+            "tagline": "Voice of the Dead",
+            "description": "The Echo-Caller communes with those who have passed, drawing knowledge and power from the realm of the dead. Each conversation risks attracting unwanted attention from darker entities.",
+            "selectionText": "Hear the whispers. The dead have much to say to those who listen.",
+            "parentArchetype": "Mystic",
+            "pathType": "Heretical",
+            "unlockCost": 0,
+            "specialResource": {
+                "resourceId": "echoes",
+                "displayName": "Echoes",
+                "minValue": 0,
+                "maxValue": 5,
+                "startsAt": 0,
+                "regenPerTurn": 0,
+                "decayPerTurn": 0,
+                "description": "Lingering connections to departed spirits"
+            }
+        },
+        {
+            "specializationId": "BoneSetter",
+            "displayName": "Bone-Setter",
+            "tagline": "Mender of the Broken",
+            "description": "The Bone-Setter practices traditional medicine and healing arts passed down through generations. Their knowledge of anatomy, herbal remedies, and surgical techniques makes them indispensable in a world where wounds are plentiful and true healers are scarce.",
+            "selectionText": "Mend what is broken. Your hands bring relief where others bring only pain.",
+            "parentArchetype": "Adept",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "JotunReader",
+            "displayName": "Jötun-Reader",
+            "tagline": "Keeper of Lost Words",
+            "description": "The Jötun-Reader studies ancient texts, runes, and lost knowledge from before the Silence. Their mastery of forgotten languages and buried lore reveals secrets that others cannot perceive, turning knowledge itself into a weapon.",
+            "selectionText": "Read the forgotten words. Knowledge buried in ruins holds the key to survival.",
+            "parentArchetype": "Adept",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "Skald",
+            "displayName": "Skald",
+            "tagline": "Voice of the Saga",
+            "description": "The Skald weaves words, song, and storytelling into a force that inspires allies and demoralizes enemies. Their performances carry the weight of ancestral tradition and can turn the tide of battle through sheer force of narrative.",
+            "selectionText": "Sing the saga. Your voice carries the strength of every hero who came before.",
+            "parentArchetype": "Adept",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "ScrapTinker",
+            "displayName": "Scrap-Tinker",
+            "tagline": "Maker of Marvels",
+            "description": "The Scrap-Tinker builds gadgets, traps, and practical inventions from salvaged materials. In a world of scarcity, their ability to repurpose broken technology and craft functional tools from refuse is an invaluable survival advantage.",
+            "selectionText": "Build from nothing. Every scrap of metal holds the potential for a marvel.",
+            "parentArchetype": "Adept",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        },
+        {
+            "specializationId": "Einbui",
+            "displayName": "Einbúi",
+            "tagline": "The Lone Survivor",
+            "description": "The Einbúi is a solitary survivalist who thrives in the harsh wilderness where others perish. Through self-reliance, resourcefulness, and intimate knowledge of the land, they endure conditions that would break lesser adventurers.",
+            "selectionText": "Survive alone. The wilderness is your home, and you need no one else.",
+            "parentArchetype": "Adept",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": null
+        }
     ]
 }

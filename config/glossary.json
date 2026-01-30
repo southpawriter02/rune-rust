@@ -1722,6 +1722,72 @@
                 "extension-methods"
             ],
             "sortOrder": 39
+        },
+        {
+            "id": "special-resource-definition",
+            "term": "Special Resource Definition",
+            "definition": "Value object defining a unique gameplay resource tied to a specific specialization. Unlike standard resources (Health, Stamina, Aether Pool), special resources provide unique mechanics for certain specializations. Each definition includes a resource ID, display name, min/max value range, starting value, passive regeneration and decay rates, and a flavor description. Five specializations have special resources: Berserkr (Rage, 0-100), Skjaldmaer (Block Charges, 0-3), Iron-Bane (Righteous Fervor, 0-50), Seiðkona (Aether Resonance, 0-10), and Echo-Caller (Echoes, 0-5). The remaining 12 specializations use SpecialResourceDefinition.None.",
+            "shortDefinition": "Value object defining a unique specialization resource with range, regen, and decay.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "special resource",
+                "specialization resource",
+                "unique resource"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-id",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-definition",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "resources",
+                "value-object"
+            ],
+            "sortOrder": 40
+        },
+        {
+            "id": "specialization-definition",
+            "term": "Specialization Definition",
+            "definition": "Entity defining a specialization's display metadata, path type classification, parent archetype, unlock cost, and optional special resource. Each of the 17 specializations has exactly one definition loaded from specializations.json configuration. Definitions include a display name (with Old Norse diacritics), tagline, lore description, second-person selection text for character creation, parent archetype linkage, Coherent/Heretical path type, Progression Point unlock cost (0 for first specialization, 3 for additional), and an optional SpecialResourceDefinition. Validated during creation to ensure path type and parent archetype match the SpecializationId enum's inherent values.",
+            "shortDefinition": "Entity defining specialization display metadata, path type, and special resource.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "spec definition",
+                "specialization entity",
+                "specialization config"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-id",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-path-type",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "special-resource-definition",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "entity",
+                "configuration"
+            ],
+            "sortOrder": 41
         }
     ]
 }

@@ -2,10 +2,11 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "specializations.schema.json",
     "title": "Specializations Configuration",
-    "description": "Configuration for character specialization path type classifications and Corruption risk profiles. Each specialization is classified as Coherent (stable reality, no Corruption risk) or Heretical (corrupted Aether, abilities may trigger Corruption gain). Part of v0.17.4a Specialization Enum & Path Types.",
+    "description": "Configuration for character specialization path type classifications, Corruption risk profiles, and specialization definitions with display metadata and special resources. Part of v0.17.4a (path types) and v0.17.4b (definitions).",
     "type": "object",
     "required": [
-        "pathTypes"
+        "pathTypes",
+        "definitions"
     ],
     "properties": {
         "$schema": {
@@ -19,6 +20,15 @@
             "maxItems": 17,
             "items": {
                 "$ref": "#/definitions/pathTypeEntry"
+            }
+        },
+        "definitions": {
+            "type": "array",
+            "description": "Array of specialization definitions with display metadata, path type, parent archetype, unlock cost, and optional special resource for all 17 specializations.",
+            "minItems": 17,
+            "maxItems": 17,
+            "items": {
+                "$ref": "#/definitions/definitionEntry"
             }
         }
     },
@@ -77,6 +87,154 @@
                             "description": "Null for Coherent specializations with no Corruption risk."
                         }
                     ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "definitionEntry": {
+            "type": "object",
+            "description": "Complete specialization definition with display metadata, path classification, parent archetype, unlock cost, and optional special resource.",
+            "required": [
+                "specializationId",
+                "displayName",
+                "tagline",
+                "description",
+                "selectionText",
+                "parentArchetype",
+                "pathType",
+                "unlockCost",
+                "specialResource"
+            ],
+            "properties": {
+                "specializationId": {
+                    "type": "string",
+                    "description": "The PascalCase identifier matching the SpecializationId enum value.",
+                    "enum": [
+                        "Berserkr",
+                        "IronBane",
+                        "Skjaldmaer",
+                        "SkarHorde",
+                        "AtgeirWielder",
+                        "GorgeMaw",
+                        "Veidimadr",
+                        "MyrkGengr",
+                        "Strandhogg",
+                        "HlekkrMaster",
+                        "Seidkona",
+                        "EchoCaller",
+                        "BoneSetter",
+                        "JotunReader",
+                        "Skald",
+                        "ScrapTinker",
+                        "Einbui"
+                    ]
+                },
+                "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable display name, potentially with Old Norse diacritics."
+                },
+                "tagline": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Short evocative tagline summarizing the specialization identity."
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Full lore description of the specialization."
+                },
+                "selectionText": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Second-person narrative text shown during character creation selection."
+                },
+                "parentArchetype": {
+                    "type": "string",
+                    "description": "The parent archetype this specialization belongs to.",
+                    "enum": [
+                        "Warrior",
+                        "Skirmisher",
+                        "Mystic",
+                        "Adept"
+                    ]
+                },
+                "pathType": {
+                    "type": "string",
+                    "description": "The path type classification: Coherent (stable reality) or Heretical (corrupted Aether).",
+                    "enum": [
+                        "Coherent",
+                        "Heretical"
+                    ]
+                },
+                "unlockCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Progression Point cost to unlock. 0 for first specialization during character creation, 3 for additional specializations."
+                },
+                "specialResource": {
+                    "description": "Optional special resource definition unique to this specialization, or null for specializations without unique resources.",
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/specialResourceEntry"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "specialResourceEntry": {
+            "type": "object",
+            "description": "Defines a special resource unique to a specialization, with range, starting value, and passive regen/decay behavior.",
+            "required": [
+                "resourceId",
+                "displayName",
+                "minValue",
+                "maxValue",
+                "startsAt",
+                "regenPerTurn",
+                "decayPerTurn",
+                "description"
+            ],
+            "properties": {
+                "resourceId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Unique kebab-case identifier for this resource type (e.g., 'rage', 'block-charges')."
+                },
+                "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable display name shown in UI (e.g., 'Rage', 'Block Charges')."
+                },
+                "minValue": {
+                    "type": "integer",
+                    "description": "Minimum resource value. Typically 0."
+                },
+                "maxValue": {
+                    "type": "integer",
+                    "description": "Maximum resource value. Must be greater than or equal to minValue."
+                },
+                "startsAt": {
+                    "type": "integer",
+                    "description": "Starting value at combat start. Must be within [minValue, maxValue] range."
+                },
+                "regenPerTurn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Passive regeneration amount per turn. 0 means no passive regeneration."
+                },
+                "decayPerTurn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Passive decay amount per turn. 0 means no passive decay."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor description of the resource's nature and purpose."
                 }
             },
             "additionalProperties": false
