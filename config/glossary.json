@@ -1029,6 +1029,89 @@
                 "movement"
             ],
             "sortOrder": 16
+        },
+        {
+            "id": "attribute-allocation-service",
+            "term": "Attribute Allocation Service",
+            "definition": "Service that manages attribute point allocation during character creation. Supports both Simple mode (archetype-recommended builds with no manual adjustment) and Advanced mode (full point-buy customization). Handles state creation, attribute modification with cost validation, mode switching, allocation validation, and reset. All state transitions are immutable, returning new state objects.",
+            "shortDefinition": "Service managing attribute point allocation during character creation.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "allocation service",
+                "attribute allocator"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attribute-provider",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "simple-mode",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "advanced-mode",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "point-buy-system",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "service",
+                "allocation"
+            ],
+            "sortOrder": 17
+        },
+        {
+            "id": "attribute-modification-result",
+            "term": "Attribute Modification Result",
+            "definition": "Value object encapsulating the outcome of an attribute modification attempt during character creation. On success, contains the updated allocation state with modified attribute value and recalculated point totals. On failure, contains an error message describing why the modification was rejected (e.g., insufficient points, out-of-range value, Simple mode restriction).",
+            "shortDefinition": "Outcome of an attribute modification attempt with state or error.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "modification result",
+                "attribute change result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attribute-allocation-service",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "allocation"
+            ],
+            "sortOrder": 18
+        },
+        {
+            "id": "allocation-validation-result",
+            "term": "Allocation Validation Result",
+            "definition": "Value object representing the outcome of an attribute allocation validation check, supporting multiple error messages for comprehensive feedback. Checks all attribute values are within range (1-10), points are not overspent, and Simple mode has an archetype selected. All constraints are checked simultaneously, reporting all violations at once.",
+            "shortDefinition": "Multi-error validation result for attribute allocation state.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "validation result",
+                "allocation validation"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attribute-allocation-service",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "validation",
+                "allocation"
+            ],
+            "sortOrder": 19
         }
     ]
 }
