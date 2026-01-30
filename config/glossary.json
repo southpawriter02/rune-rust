@@ -510,6 +510,54 @@
             "sortOrder": 5
         },
         {
+            "id": "simple-mode",
+            "term": "Simple Mode",
+            "definition": "An attribute allocation mode for character creation that uses archetype-recommended builds. In Simple mode, players select an archetype and attributes are automatically set to predefined values. Manual adjustment is disabled, providing the fastest path through character creation for new players.",
+            "shortDefinition": "Guided attribute allocation using archetype-recommended builds.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "simple allocation",
+                "recommended build",
+                "quick mode"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "advanced-mode",
+                    "relationship": "Contrast"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "allocation"
+            ],
+            "sortOrder": 8
+        },
+        {
+            "id": "advanced-mode",
+            "term": "Advanced Mode",
+            "definition": "An attribute allocation mode for character creation that enables full point-buy customization. In Advanced mode, all attributes start at 1 and the player distributes points manually. Cost scaling applies at higher values (9-10 cost 2 points each). Players have complete control over their attribute distribution.",
+            "shortDefinition": "Full point-buy attribute customization for experienced players.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "advanced allocation",
+                "point-buy",
+                "custom mode"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "simple-mode",
+                    "relationship": "Contrast"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "allocation"
+            ],
+            "sortOrder": 9
+        },
+        {
             "id": "burning",
             "term": "Burning",
             "definition": "A damage-over-time status effect caused by fire. Burning targets take fire damage at the start of each turn and may spread the effect to adjacent allies. Burning can be removed by water, rolling on the ground (takes an action), or specific abilities.",

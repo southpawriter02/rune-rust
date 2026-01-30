@@ -41,5 +41,43 @@
             "affectedStats": ["Max HP", "Soak"],
             "affectedSkills": ["Endurance", "Survival", "Fortitude"]
         }
+    ],
+    "recommendedBuilds": [
+        {
+            "archetypeId": "warrior",
+            "might": 4,
+            "finesse": 3,
+            "wits": 2,
+            "will": 2,
+            "sturdiness": 4,
+            "totalPoints": 15
+        },
+        {
+            "archetypeId": "skirmisher",
+            "might": 3,
+            "finesse": 4,
+            "wits": 3,
+            "will": 2,
+            "sturdiness": 3,
+            "totalPoints": 15
+        },
+        {
+            "archetypeId": "mystic",
+            "might": 2,
+            "finesse": 3,
+            "wits": 4,
+            "will": 4,
+            "sturdiness": 2,
+            "totalPoints": 15
+        },
+        {
+            "archetypeId": "adept",
+            "might": 3,
+            "finesse": 3,
+            "wits": 3,
+            "will": 2,
+            "sturdiness": 3,
+            "totalPoints": 14
+        }
     ]
 }

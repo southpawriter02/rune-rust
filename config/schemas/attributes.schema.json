@@ -2,9 +2,9 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "attributes.schema.json",
     "title": "Attributes Configuration",
-    "description": "Configuration for core character attributes and their descriptions. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties and relationship mappings to derived stats and skills.",
+    "description": "Configuration for core character attributes and their descriptions, plus archetype-recommended builds for Simple mode allocation. Defines the five fundamental attributes (Might, Finesse, Wits, Will, Sturdiness) with display properties, relationship mappings to derived stats and skills, and pre-configured attribute allocations for each archetype.",
     "type": "object",
-    "required": ["attributes"],
+    "required": ["attributes", "recommendedBuilds"],
     "properties": {
         "$schema": {
             "type": "string",
@@ -17,6 +17,15 @@
             "maxItems": 5,
             "items": {
                 "$ref": "#/definitions/attributeDefinition"
+            }
+        },
+        "recommendedBuilds": {
+            "type": "array",
+            "description": "Archetype-recommended attribute builds for Simple mode. Each entry defines a pre-configured allocation that totals to the archetype's point budget (15 for most, 14 for Adept).",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+                "$ref": "#/definitions/recommendedBuild"
             }
         }
     },
@@ -79,6 +88,65 @@
                     },
                     "minItems": 1,
                     "maxItems": 10
+                }
+            },
+            "additionalProperties": false
+        },
+        "recommendedBuild": {
+            "type": "object",
+            "description": "A pre-configured attribute allocation for a specific archetype, used in Simple mode during character creation.",
+            "required": [
+                "archetypeId",
+                "might",
+                "finesse",
+                "wits",
+                "will",
+                "sturdiness",
+                "totalPoints"
+            ],
+            "properties": {
+                "archetypeId": {
+                    "type": "string",
+                    "description": "Lowercase archetype identifier matching the archetype system (e.g., 'warrior', 'mystic').",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "might": {
+                    "type": "integer",
+                    "description": "Recommended Might attribute value (1-10).",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Recommended Finesse attribute value (1-10).",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Recommended Wits attribute value (1-10).",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Recommended Will attribute value (1-10).",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "sturdiness": {
+                    "type": "integer",
+                    "description": "Recommended Sturdiness attribute value (1-10).",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "totalPoints": {
+                    "type": "integer",
+                    "description": "Total point cost of this build. Typically 15 for most archetypes, 14 for Adept.",
+                    "minimum": 1,
+                    "maximum": 50
                 }
             },
             "additionalProperties": false
