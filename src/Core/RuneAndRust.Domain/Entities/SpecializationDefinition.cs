@@ -4,7 +4,7 @@
 // classification (Coherent/Heretical), parent archetype, unlock cost, and
 // optional special resource. Specializations provide tactical identity and
 // a unique ability tree for each character in Aethelgard.
-// Version: 0.17.4b
+// Version: 0.17.4c
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Domain.Entities;
@@ -46,6 +46,11 @@ using RuneAndRust.Domain.ValueObjects;
 ///   <item><description>Warrior: 6, Skirmisher: 4, Mystic: 2, Adept: 5</description></item>
 /// </list>
 /// <para>
+/// Each specialization has three tiers of abilities (v0.17.4c), accessed via
+/// <see cref="AbilityTiers"/>. Tiers contain 2-4 abilities each with escalating
+/// Progression Point costs (0 PP, 2 PP, 3 PP).
+/// </para>
+/// <para>
 /// Instances are typically loaded from configuration (specializations.json) via
 /// the ISpecializationProvider (v0.17.4d).
 /// </para>
@@ -54,6 +59,8 @@ using RuneAndRust.Domain.ValueObjects;
 /// <seealso cref="SpecializationPathType"/>
 /// <seealso cref="Archetype"/>
 /// <seealso cref="SpecialResourceDefinition"/>
+/// <seealso cref="SpecializationAbilityTier"/>
+/// <seealso cref="SpecializationAbility"/>
 /// <seealso cref="SpecializationIdExtensions"/>
 /// <seealso cref="SpecializationPathTypeExtensions"/>
 public class SpecializationDefinition : IEntity
@@ -219,6 +226,63 @@ public class SpecializationDefinition : IEntity
     /// </value>
     public bool IsHeretical => PathType == SpecializationPathType.Heretical;
 
+    /// <summary>
+    /// Gets the ability tiers for this specialization.
+    /// </summary>
+    /// <value>
+    /// A read-only list of <see cref="SpecializationAbilityTier"/> instances,
+    /// typically containing 3 tiers. Empty if ability tiers have not been configured.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// Contains 3 tiers of abilities, each with 2-4 abilities. Tiers are unlocked
+    /// sequentially via Progression Points:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item><description>Tier 1: 0 PP (free on selection)</description></item>
+    ///   <item><description>Tier 2: 2 PP (requires Tier 1)</description></item>
+    ///   <item><description>Tier 3: 3 PP (requires Tier 2)</description></item>
+    /// </list>
+    /// <para>
+    /// Ability IDs are guaranteed unique across all tiers within this specialization.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="SpecializationAbilityTier"/>
+    /// <seealso cref="TotalAbilityCount"/>
+    /// <seealso cref="AllAbilities"/>
+    public IReadOnlyList<SpecializationAbilityTier> AbilityTiers { get; private set; }
+
+    /// <summary>
+    /// Gets whether this specialization has ability tiers configured.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if <see cref="AbilityTiers"/> contains at least one tier;
+    /// <c>false</c> for specializations without configured ability data.
+    /// </value>
+    public bool HasAbilityTiers => AbilityTiers.Count > 0;
+
+    /// <summary>
+    /// Gets the total count of abilities across all tiers.
+    /// </summary>
+    /// <value>
+    /// The sum of <see cref="SpecializationAbilityTier.AbilityCount"/> for all tiers.
+    /// Returns 0 if no tiers are configured.
+    /// </value>
+    public int TotalAbilityCount => AbilityTiers.Sum(t => t.AbilityCount);
+
+    /// <summary>
+    /// Gets all abilities across all tiers as a flat sequence.
+    /// </summary>
+    /// <value>
+    /// An enumerable of all <see cref="SpecializationAbility"/> instances from
+    /// all tiers. Empty if no tiers are configured.
+    /// </value>
+    /// <remarks>
+    /// Abilities are returned in tier order (Tier 1 abilities first, then Tier 2, then Tier 3).
+    /// </remarks>
+    public IEnumerable<SpecializationAbility> AllAbilities =>
+        AbilityTiers.SelectMany(t => t.Abilities);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // CONSTRUCTORS
     // ═══════════════════════════════════════════════════════════════════════════
@@ -232,6 +296,7 @@ public class SpecializationDefinition : IEntity
         Tagline = null!;
         Description = null!;
         SelectionText = null!;
+        AbilityTiers = Array.Empty<SpecializationAbilityTier>();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -250,13 +315,15 @@ public class SpecializationDefinition : IEntity
     /// <param name="pathType">Coherent or Heretical classification.</param>
     /// <param name="unlockCost">PP cost to unlock (0 for first spec).</param>
     /// <param name="specialResource">Optional special resource definition.</param>
+    /// <param name="abilityTiers">Optional ability tiers. Must have unique tier numbers and unique ability IDs across all tiers.</param>
     /// <param name="logger">Optional logger for diagnostic output.</param>
     /// <returns>A validated <see cref="SpecializationDefinition"/>.</returns>
     /// <exception cref="ArgumentException">
-    /// Thrown when any required string parameter is null or whitespace, or when
+    /// Thrown when any required string parameter is null or whitespace, when
     /// <paramref name="pathType"/> does not match the inherent path type of
-    /// <paramref name="specializationId"/>, or when <paramref name="parentArchetype"/>
-    /// does not match the inherent parent archetype.
+    /// <paramref name="specializationId"/>, when <paramref name="parentArchetype"/>
+    /// does not match the inherent parent archetype, when <paramref name="abilityTiers"/>
+    /// contains duplicate tier numbers, or when ability IDs are duplicated across tiers.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="unlockCost"/> is negative.
@@ -301,6 +368,7 @@ public class SpecializationDefinition : IEntity
         SpecializationPathType pathType,
         int unlockCost,
         SpecialResourceDefinition? specialResource = null,
+        IEnumerable<SpecializationAbilityTier>? abilityTiers = null,
         ILogger<SpecializationDefinition>? logger = null)
     {
         // Store logger for this creation context
@@ -309,13 +377,14 @@ public class SpecializationDefinition : IEntity
         _logger?.LogDebug(
             "Creating SpecializationDefinition for {SpecializationId} with display name '{DisplayName}', " +
             "parent archetype {ParentArchetype}, path type {PathType}, unlock cost {UnlockCost}, " +
-            "has special resource: {HasSpecialResource}",
+            "has special resource: {HasSpecialResource}, has ability tiers: {HasAbilityTiers}",
             specializationId,
             displayName,
             parentArchetype,
             pathType,
             unlockCost,
-            specialResource.HasValue);
+            specialResource.HasValue,
+            abilityTiers is not null);
 
         // Validate required string parameters
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
@@ -365,6 +434,63 @@ public class SpecializationDefinition : IEntity
             parentArchetype,
             unlockCost);
 
+        // Materialize ability tiers for validation
+        var tiersList = abilityTiers?.ToList() ?? new List<SpecializationAbilityTier>();
+
+        // Validate ability tiers if provided
+        if (tiersList.Count > 0)
+        {
+            _logger?.LogDebug(
+                "Validating {TierCount} ability tiers for {SpecializationId}",
+                tiersList.Count,
+                specializationId);
+
+            // Validate tier numbers are unique
+            var tierNumbers = tiersList.Select(t => t.Tier).OrderBy(t => t).ToList();
+            if (tierNumbers.Distinct().Count() != tierNumbers.Count)
+            {
+                _logger?.LogWarning(
+                    "Duplicate tier numbers found for {SpecializationId}: {TierNumbers}",
+                    specializationId,
+                    string.Join(", ", tierNumbers));
+
+                throw new ArgumentException(
+                    "Ability tiers must have unique tier numbers",
+                    nameof(abilityTiers));
+            }
+
+            // Validate no duplicate ability IDs across tiers
+            var allAbilityIds = tiersList
+                .SelectMany(t => t.Abilities)
+                .Select(a => a.AbilityId)
+                .ToList();
+
+            var duplicateIds = allAbilityIds
+                .GroupBy(id => id)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicateIds.Count > 0)
+            {
+                _logger?.LogWarning(
+                    "Duplicate ability IDs across tiers for {SpecializationId}: {DuplicateIds}",
+                    specializationId,
+                    string.Join(", ", duplicateIds));
+
+                throw new ArgumentException(
+                    $"Duplicate ability IDs across tiers: {string.Join(", ", duplicateIds)}",
+                    nameof(abilityTiers));
+            }
+
+            _logger?.LogDebug(
+                "Ability tier validation passed for {SpecializationId}. " +
+                "{TierCount} tiers with {AbilityCount} total abilities, all IDs unique",
+                specializationId,
+                tiersList.Count,
+                allAbilityIds.Count);
+        }
+
         var definition = new SpecializationDefinition
         {
             Id = Guid.NewGuid(),
@@ -376,13 +502,15 @@ public class SpecializationDefinition : IEntity
             ParentArchetype = parentArchetype,
             PathType = pathType,
             UnlockCost = unlockCost,
-            SpecialResource = specialResource ?? SpecialResourceDefinition.None
+            SpecialResource = specialResource ?? SpecialResourceDefinition.None,
+            AbilityTiers = tiersList.AsReadOnly()
         };
 
         _logger?.LogInformation(
             "Created SpecializationDefinition '{DisplayName}' (ID: {Id}) for {SpecializationId}. " +
             "Parent: {ParentArchetype}, PathType: {PathType}, UnlockCost: {UnlockCost}, " +
-            "HasSpecialResource: {HasSpecialResource}, IsHeretical: {IsHeretical}",
+            "HasSpecialResource: {HasSpecialResource}, IsHeretical: {IsHeretical}, " +
+            "AbilityTiers: {TierCount}, TotalAbilities: {TotalAbilities}",
             definition.DisplayName,
             definition.Id,
             definition.SpecializationId,
@@ -390,7 +518,9 @@ public class SpecializationDefinition : IEntity
             definition.PathType,
             definition.UnlockCost,
             definition.HasSpecialResource,
-            definition.IsHeretical);
+            definition.IsHeretical,
+            definition.AbilityTiers.Count,
+            definition.TotalAbilityCount);
 
         return definition;
     }
@@ -424,6 +554,88 @@ public class SpecializationDefinition : IEntity
     public string? GetCorruptionWarning()
     {
         return PathType.GetCreationWarning();
+    }
+
+    /// <summary>
+    /// Gets a specific tier by tier number.
+    /// </summary>
+    /// <param name="tierNumber">The tier number (1, 2, or 3).</param>
+    /// <returns>
+    /// The matching <see cref="SpecializationAbilityTier"/>, or <c>null</c> if
+    /// no tier with the specified number exists.
+    /// </returns>
+    /// <remarks>
+    /// Returns <c>null</c> for the default struct value if the tier is not found,
+    /// since <see cref="SpecializationAbilityTier"/> is a value type. Callers
+    /// should check the returned value's <c>Tier</c> property or use pattern matching.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var tier2 = berserkrDef.GetTier(2);
+    /// // tier2?.DisplayName == "Unleashed Beast"
+    /// </code>
+    /// </example>
+    public SpecializationAbilityTier? GetTier(int tierNumber)
+    {
+        var tier = AbilityTiers.FirstOrDefault(t => t.Tier == tierNumber);
+
+        // FirstOrDefault on a value type returns default struct (Tier == 0) if not found
+        return tier.Tier == 0 ? null : tier;
+    }
+
+    /// <summary>
+    /// Gets a specific ability by its ID from any tier.
+    /// </summary>
+    /// <param name="abilityId">The ability ID to search for (case-insensitive).</param>
+    /// <returns>
+    /// The matching <see cref="SpecializationAbility"/>, or <c>null</c> if
+    /// no ability with the specified ID exists in any tier.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var ability = berserkrDef.GetAbility("rage-strike");
+    /// // ability?.DisplayName == "Rage Strike"
+    /// </code>
+    /// </example>
+    public SpecializationAbility? GetAbility(string abilityId)
+    {
+        foreach (var ability in AllAbilities)
+        {
+            if (ability.AbilityId.Equals(abilityId, StringComparison.OrdinalIgnoreCase))
+            {
+                return ability;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the tier number containing a specific ability.
+    /// </summary>
+    /// <param name="abilityId">The ability ID to search for (case-insensitive).</param>
+    /// <returns>
+    /// The tier number (1, 2, or 3) containing the ability, or <c>null</c>
+    /// if the ability is not found in any tier.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var tierNum = berserkrDef.GetAbilityTier("berserker-charge");
+    /// // tierNum == 2
+    /// </code>
+    /// </example>
+    public int? GetAbilityTier(string abilityId)
+    {
+        foreach (var tier in AbilityTiers)
+        {
+            if (tier.Abilities.Any(a =>
+                a.AbilityId.Equals(abilityId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return tier.Tier;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

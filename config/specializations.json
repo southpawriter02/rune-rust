@@ -106,7 +106,126 @@
                 "regenPerTurn": 0,
                 "decayPerTurn": 5,
                 "description": "Fury that builds with each strike and received blow"
-            }
+            },
+            "abilityTiers": [
+                {
+                    "tier": 1,
+                    "displayName": "Primal Fury",
+                    "unlockCost": 0,
+                    "requiresPreviousTier": false,
+                    "requiredRank": 1,
+                    "abilities": [
+                        {
+                            "abilityId": "rage-strike",
+                            "displayName": "Rage Strike",
+                            "description": "Channel rage into a devastating blow. Damage scales with current Rage.",
+                            "isPassive": false,
+                            "resourceCost": 20,
+                            "resourceType": "rage",
+                            "cooldown": 0,
+                            "corruptionRisk": 5
+                        },
+                        {
+                            "abilityId": "blood-frenzy",
+                            "displayName": "Blood Frenzy",
+                            "description": "When below 50% health, deal 10% increased damage.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "intimidating-presence",
+                            "displayName": "Intimidating Presence",
+                            "description": "Your fury terrifies nearby enemies, reducing their accuracy.",
+                            "isPassive": false,
+                            "resourceCost": 15,
+                            "resourceType": "rage",
+                            "cooldown": 3,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                },
+                {
+                    "tier": 2,
+                    "displayName": "Unleashed Beast",
+                    "unlockCost": 2,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 2,
+                    "abilities": [
+                        {
+                            "abilityId": "berserker-charge",
+                            "displayName": "Berserker Charge",
+                            "description": "Rush toward an enemy, stunning them on impact.",
+                            "isPassive": false,
+                            "resourceCost": 30,
+                            "resourceType": "rage",
+                            "cooldown": 4,
+                            "corruptionRisk": 10
+                        },
+                        {
+                            "abilityId": "pain-is-power",
+                            "displayName": "Pain is Power",
+                            "description": "Convert 25% of damage taken into Rage.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "reckless-swing",
+                            "displayName": "Reckless Swing",
+                            "description": "A powerful attack that leaves you vulnerable. +50% damage, -30% defense for 1 turn.",
+                            "isPassive": false,
+                            "resourceCost": 25,
+                            "resourceType": "rage",
+                            "cooldown": 2,
+                            "corruptionRisk": 5
+                        }
+                    ]
+                },
+                {
+                    "tier": 3,
+                    "displayName": "Avatar of Destruction",
+                    "unlockCost": 3,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 3,
+                    "abilities": [
+                        {
+                            "abilityId": "unstoppable-fury",
+                            "displayName": "Unstoppable Fury",
+                            "description": "Become immune to crowd control while above 50 Rage.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "deaths-door-defiance",
+                            "displayName": "Death's Door Defiance",
+                            "description": "Once per combat, survive a fatal blow with 1 HP and gain 50 Rage.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 15
+                        },
+                        {
+                            "abilityId": "cataclysmic-roar",
+                            "displayName": "Cataclysmic Roar",
+                            "description": "Release all Rage in a devastating area attack. Damage scales with Rage consumed.",
+                            "isPassive": false,
+                            "resourceCost": 50,
+                            "resourceType": "rage",
+                            "cooldown": 6,
+                            "corruptionRisk": 20
+                        }
+                    ]
+                }
+            ]
         },
         {
             "specializationId": "IronBane",
@@ -126,7 +245,8 @@
                 "regenPerTurn": 0,
                 "decayPerTurn": 0,
                 "description": "Zealous conviction that grows when facing abominations"
-            }
+            },
+            "abilityTiers": []
         },
         {
             "specializationId": "Skjaldmaer",
@@ -146,7 +266,8 @@
                 "regenPerTurn": 1,
                 "decayPerTurn": 0,
                 "description": "Stored defensive reactions ready to deflect incoming attacks"
-            }
+            },
+            "abilityTiers": []
         },
         {
             "specializationId": "SkarHorde",
@@ -157,7 +278,8 @@
             "parentArchetype": "Warrior",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "AtgeirWielder",
@@ -168,7 +290,8 @@
             "parentArchetype": "Warrior",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "GorgeMaw",
@@ -179,7 +302,8 @@
             "parentArchetype": "Warrior",
             "pathType": "Heretical",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "Veidimadr",
@@ -190,7 +314,8 @@
             "parentArchetype": "Skirmisher",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "MyrkGengr",
@@ -201,7 +326,8 @@
             "parentArchetype": "Skirmisher",
             "pathType": "Heretical",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "Strandhogg",
@@ -212,7 +338,8 @@
             "parentArchetype": "Skirmisher",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "HlekkrMaster",
@@ -223,7 +350,8 @@
             "parentArchetype": "Skirmisher",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "Seidkona",
@@ -243,7 +371,8 @@
                 "regenPerTurn": 0,
                 "decayPerTurn": 1,
                 "description": "Harmonic attunement to the Aether that enables spell combinations"
-            }
+            },
+            "abilityTiers": []
         },
         {
             "specializationId": "EchoCaller",
@@ -263,7 +392,8 @@
                 "regenPerTurn": 0,
                 "decayPerTurn": 0,
                 "description": "Lingering connections to departed spirits"
-            }
+            },
+            "abilityTiers": []
         },
         {
             "specializationId": "BoneSetter",
@@ -274,7 +404,8 @@
             "parentArchetype": "Adept",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "JotunReader",
@@ -285,7 +416,8 @@
             "parentArchetype": "Adept",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "Skald",
@@ -296,7 +428,8 @@
             "parentArchetype": "Adept",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "ScrapTinker",
@@ -307,7 +440,8 @@
             "parentArchetype": "Adept",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         },
         {
             "specializationId": "Einbui",
@@ -318,7 +452,8 @@
             "parentArchetype": "Adept",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null
+            "specialResource": null,
+            "abilityTiers": []
         }
     ]
 }

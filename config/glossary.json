@@ -1788,6 +1788,73 @@
                 "configuration"
             ],
             "sortOrder": 41
+        },
+        {
+            "id": "specialization-ability",
+            "term": "Specialization Ability",
+            "definition": "Value object representing an individual ability within a specialization tier. Each ability has mechanical properties including a unique kebab-case ID, display name, description, active/passive classification, resource cost and type, cooldown in turns, and Corruption risk for Heretical paths. Passive abilities are always in effect once the tier is unlocked and cannot have cooldowns. Active abilities require manual activation and may have resource costs and cooldowns. Ability IDs are normalized to lowercase for consistent lookups. Each specialization has 7-12 abilities distributed across three tiers.",
+            "shortDefinition": "Value object representing an individual ability with cost, cooldown, and Corruption risk properties.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "spec ability",
+                "specialization skill",
+                "ability"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-ability-tier",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-definition",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "special-resource-definition",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "abilities",
+                "value-object"
+            ],
+            "sortOrder": 42
+        },
+        {
+            "id": "specialization-ability-tier",
+            "term": "Specialization Ability Tier",
+            "definition": "Value object representing a tier of abilities within a specialization. Each specialization has three tiers with escalating Progression Point costs and rank requirements. Tier 1 (0 PP, Rank 1) provides core abilities free on selection. Tier 2 (2 PP, Rank 2) requires Tier 1 and provides advanced abilities. Tier 3 (3 PP, Rank 3) requires Tier 2 and provides pinnacle abilities. Each tier contains 2-4 abilities (mix of active and passive). The CanUnlock method validates rank requirements, previous tier prerequisites, and available PP before allowing unlock.",
+            "shortDefinition": "Value object representing a tier of abilities with unlock cost, rank requirements, and contained abilities.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "ability tier",
+                "spec tier",
+                "specialization tier"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-ability",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-definition",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "progression-point",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "abilities",
+                "value-object",
+                "progression"
+            ],
+            "sortOrder": 43
         }
     ]
 }
