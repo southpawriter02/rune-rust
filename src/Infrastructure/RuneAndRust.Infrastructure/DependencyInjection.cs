@@ -172,6 +172,15 @@ public static class DependencyInjection
             return new ArchetypeProvider(logger, archetypesPath);
         });
 
+        // Specialization provider (v0.17.4d) - loads specialization definitions, ability tiers,
+        // special resources, and path type classifications from JSON config
+        services.AddSingleton<ISpecializationProvider>(sp =>
+        {
+            var specializationsPath = Path.Combine(configPath, "specializations.json");
+            var logger = sp.GetRequiredService<ILogger<SpecializationProvider>>();
+            return new SpecializationProvider(logger, specializationsPath);
+        });
+
         return services;
     }
 

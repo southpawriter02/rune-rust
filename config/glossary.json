@@ -1855,6 +1855,69 @@
                 "progression"
             ],
             "sortOrder": 43
+        },
+        {
+            "id": "specialization-provider",
+            "term": "Specialization Provider",
+            "definition": "Service that loads, caches, and provides access to all 17 specialization definitions from specializations.json configuration. Implements ISpecializationProvider with O(1) dictionary lookups by specialization ID, archetype, and path type. Loaded once at startup and registered as a singleton. Provides filtered access to Heretical (5) and Coherent (12) specializations, specializations with special resources (5), and cross-specialization ability lookups.",
+            "shortDefinition": "Service for loading and caching specialization definitions from JSON config with O(1) lookups.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "spec provider",
+                "specialization service",
+                "ISpecializationProvider"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-definition",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-ability-tier",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "special-resource-definition",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "service",
+                "provider",
+                "configuration"
+            ],
+            "sortOrder": 44
+        },
+        {
+            "id": "specialization-config-dto",
+            "term": "Specialization Config DTO",
+            "definition": "Data Transfer Object classes for deserializing the specializations.json configuration file. Includes SpecializationsConfigDto (root), SpecializationPathTypeEntryDto (path type array entries), SpecializationDefinitionDto (definition entries with display metadata), SpecialResourceDto (optional unique combat resource), AbilityTierDto (tier progression structure), and SpecializationAbilityDto (individual ability properties). All properties auto-initialize for safe deserialization with System.Text.Json using case-insensitive property matching.",
+            "shortDefinition": "DTO classes for deserializing specializations.json configuration file.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "specialization dto",
+                "spec config dto"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-provider",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-definition",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "configuration",
+                "dto",
+                "deserialization"
+            ],
+            "sortOrder": 45
         }
     ]
 }
