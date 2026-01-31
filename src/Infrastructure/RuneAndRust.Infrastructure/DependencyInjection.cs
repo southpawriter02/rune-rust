@@ -390,6 +390,13 @@ public static class DependencyInjection
         // and specialization data.
         services.AddScoped<IArchetypeApplicationService, ArchetypeApplicationService>();
 
+        // Specialization application service (v0.17.4e)
+        // Orchestrates applying specialization ability tiers and resources to characters
+        // during character creation Step 5 (Specialization Selection) and manages ability
+        // tier unlocks during Saga progression. Depends on ISpecializationProvider for
+        // specialization definitions, ability tiers, and special resource data.
+        services.AddScoped<ISpecializationApplicationService, SpecializationApplicationService>();
+
         // Derived stat calculator (v0.17.2g)
         // Calculates derived statistics (HP, Stamina, Aether Pool, Initiative, Soak,
         // Movement Speed, Carrying Capacity) from core attributes during character creation.

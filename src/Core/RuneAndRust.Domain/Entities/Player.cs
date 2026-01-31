@@ -2212,5 +2212,365 @@ public class Player : IEntity
         CorruptionResistanceModifier = corruptionResistModifier;
         StressResistanceModifier = stressResistModifier;
     }
+
+    // ===== Specialization System (v0.17.4e) =====
+
+    /// <summary>
+    /// Internal tracking of specialization assignments and unlocked tiers.
+    /// Maps each <see cref="SpecializationId"/> to the set of tier numbers
+    /// that have been unlocked (Tier 1 is automatically included when the
+    /// specialization is added).
+    /// </summary>
+    private readonly Dictionary<SpecializationId, HashSet<int>> _specializations = new();
+
+    /// <summary>
+    /// Gets the player's available Progression Points (PP) for unlocking
+    /// specializations and ability tiers.
+    /// </summary>
+    /// <value>
+    /// The current PP balance. Starts at 0 for new characters.
+    /// Earned through Saga progression milestones.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// Progression Points are spent on:
+    /// <list type="bullet">
+    ///   <item><description>Additional specializations: 3 PP each</description></item>
+    ///   <item><description>Tier 2 abilities: 2 PP per tier</description></item>
+    ///   <item><description>Tier 3 abilities: 3 PP per tier</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// Use <see cref="SpendProgressionPoints"/> to deduct PP and
+    /// <see cref="SetProgressionPoints"/> for test setup.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="SpendProgressionPoints"/>
+    /// <seealso cref="ProgressionRank"/>
+    public int ProgressionPoints { get; private set; }
+
+    /// <summary>
+    /// Gets the player's current progression rank, which gates ability tier unlocks.
+    /// </summary>
+    /// <value>
+    /// The current rank. Starts at 1 for new characters. Tier 2 abilities
+    /// require Rank 2; Tier 3 abilities require Rank 3.
+    /// </value>
+    /// <remarks>
+    /// Use <see cref="SetProgressionRank"/> for test setup.
+    /// </remarks>
+    /// <seealso cref="ProgressionPoints"/>
+    public int ProgressionRank { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets the number of specializations the player has acquired.
+    /// </summary>
+    /// <value>
+    /// The count of specializations. The first specialization is free
+    /// during character creation; additional specializations cost 3 PP.
+    /// </value>
+    /// <seealso cref="AddSpecialization"/>
+    /// <seealso cref="HasSpecialization"/>
+    public int SpecializationCount => _specializations.Count;
+
+    /// <summary>
+    /// Gets the typed <see cref="Archetype"/> enum value parsed from <see cref="ArchetypeId"/>,
+    /// or <c>null</c> if no archetype has been set or the ID cannot be parsed.
+    /// </summary>
+    /// <value>
+    /// The <see cref="Archetype"/> enum value corresponding to the player's archetype,
+    /// or <c>null</c> if <see cref="ArchetypeId"/> is not set or does not map to a valid enum value.
+    /// </value>
+    /// <remarks>
+    /// Used by the SpecializationApplicationService to validate that a specialization's
+    /// parent archetype matches the player's archetype during character creation Step 5.
+    /// </remarks>
+    /// <seealso cref="ArchetypeId"/>
+    public Archetype? Archetype =>
+        ArchetypeId != null && Enum.TryParse<Archetype>(ArchetypeId, ignoreCase: true, out var archetype)
+            ? archetype
+            : null;
+
+    /// <summary>
+    /// Adds a specialization to the player, automatically unlocking Tier 1.
+    /// </summary>
+    /// <param name="specializationId">The specialization to add.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the player already has this specialization.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Adding a specialization automatically registers Tier 1 as unlocked.
+    /// The first specialization during character creation is free (0 PP);
+    /// additional specializations cost 3 PP (handled by the application service).
+    /// </para>
+    /// <para>
+    /// This method does not deduct PP or grant abilities — those operations
+    /// are performed by the <c>ISpecializationApplicationService</c>.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.AddSpecialization(SpecializationId.Berserkr);
+    /// // player.HasSpecialization(SpecializationId.Berserkr) == true
+    /// // player.HasUnlockedTier(SpecializationId.Berserkr, 1) == true
+    /// // player.SpecializationCount == 1
+    /// </code>
+    /// </example>
+    /// <seealso cref="HasSpecialization"/>
+    /// <seealso cref="SpecializationCount"/>
+    public void AddSpecialization(SpecializationId specializationId)
+    {
+        if (_specializations.ContainsKey(specializationId))
+        {
+            throw new InvalidOperationException(
+                $"Player '{Name}' already has specialization '{specializationId}'. " +
+                "Duplicate specializations are not allowed.");
+        }
+
+        // Tier 1 is automatically unlocked when the specialization is added
+        _specializations[specializationId] = new HashSet<int> { 1 };
+    }
+
+    /// <summary>
+    /// Checks whether the player has a specific specialization.
+    /// </summary>
+    /// <param name="specializationId">The specialization to check.</param>
+    /// <returns>
+    /// <c>true</c> if the player has this specialization; otherwise, <c>false</c>.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// bool hasBerserkr = player.HasSpecialization(SpecializationId.Berserkr);
+    /// </code>
+    /// </example>
+    /// <seealso cref="AddSpecialization"/>
+    public bool HasSpecialization(SpecializationId specializationId)
+    {
+        return _specializations.ContainsKey(specializationId);
+    }
+
+    /// <summary>
+    /// Deducts Progression Points from the player's balance.
+    /// </summary>
+    /// <param name="cost">The number of PP to spend (must be non-negative).</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="cost"/> is negative.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the player does not have enough PP to cover the cost.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// PP costs in the specialization system:
+    /// <list type="bullet">
+    ///   <item><description>First specialization: 0 PP (free at character creation)</description></item>
+    ///   <item><description>Additional specializations: 3 PP each</description></item>
+    ///   <item><description>Tier 2 abilities: 2 PP per tier</description></item>
+    ///   <item><description>Tier 3 abilities: 3 PP per tier</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.SetProgressionPoints(10);
+    /// player.SpendProgressionPoints(3);
+    /// // player.ProgressionPoints == 7
+    /// </code>
+    /// </example>
+    /// <seealso cref="ProgressionPoints"/>
+    public void SpendProgressionPoints(int cost)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(cost);
+
+        if (cost == 0) return;
+
+        if (ProgressionPoints < cost)
+        {
+            throw new InvalidOperationException(
+                $"Player '{Name}' has {ProgressionPoints} PP but requires {cost} PP. " +
+                "Insufficient Progression Points.");
+        }
+
+        ProgressionPoints -= cost;
+    }
+
+    /// <summary>
+    /// Checks whether a specific ability tier has been unlocked for a specialization.
+    /// </summary>
+    /// <param name="specializationId">The specialization to check.</param>
+    /// <param name="tier">The tier number (1, 2, or 3).</param>
+    /// <returns>
+    /// <c>true</c> if the player has this specialization and the tier is unlocked;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// bool hasTier2 = player.HasUnlockedTier(SpecializationId.Berserkr, 2);
+    /// </code>
+    /// </example>
+    /// <seealso cref="UnlockSpecializationTier"/>
+    public bool HasUnlockedTier(SpecializationId specializationId, int tier)
+    {
+        return _specializations.TryGetValue(specializationId, out var tiers)
+            && tiers.Contains(tier);
+    }
+
+    /// <summary>
+    /// Marks a specialization tier as unlocked.
+    /// </summary>
+    /// <param name="specializationId">The specialization containing the tier.</param>
+    /// <param name="tier">The tier number to unlock (2 or 3; Tier 1 is automatic).</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the player does not have the specialization or if the tier
+    /// is already unlocked.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// This method only marks the tier as unlocked — it does not deduct PP
+    /// or grant abilities. Those operations are performed by the
+    /// <c>ISpecializationApplicationService.UnlockTier</c> method.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.UnlockSpecializationTier(SpecializationId.Berserkr, 2);
+    /// // player.HasUnlockedTier(SpecializationId.Berserkr, 2) == true
+    /// </code>
+    /// </example>
+    /// <seealso cref="HasUnlockedTier"/>
+    public void UnlockSpecializationTier(SpecializationId specializationId, int tier)
+    {
+        if (!_specializations.TryGetValue(specializationId, out var tiers))
+        {
+            throw new InvalidOperationException(
+                $"Player '{Name}' does not have specialization '{specializationId}'. " +
+                "Cannot unlock tier for a specialization the player does not have.");
+        }
+
+        if (tiers.Contains(tier))
+        {
+            throw new InvalidOperationException(
+                $"Player '{Name}' already has tier {tier} unlocked for '{specializationId}'.");
+        }
+
+        tiers.Add(tier);
+    }
+
+    /// <summary>
+    /// Grants an ability to the player by creating a <see cref="PlayerAbility"/> instance.
+    /// </summary>
+    /// <param name="abilityId">The ability definition ID to grant.</param>
+    /// <remarks>
+    /// <para>
+    /// Convenience wrapper around <see cref="AddAbility(PlayerAbility)"/> that creates
+    /// a <see cref="PlayerAbility"/> via <see cref="PlayerAbility.Create(string, bool)"/>
+    /// with <c>isUnlocked: true</c>.
+    /// </para>
+    /// <para>
+    /// If the player already has the ability, it is silently replaced (upsert behavior
+    /// inherited from the <see cref="Abilities"/> dictionary).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.GrantAbility("rage-strike");
+    /// // player.HasAbility("rage-strike") == true
+    /// </code>
+    /// </example>
+    /// <seealso cref="AddAbility"/>
+    /// <seealso cref="HasAbility"/>
+    public void GrantAbility(string abilityId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(abilityId);
+        var playerAbility = PlayerAbility.Create(abilityId, isUnlocked: true);
+        AddAbility(playerAbility);
+    }
+
+    /// <summary>
+    /// Initializes a special resource from a <see cref="SpecialResourceDefinition"/>.
+    /// </summary>
+    /// <param name="resource">The special resource definition to initialize.</param>
+    /// <remarks>
+    /// <para>
+    /// Convenience wrapper around <see cref="InitializeResource(string, int, bool)"/>
+    /// that extracts the resource ID, max value, and starting behavior from the
+    /// definition value object.
+    /// </para>
+    /// <para>
+    /// Special resources by specialization:
+    /// <list type="bullet">
+    ///   <item><description>Berserkr: Rage (0-100, starts at 0)</description></item>
+    ///   <item><description>Skjaldmaer: Block Charges (0-3, starts at 3)</description></item>
+    ///   <item><description>Iron-Bane: Righteous Fervor (0-50, starts at 0)</description></item>
+    ///   <item><description>Seiðkona: Aether Resonance (0-10, starts at 0)</description></item>
+    ///   <item><description>Echo-Caller: Echoes (0-5, starts at 0)</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var rageResource = SpecialResourceDefinition.Create("rage", "Rage", 0, 100, 0, 0, 5, "...");
+    /// player.InitializeSpecialResource(rageResource);
+    /// // player.HasResource("rage") == true
+    /// </code>
+    /// </example>
+    /// <seealso cref="InitializeResource"/>
+    public void InitializeSpecialResource(SpecialResourceDefinition resource)
+    {
+        if (!resource.HasResource) return;
+
+        InitializeResource(
+            resource.ResourceId,
+            resource.MaxValue,
+            startAtZero: resource.StartsAt == 0);
+    }
+
+    /// <summary>
+    /// Sets the player's Progression Points balance directly.
+    /// </summary>
+    /// <param name="pp">The PP value to set.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="pp"/> is negative.
+    /// </exception>
+    /// <remarks>
+    /// Intended for test setup and character initialization.
+    /// During gameplay, PP are earned through Saga progression and
+    /// spent via <see cref="SpendProgressionPoints"/>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.SetProgressionPoints(10);
+    /// // player.ProgressionPoints == 10
+    /// </code>
+    /// </example>
+    public void SetProgressionPoints(int pp)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(pp);
+        ProgressionPoints = pp;
+    }
+
+    /// <summary>
+    /// Sets the player's progression rank directly.
+    /// </summary>
+    /// <param name="rank">The rank value to set (must be at least 1).</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="rank"/> is less than 1.
+    /// </exception>
+    /// <remarks>
+    /// Intended for test setup and character initialization.
+    /// During gameplay, rank increases are earned through Saga progression.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.SetProgressionRank(3);
+    /// // player.ProgressionRank == 3
+    /// </code>
+    /// </example>
+    public void SetProgressionRank(int rank)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(rank, 1);
+        ProgressionRank = rank;
+    }
 }
 

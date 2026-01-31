@@ -1918,6 +1918,95 @@
                 "deserialization"
             ],
             "sortOrder": 45
+        },
+        {
+            "id": "specialization-application-service",
+            "term": "Specialization Application Service",
+            "definition": "Application service that orchestrates applying specializations to characters during character creation Step 5 and managing ability tier unlocks during progression. Validates archetype compatibility, deducts Progression Points, grants Tier 1 abilities, initializes special resources, and tracks Heretical path Corruption warnings. Depends on ISpecializationProvider for specialization definitions.",
+            "shortDefinition": "Service for applying specializations and managing tier unlocks.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "spec application service",
+                "specialization service"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-provider",
+                    "relationship": "Prerequisite"
+                },
+                {
+                    "termId": "specialization-application-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "tier-unlock-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "service",
+                "application-layer"
+            ],
+            "sortOrder": 46
+        },
+        {
+            "id": "specialization-application-result",
+            "term": "Specialization Application Result",
+            "definition": "Sealed value object capturing the outcome of applying a specialization to a character, including the applied definition, granted Tier 1 abilities, special resource initialization status, Heretical path warnings, PP cost, and any failure reasons. Created via factory methods Succeeded, Failed, AlreadyHasSpecialization, CharacterRequired, and ArchetypeMismatch.",
+            "shortDefinition": "Result value object for specialization application outcomes.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "spec result",
+                "specialization result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-application-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "tier-unlock-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "value-object",
+                "result-type"
+            ],
+            "sortOrder": 47
+        },
+        {
+            "id": "tier-unlock-result",
+            "term": "Tier Unlock Result",
+            "definition": "Sealed value object capturing the outcome of unlocking a specialization ability tier, including the unlocked tier definition, granted abilities, PP cost, and any failure reasons. Tier 1 is free with specialization selection, Tier 2 costs 2 PP and requires Rank 2, Tier 3 costs 3 PP and requires Rank 3. Created via factory methods Succeeded and Failed.",
+            "shortDefinition": "Result value object for tier unlock outcomes.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "tier result",
+                "unlock result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-application-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-application-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "value-object",
+                "result-type",
+                "progression"
+            ],
+            "sortOrder": 48
         }
     ]
 }
