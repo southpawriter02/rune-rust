@@ -2842,6 +2842,99 @@
                 "trauma-economy"
             ],
             "sortOrder": 78
+        },
+        {
+            "id": "stress-check-result",
+            "term": "Stress Check Result",
+            "definition": "Immutable value object (readonly record struct StressCheckResult) capturing the outcome of a WILL-based stress resistance check. Records the number of successes (0-4+) and maps them to a reduction percentage via the resistance reduction table: 0 successes = 0% (full stress), 1 success = 50% (half stress), 2-3 successes = 75% (quarter stress), 4+ successes = 100% (fully resisted). Properties include Succeeded (true when successes > 0), Successes (count), BaseStress (original amount), FinalStress (after reduction, truncated not rounded), ReductionPercent (decimal 0.00-1.00), WasFullyResisted (FinalStress == 0), and WasPartiallyResisted (Succeeded but FinalStress > 0). Created via factory methods Create(successes, baseStress) or NoResistance(baseStress). Part of the Result Object Pattern for the Trauma Economy system.",
+            "shortDefinition": "Immutable result of a WILL-based resistance check mapping successes to stress reduction percentage.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressCheckResult",
+                "resistance check result",
+                "stress resistance result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-application-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "value-object",
+                "combat",
+                "trauma-economy"
+            ],
+            "sortOrder": 79
+        },
+        {
+            "id": "stress-application-result",
+            "term": "Stress Application Result",
+            "definition": "Immutable value object (readonly record struct StressApplicationResult) capturing the complete outcome of applying stress to a character. Tracks PreviousStress and NewStress (clamped 0-100), StressGained (delta after clamping), Source (StressSource category), PreviousThreshold and NewThreshold (StressThreshold tiers derived via FromStressValue), ThresholdCrossed (true when NewThreshold > PreviousThreshold), TraumaCheckTriggered (true when NewStress >= 100), and optional ResistanceResult (StressCheckResult). Arrow-expression properties: WasResisted (resistance succeeded) and DefensePenaltyChange (integer division change). Created via factory method Create(previousStress, newStress, source, resistanceResult?). Part of the Result Object Pattern for the Trauma Economy system.",
+            "shortDefinition": "Immutable result of applying stress, tracking threshold crossings and trauma triggers.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressApplicationResult",
+                "stress applied result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-check-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-source",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "value-object",
+                "combat",
+                "trauma-economy"
+            ],
+            "sortOrder": 80
+        },
+        {
+            "id": "stress-recovery-result",
+            "term": "Stress Recovery Result",
+            "definition": "Immutable value object (readonly record struct StressRecoveryResult) capturing the outcome of stress recovery from rest or other healing sources. Tracks PreviousStress and NewStress (clamped to minimum 0), AmountRecovered (PreviousStress - NewStress), RecoverySource (RestType), PreviousThreshold and NewThreshold (StressThreshold tiers derived via FromStressValue), ThresholdDropped (true when NewThreshold < PreviousThreshold). Arrow-expression properties: IsFullyRecovered (NewStress == 0), IsNowCalm (NewThreshold == Calm), and DefensePenaltyImprovement (integer division improvement). Created via factory method Create(previousStress, newStress, recoverySource). Part of the Result Object Pattern for the Trauma Economy system.",
+            "shortDefinition": "Immutable result of stress recovery, tracking threshold improvements and full recovery.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressRecoveryResult",
+                "stress recovery outcome"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "rest-type",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "value-object",
+                "recovery",
+                "trauma-economy"
+            ],
+            "sortOrder": 81
         }
     ]
 }
