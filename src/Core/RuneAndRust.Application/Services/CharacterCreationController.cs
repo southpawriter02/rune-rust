@@ -3,9 +3,10 @@
 // Application service orchestrating the 6-step character creation workflow.
 // Manages state transitions, validates selections against domain providers,
 // coordinates with the ViewModel builder for TUI rendering, and delegates
-// final character creation to the character factory. Provides forward/backward
-// navigation and session lifecycle management (initialize, cancel).
-// Version: 0.17.5d
+// final character creation to the character factory. After creation, persists
+// the Player entity via IPlayerRepository. Provides forward/backward navigation
+// and session lifecycle management (initialize, cancel).
+// Version: 0.17.5g
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Application.Services;
@@ -39,6 +40,7 @@ using RuneAndRust.Domain.ValueObjects;
 ///   <item><description><see cref="IViewModelBuilder"/> — builds ViewModel after every state change</description></item>
 ///   <item><description><see cref="INameValidator"/> — validates character name at confirmation</description></item>
 ///   <item><description><see cref="ICharacterFactory"/> (optional) — creates Player entity from completed state</description></item>
+///   <item><description><see cref="IPlayerRepository"/> (optional) — persists Player entity to storage after creation</description></item>
 ///   <item><description><see cref="ILogger{T}"/> — structured diagnostic logging</description></item>
 /// </list>
 /// <para>
@@ -82,6 +84,12 @@ public class CharacterCreationController : ICharacterCreationController
     /// </summary>
     private readonly ICharacterFactory? _characterFactory;
 
+    /// <summary>
+    /// Optional repository for persisting Player entities to storage.
+    /// When null, character creation succeeds but persistence is skipped (logged as warning).
+    /// </summary>
+    private readonly IPlayerRepository? _playerRepository;
+
     /// <summary>Logger for structured diagnostic output.</summary>
     private readonly ILogger<CharacterCreationController> _logger;
 
@@ -116,6 +124,10 @@ public class CharacterCreationController : ICharacterCreationController
     /// <summary>Error when trying to go back from the first step.</summary>
     private const string ErrorAlreadyAtFirstStep = "Already at first step.";
 
+    /// <summary>Error when persistence fails after character creation.</summary>
+    private const string ErrorPersistenceFailed =
+        "Character was created but could not be saved. Please try again.";
+
     // ═══════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
     // ═══════════════════════════════════════════════════════════════════════════
@@ -131,9 +143,14 @@ public class CharacterCreationController : ICharacterCreationController
     /// <param name="nameValidator">Validator for character names. Must not be null.</param>
     /// <param name="logger">Logger for structured diagnostics. Must not be null.</param>
     /// <param name="characterFactory">
-    /// Optional factory for creating Player entities. Null until v0.17.5e provides
-    /// the implementation. When null, <see cref="ConfirmCharacterAsync"/> returns
-    /// a pending success result without creating a Player.
+    /// Optional factory for creating Player entities. When null,
+    /// <see cref="ConfirmCharacterAsync"/> returns a pending success result
+    /// without creating a Player.
+    /// </param>
+    /// <param name="playerRepository">
+    /// Optional repository for persisting Player entities. When null,
+    /// <see cref="ConfirmCharacterAsync"/> skips persistence and logs a warning.
+    /// Persistence is only attempted when both factory and repository are available.
     /// </param>
     public CharacterCreationController(
         ILineageProvider lineageProvider,
@@ -143,7 +160,8 @@ public class CharacterCreationController : ICharacterCreationController
         IViewModelBuilder viewModelBuilder,
         INameValidator nameValidator,
         ILogger<CharacterCreationController> logger,
-        ICharacterFactory? characterFactory = null)
+        ICharacterFactory? characterFactory = null,
+        IPlayerRepository? playerRepository = null)
     {
         ArgumentNullException.ThrowIfNull(lineageProvider);
         ArgumentNullException.ThrowIfNull(backgroundProvider);
@@ -161,10 +179,11 @@ public class CharacterCreationController : ICharacterCreationController
         _nameValidator = nameValidator;
         _logger = logger;
         _characterFactory = characterFactory;
+        _playerRepository = playerRepository;
 
         _logger.LogDebug(
-            "CharacterCreationController initialized. CharacterFactory available: {FactoryAvailable}",
-            _characterFactory != null);
+            "CharacterCreationController initialized. CharacterFactory available: {FactoryAvailable}, PlayerRepository available: {RepositoryAvailable}",
+            _characterFactory != null, _playerRepository != null);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -367,7 +386,30 @@ public class CharacterCreationController : ICharacterCreationController
             return CharacterCreationResult.Failed(ErrorIncompleteState);
         }
 
-        // Create character via factory (if available)
+        // ─── Check name uniqueness via repository (if available) ────────────
+        if (_playerRepository != null)
+        {
+            _logger.LogDebug(
+                "Checking name uniqueness for '{Name}'. SessionId: {SessionId}",
+                name, _state.SessionId);
+
+            var nameExists = await _playerRepository.ExistsWithNameAsync(name);
+            if (nameExists)
+            {
+                _logger.LogWarning(
+                    "Name uniqueness check failed: '{Name}' already exists. SessionId: {SessionId}",
+                    name, _state.SessionId);
+                return CharacterCreationResult.Failed(
+                    $"A character named '{name}' already exists.",
+                    $"A character named '{name}' already exists.");
+            }
+
+            _logger.LogDebug(
+                "Name '{Name}' is available. SessionId: {SessionId}",
+                name, _state.SessionId);
+        }
+
+        // ─── Create character via factory (if available) ─────────────────────
         if (_characterFactory == null)
         {
             _logger.LogWarning(
@@ -384,7 +426,37 @@ public class CharacterCreationController : ICharacterCreationController
             "Character created: {Name} ({Lineage} {Archetype}). SessionId: {SessionId}",
             name, _state.SelectedLineage, _state.SelectedArchetype, _state.SessionId);
 
-        // Clear state after successful creation
+        // ─── Persist character via repository (if available) ─────────────────
+        if (_playerRepository != null)
+        {
+            _logger.LogDebug(
+                "Persisting character '{Name}' (Id: {PlayerId}). SessionId: {SessionId}",
+                name, character.Id, _state.SessionId);
+
+            var saveResult = await _playerRepository.SaveAsync(character);
+
+            if (!saveResult.Success)
+            {
+                _logger.LogError(
+                    "Failed to persist character '{Name}' (Id: {PlayerId}): {Error}. SessionId: {SessionId}",
+                    name, character.Id, saveResult.ErrorMessage, _state.SessionId);
+                return CharacterCreationResult.Failed(
+                    ErrorPersistenceFailed,
+                    saveResult.ErrorMessage ?? ErrorPersistenceFailed);
+            }
+
+            _logger.LogInformation(
+                "Character '{Name}' persisted successfully (Id: {PlayerId}). SessionId: {SessionId}",
+                name, character.Id, _state.SessionId);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Player repository not available — skipping persistence for '{Name}'. SessionId: {SessionId}",
+                name, _state.SessionId);
+        }
+
+        // Clear state after successful creation (and optional persistence)
         _state = null;
 
         return CharacterCreationResult.Succeeded(

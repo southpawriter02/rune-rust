@@ -2652,6 +2652,78 @@
                 "presentation"
             ],
             "sortOrder": 71
+        },
+        {
+            "id": "player-repository",
+            "term": "Player Repository",
+            "definition": "Interface (IPlayerRepository) defining the persistence contract for Player entities created through the character creation workflow. Provides methods for saving newly created characters, retrieving by ID or most recent, checking name uniqueness (case-insensitive), updating existing characters, and listing all saved characters. Currently implemented by InMemoryPlayerRepository; future EF Core implementation planned.",
+            "shortDefinition": "Repository interface for Player entity persistence operations.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "IPlayerRepository",
+                "player repository"
+            ],
+            "examples": [
+                {
+                    "context": "Save",
+                    "example": "var result = await repository.SaveAsync(player);"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "persistence",
+                "interface",
+                "infrastructure"
+            ],
+            "sortOrder": 72
+        },
+        {
+            "id": "save-result",
+            "term": "Save Result",
+            "definition": "Value object (SaveResult) representing the outcome of a persistence operation on an entity. Contains either a successful outcome with the saved entity's Guid ID or a failure with a descriptive error message. Created via factory methods: SaveResult.Succeeded(Guid) and SaveResult.Failed(string). Used by IPlayerRepository to communicate save/update outcomes to the CharacterCreationController.",
+            "shortDefinition": "Value object for persistence operation outcomes (success with ID or failure with error).",
+            "categoryId": "mechanics",
+            "aliases": [
+                "SaveResult",
+                "save result"
+            ],
+            "examples": [
+                {
+                    "context": "Check",
+                    "example": "if (result.Success) logger.LogInformation(\"Saved: {Id}\", result.EntityId);"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "persistence",
+                "value-object",
+                "domain"
+            ],
+            "sortOrder": 73
+        },
+        {
+            "id": "in-memory-player-repository",
+            "term": "In-Memory Player Repository",
+            "definition": "Thread-safe in-memory implementation of IPlayerRepository using ConcurrentDictionary. Stores Player entities keyed by ID with separate timestamp tracking for ordering. Enforces case-insensitive name uniqueness. Data is lost when the application stops. Suitable for development, testing, and scenarios where database persistence is not yet configured. Registered as a singleton in DI.",
+            "shortDefinition": "Thread-safe in-memory implementation of player persistence.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "InMemoryPlayerRepository",
+                "in-memory player repository"
+            ],
+            "examples": [
+                {
+                    "context": "DI",
+                    "example": "services.AddSingleton<IPlayerRepository, InMemoryPlayerRepository>();"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "persistence",
+                "infrastructure",
+                "in-memory"
+            ],
+            "sortOrder": 74
         }
     ]
 }

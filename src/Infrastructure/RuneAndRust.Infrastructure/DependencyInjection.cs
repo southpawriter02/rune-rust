@@ -181,6 +181,11 @@ public static class DependencyInjection
             return new SpecializationProvider(logger, specializationsPath);
         });
 
+        // Player repository (v0.17.5g) - in-memory storage for created characters
+        // Thread-safe ConcurrentDictionary-based storage with case-insensitive name uniqueness.
+        // Future: Replace with EF Core PlayerRepository when database persistence is needed.
+        services.AddSingleton<IPlayerRepository, InMemoryPlayerRepository>();
+
         return services;
     }
 

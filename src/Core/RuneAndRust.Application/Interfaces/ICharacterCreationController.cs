@@ -3,9 +3,10 @@
 // Interface defining the contract for the character creation workflow controller.
 // Orchestrates step transitions, validates selections against providers, manages
 // navigation (forward, back, cancel), and coordinates with the character factory
-// for final creation. Each step method returns a StepResult containing the
+// for final creation. After creation, persists the Player entity via
+// IPlayerRepository. Each step method returns a StepResult containing the
 // outcome, validation errors, and an updated ViewModel for TUI rendering.
-// Version: 0.17.5d
+// Version: 0.17.5g
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Application.Interfaces;
@@ -154,7 +155,7 @@ public interface ICharacterCreationController
 
     /// <summary>
     /// Processes final character confirmation with name (Step 6).
-    /// Validates name, creates character via factory, and prepares for persistence.
+    /// Validates name, creates character via factory, and persists via repository.
     /// </summary>
     /// <param name="name">The character name to validate and assign.</param>
     /// <returns>
@@ -163,16 +164,19 @@ public interface ICharacterCreationController
     /// </returns>
     /// <remarks>
     /// <para>
-    /// This method performs three sequential validations:
+    /// This method performs the following sequential operations:
     /// </para>
     /// <list type="number">
     ///   <item><description>Name validation via <c>INameValidator.Validate()</c></description></item>
+    ///   <item><description>Name uniqueness check via <c>IPlayerRepository.ExistsWithNameAsync()</c> (if repository available)</description></item>
     ///   <item><description>State completeness check (<c>CharacterCreationState.IsComplete</c>)</description></item>
     ///   <item><description>Character creation via <c>ICharacterFactory.CreateCharacterAsync()</c></description></item>
+    ///   <item><description>Persistence via <c>IPlayerRepository.SaveAsync()</c> (if repository available)</description></item>
     /// </list>
     /// <para>
-    /// If the character factory is not available (v0.17.5e pending), the method
-    /// returns a success result with a null character and a "pending" message.
+    /// If the character factory is not available, the method returns a success result
+    /// with a null character and a "pending" message. If the player repository is not
+    /// available, persistence is skipped and a warning is logged.
     /// </para>
     /// </remarks>
     Task<CharacterCreationResult> ConfirmCharacterAsync(string name);
