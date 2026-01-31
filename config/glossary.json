@@ -2935,6 +2935,54 @@
                 "trauma-economy"
             ],
             "sortOrder": 81
+        },
+        {
+            "id": "stress-service",
+            "term": "Stress Service",
+            "definition": "Application layer service interface (IStressService) defining the contract for all Psychic Stress management operations. Exposes 9 methods across three categories: Query methods (GetStressState, GetDefensePenalty, HasSkillDisadvantage, RequiresTraumaCheck) for reading stress state and derived penalties without side effects; Command methods (ApplyStress with optional WILL-based resistance check, RecoverStress via RestType or arbitrary amount/source, ResetAfterTraumaCheck setting stress to 75 on pass or 50 on fail) for modifying character stress state; Internal methods (PerformResistanceCheck) for WILL-based resistance calculation exposed for testing. Uses domain types from v0.18.0a (StressState, StressSource, RestType, StressThreshold) and result objects from v0.18.0b (StressCheckResult, StressApplicationResult, StressRecoveryResult). Consumed by CombatService, SkillCheckService, RestService, TraumaService, and the UI layer.",
+            "shortDefinition": "Application layer interface defining the contract for stress queries, application, recovery, and trauma reset.",
+            "categoryId": "combat",
+            "aliases": [
+                "IStressService",
+                "stress service interface"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-check-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-application-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-recovery-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-source",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "rest-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "interface",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 82
         }
     ]
 }
