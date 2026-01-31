@@ -68,7 +68,7 @@ public readonly record struct SkillStressResult(
             TotalStress: 0,
             CorruptionStress: 0,
             FumbleStress: 0,
-            Source: StressSource.None,
+            Source: StressSource.Exploration,
             TriggersBreakingPoint: false,
             CorruptionTier: CorruptionTier.Normal);
     }
@@ -85,7 +85,7 @@ public readonly record struct SkillStressResult(
             TotalStress: stress,
             CorruptionStress: stress,
             FumbleStress: 0,
-            Source: stress > 0 ? StressSource.Corruption : StressSource.None,
+            Source: stress > 0 ? StressSource.Corruption : StressSource.Exploration,
             TriggersBreakingPoint: stress >= BreakingPointThreshold,
             CorruptionTier: tier);
     }
@@ -105,7 +105,7 @@ public readonly record struct SkillStressResult(
             TotalStress: totalStress,
             CorruptionStress: corruptionStress,
             FumbleStress: fumbleStress,
-            Source: StressSource.Fumble,
+            Source: StressSource.Combat,
             TriggersBreakingPoint: totalStress >= BreakingPointThreshold,
             CorruptionTier: tier);
     }

@@ -97,10 +97,10 @@ public class TraumaIntegrationService : ITraumaIntegrationService
         var totalStress = corruptionStress + fumbleStress;
 
         var source = isFumble
-            ? StressSource.Fumble
+            ? StressSource.Combat
             : objectCorruptionTier != CorruptionTier.Normal
-                ? StressSource.CorruptedObject
-                : StressSource.None;
+                ? StressSource.Exploration
+                : StressSource.Exploration;
 
         var result = new SkillStressResult(
             TotalStress: totalStress,
@@ -144,10 +144,10 @@ public class TraumaIntegrationService : ITraumaIntegrationService
         var totalStress = accumulatedCorruptionStress + accumulatedFumbleStress;
 
         var source = fumbleCount > 0
-            ? StressSource.Fumble
+            ? StressSource.Combat
             : corruptionTier != CorruptionTier.Normal
-                ? StressSource.ExtendedExposure
-                : StressSource.None;
+                ? StressSource.Environmental
+                : StressSource.Exploration;
 
         var result = new SkillStressResult(
             TotalStress: totalStress,

@@ -37,7 +37,7 @@ public class TraumaIntegrationServiceTests
         // Assert
         result.TotalStress.Should().Be(0);
         result.HasStress.Should().BeFalse();
-        result.Source.Should().Be(StressSource.None);
+        result.Source.Should().Be(StressSource.Exploration);
     }
 
     [Test]
@@ -74,7 +74,7 @@ public class TraumaIntegrationServiceTests
         result.TotalStress.Should().Be(4); // 2 corruption + 2 fumble
         result.CorruptionStress.Should().Be(2);
         result.FumbleStress.Should().Be(2);
-        result.Source.Should().Be(StressSource.Fumble);
+        result.Source.Should().Be(StressSource.Combat);
     }
 
     [Test]
@@ -115,7 +115,7 @@ public class TraumaIntegrationServiceTests
 
         // Assert
         result.TotalStress.Should().Be(5);
-        result.Source.Should().Be(StressSource.CorruptedObject);
+        result.Source.Should().Be(StressSource.Exploration);
     }
 
     private static SkillContext CreateContext(CorruptionTier tier)

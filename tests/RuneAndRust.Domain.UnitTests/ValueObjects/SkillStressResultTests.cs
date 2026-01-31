@@ -21,7 +21,7 @@ public class SkillStressResultTests
         result.TotalStress.Should().Be(0);
         result.CorruptionStress.Should().Be(0);
         result.FumbleStress.Should().Be(0);
-        result.Source.Should().Be(StressSource.None);
+        result.Source.Should().Be(StressSource.Exploration);
         result.HasStress.Should().BeFalse();
         result.TriggersBreakingPoint.Should().BeFalse();
         result.CorruptionTier.Should().Be(CorruptionTier.Normal);
@@ -68,7 +68,7 @@ public class SkillStressResultTests
         result.TotalStress.Should().Be(4); // 2 corruption + 2 fumble
         result.CorruptionStress.Should().Be(2);
         result.FumbleStress.Should().Be(2);
-        result.Source.Should().Be(StressSource.Fumble);
+        result.Source.Should().Be(StressSource.Combat);
         result.HadFumble.Should().BeTrue();
     }
 

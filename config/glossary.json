@@ -2724,6 +2724,124 @@
                 "in-memory"
             ],
             "sortOrder": 74
+        },
+        {
+            "id": "stress-threshold",
+            "term": "Stress Threshold",
+            "definition": "Enum (StressThreshold) representing the six psychological stress tiers for a character in the Psychic Stress system. Each tier corresponds to a 20-point stress range and imposes escalating mechanical penalties: Calm (0-19, no penalty), Uneasy (20-39, Defense -1), Anxious (40-59, Defense -2), Panicked (60-79, Defense -3), Breaking (80-99, Defense -4, skill disadvantage), Trauma (100, Defense -5, all-check disadvantage, Trauma Check). Integer values (0-5) match defense penalty magnitude for direct ordinal-based penalty lookup. Extension methods provide stress range queries (GetMinStress, GetMaxStress), penalty lookup (GetDefensePenalty), threshold resolution from stress values (FromStressValue), and display formatting (ToDisplayString).",
+            "shortDefinition": "Enum defining six stress tiers with escalating defense penalties and skill disadvantage.",
+            "categoryId": "combat",
+            "aliases": [
+                "stress tier",
+                "stress level",
+                "threshold tier"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-source",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "enum",
+                "combat",
+                "trauma-economy"
+            ],
+            "sortOrder": 75
+        },
+        {
+            "id": "stress-source",
+            "term": "Stress Source",
+            "definition": "Enum (StressSource) categorizing the six broad origins of psychic stress accumulation: Combat (enemy fear auras, psychic attacks), Exploration (disturbing discoveries, forbidden texts), Narrative (story-driven revelations, NPC betrayals), Heretical (forbidden rune usage, Blót-Priest abilities), Environmental (Reality Bleed zones, extreme conditions), and Corruption (automatic stress from Corruption failure). Extension methods provide human-readable descriptions (GetDescription) and resistance check applicability (TypicallyResistable — Narrative and Corruption are unavoidable). Replaced the v0.15.1e skill-check-specific StressSource (None, Corruption, Fumble, CorruptedObject, ExtendedExposure) with broader gameplay categories.",
+            "shortDefinition": "Enum categorizing six broad origins of psychic stress for contextual resistance modifiers.",
+            "categoryId": "combat",
+            "aliases": [
+                "stress origin",
+                "stress category"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "enum",
+                "combat",
+                "trauma-economy"
+            ],
+            "sortOrder": 76
+        },
+        {
+            "id": "rest-type",
+            "term": "Rest Type",
+            "definition": "Enum (RestType) defining the four types of rest that allow psychic stress recovery: Short (WILL × 2, brief 10-30 minute rest, once per day), Long (WILL × 5, extended 6-8 hour rest, requires safe location), Sanctuary (full stress reset to 0, rare safe havens in Aethelgard), and Milestone (fixed 25 stress recovery, awarded for quest objectives and boss defeats). Extension methods provide recovery calculation (CalculateRecovery with WILL parameter), formula descriptions (GetFormulaDescription), and full recovery identification (IsFullRecovery — true only for Sanctuary). Sanctuary returns int.MaxValue for recovery amount, with callers clamping to 0.",
+            "shortDefinition": "Enum defining four rest types with distinct stress recovery formulas.",
+            "categoryId": "combat",
+            "aliases": [
+                "rest category",
+                "recovery type"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "enum",
+                "recovery",
+                "trauma-economy"
+            ],
+            "sortOrder": 77
+        },
+        {
+            "id": "stress-state",
+            "term": "Stress State",
+            "definition": "Immutable value object (readonly record struct StressState) representing a character's current psychic stress state. Encapsulates the stress value (clamped to 0-100) and derives all gameplay properties: Threshold (StressThreshold tier), DefensePenalty (0-5 matching threshold ordinal), HasSkillDisadvantage (true at Breaking/Trauma), RequiresTraumaCheck (true at 100), IsCalm, IsBreaking, and StressPercentage. Created via factory method Create(int) or static Calm property. Mutation methods (WithStress, WithStressAdded, WithStressReduced) return new instances preserving immutability. The stress system creates a death spiral — higher stress reduces Defense, making characters more vulnerable to attacks that cause further stress.",
+            "shortDefinition": "Immutable value object tracking stress level with computed penalties and trigger conditions.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressState",
+                "psychic stress state",
+                "stress snapshot"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-source",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "rest-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "value-object",
+                "combat",
+                "trauma-economy"
+            ],
+            "sortOrder": 78
         }
     ]
 }
