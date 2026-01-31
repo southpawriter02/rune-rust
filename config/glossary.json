@@ -2302,6 +2302,122 @@
                 "configuration"
             ],
             "sortOrder": 59
+        },
+        {
+            "id": "step-result",
+            "term": "Step Result",
+            "definition": "Immutable value object representing the outcome of a step selection or navigation action in the character creation workflow. Contains success status, current and next step information, validation errors (if any), and the updated ViewModel for TUI rendering. Returned by all ICharacterCreationController step methods.",
+            "shortDefinition": "Result of a creation workflow step action",
+            "categoryId": "mechanics",
+            "aliases": [
+                "step outcome",
+                "step selection result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-controller",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-view-model",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "workflow"
+            ],
+            "sortOrder": 60
+        },
+        {
+            "id": "character-creation-result",
+            "term": "Character Creation Result",
+            "definition": "Immutable value object representing the final outcome of character creation. Contains either the successfully created Player entity or validation errors explaining why creation failed (invalid name, incomplete state, factory unavailable). Returned by ICharacterCreationController.ConfirmCharacterAsync().",
+            "shortDefinition": "Final result of character creation with Player or errors",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation result",
+                "creation outcome"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-controller",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "step-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "workflow"
+            ],
+            "sortOrder": 61
+        },
+        {
+            "id": "character-creation-controller",
+            "term": "Character Creation Controller",
+            "definition": "Application service orchestrating the 6-step character creation workflow. Manages state transitions, validates selections against domain providers (lineage, background, archetype, specialization), coordinates with the ViewModel builder for TUI rendering, and delegates final character creation to the character factory. Provides forward/backward navigation and session lifecycle management.",
+            "shortDefinition": "Orchestrator for the character creation workflow",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation controller",
+                "workflow controller"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-controller-interface",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "step-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "application-service",
+                "workflow"
+            ],
+            "sortOrder": 62
+        },
+        {
+            "id": "character-creation-controller-interface",
+            "term": "ICharacterCreationController",
+            "definition": "Interface defining the contract for the character creation workflow controller. Specifies step selection methods (lineage, background, attributes, archetype, specialization, confirm), navigation controls (GoBack, Cancel), state retrieval (GetCurrentState), and session status (IsSessionActive). Implemented by CharacterCreationController.",
+            "shortDefinition": "Interface for the creation workflow controller",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation controller interface",
+                "ICreationController"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-controller",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "step-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "interface",
+                "workflow"
+            ],
+            "sortOrder": 63
         }
     ]
 }
