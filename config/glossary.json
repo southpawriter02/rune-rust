@@ -2007,6 +2007,212 @@
                 "progression"
             ],
             "sortOrder": 48
+        },
+        {
+            "id": "character-creation-step",
+            "term": "Character Creation Step",
+            "definition": "Enum defining the six sequential steps in the character creation wizard: Lineage (Step 1, blood heritage), Background (Step 2, pre-Silence profession), Attributes (Step 3, point allocation), Archetype (Step 4, PERMANENT combat role), Specialization (Step 5, tactical identity), and Summary (Step 6, review and name entry). Values are explicitly assigned 0-5 for arithmetic navigation via GetNextStep and GetPreviousStep extension methods.",
+            "shortDefinition": "Enum defining the six steps in the character creation wizard.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation step",
+                "wizard step"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "enum",
+                "workflow",
+                "navigation"
+            ],
+            "sortOrder": 49
+        },
+        {
+            "id": "character-creation-state",
+            "term": "Character Creation State",
+            "definition": "Transient entity maintaining all player selections throughout the character creation process. Tracks the current step, lineage, background, attributes, archetype, specialization, and character name. Supports forward/backward navigation via TryAdvance and TryGoBack methods while preserving choices. The IsComplete property returns true only when all required selections are present and there are no validation errors. Not persisted to the database — only the final character entity is saved upon confirmation.",
+            "shortDefinition": "Entity tracking all selections during character creation.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation state",
+                "creation session"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-step",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "entity",
+                "state-management",
+                "navigation"
+            ],
+            "sortOrder": 50
+        },
+        {
+            "id": "creation-workflow-config",
+            "term": "Creation Workflow Configuration",
+            "definition": "JSON configuration file (creation-workflow.json) defining the character creation workflow parameters: step order with display names and descriptions, navigation rules (canGoBack, isPermanent), permanent choice warnings, name validation rules (2-20 characters, ASCII letters/spaces/hyphens, profanity filter), and character initialization defaults (starting Legend, PP, Milestone, Stress values and resource maximization). Validated against creation-workflow.schema.json (Draft-07).",
+            "shortDefinition": "JSON config defining creation workflow steps and validation rules.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation config",
+                "workflow config"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-step",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "configuration",
+                "json-schema",
+                "validation"
+            ],
+            "sortOrder": 51
+        },
+        {
+            "id": "character-creation-viewmodel",
+            "term": "Character Creation ViewModel",
+            "definition": "Immutable readonly record struct (CharacterCreationViewModel) containing all presentation data for the character creation wizard. Includes step information (title, description, step number), navigation state (canGoBack, canGoForward, isPermanentChoice), current selection display names (lineage, background, archetype, specialization, character name), preview data (DerivedStatsPreview, AbilitiesPreview, EquipmentPreview), and validation status. Rebuilt by the ViewModelBuilder on every state change.",
+            "shortDefinition": "Read-only presentation data for the character creation wizard.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "creation viewmodel",
+                "creation view model"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "viewmodel-builder",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "presentation",
+                "viewmodel"
+            ],
+            "sortOrder": 52
+        },
+        {
+            "id": "derived-stats-preview",
+            "term": "Derived Stats Preview",
+            "definition": "Read-only value object (DerivedStatsPreview) providing a simplified view of derived statistics during character creation. Shows the three primary resource pools (MaxHp, MaxStamina, MaxAp) with source breakdown by lineage and archetype bonuses. Updated in real-time during attribute allocation (Step 3). MaxAp maps to MaxAetherPool in the domain model.",
+            "shortDefinition": "Preview of HP, Stamina, and AP with bonus source breakdown.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "stats preview",
+                "resource preview"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-viewmodel",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "derived-stats",
+                "preview"
+            ],
+            "sortOrder": 53
+        },
+        {
+            "id": "abilities-preview",
+            "term": "Abilities Preview",
+            "definition": "Read-only value object (AbilitiesPreview) listing ability names that will be granted during character creation. Separates abilities by source: archetype starting abilities (3 abilities from Step 4) and specialization Tier 1 abilities (2-4 abilities from Step 5). Populated in two stages as archetype and specialization are selected.",
+            "shortDefinition": "Preview of archetype and specialization abilities.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "ability preview"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-viewmodel",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "abilities",
+                "preview"
+            ],
+            "sortOrder": 54
+        },
+        {
+            "id": "equipment-preview",
+            "term": "Equipment Preview",
+            "definition": "Read-only value object (EquipmentPreview) listing starting equipment items based on background selection during character creation. Each item (EquipmentPreviewItem) has a display name (kebab-case ItemId converted to title case), quantity, and derived item type (equipment slot name for equipped items, 'Consumable' for multi-quantity non-equipped items, 'Item' for single non-equipped items).",
+            "shortDefinition": "Preview of starting equipment from background selection.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "starting equipment preview"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-viewmodel",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "equipment",
+                "preview"
+            ],
+            "sortOrder": 55
+        },
+        {
+            "id": "viewmodel-builder",
+            "term": "ViewModel Builder",
+            "definition": "Application service (ViewModelBuilder implementing IViewModelBuilder) that transforms CharacterCreationState into CharacterCreationViewModel. Coordinates with five providers: ILineageProvider (display names, HP/AP bonuses), IBackgroundProvider (display names, equipment grants), IArchetypeProvider (display names, resource bonuses, starting abilities), ISpecializationProvider (display names, Tier 1 abilities), and IDerivedStatCalculator (derived stat calculation). Constructs a fresh ViewModel on every call with no caching.",
+            "shortDefinition": "Service that builds creation ViewModel from state and providers.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "view model builder",
+                "creation viewmodel builder"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-viewmodel",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "application-service",
+                "viewmodel",
+                "builder"
+            ],
+            "sortOrder": 56
         }
     ]
 }

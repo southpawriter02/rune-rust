@@ -1,0 +1,70 @@
+{
+    "$schema": "./schemas/creation-workflow.schema.json",
+    "workflow": {
+        "steps": [
+            {
+                "step": "Lineage",
+                "order": 1,
+                "displayName": "Choose Your Lineage",
+                "description": "Your bloodline carries echoes of the world before.",
+                "canGoBack": false,
+                "isPermanent": false
+            },
+            {
+                "step": "Background",
+                "order": 2,
+                "displayName": "Choose Your Background",
+                "description": "What were you before the world broke?",
+                "canGoBack": true,
+                "isPermanent": false
+            },
+            {
+                "step": "Attributes",
+                "order": 3,
+                "displayName": "Allocate Attributes",
+                "description": "Define your character's core capabilities.",
+                "canGoBack": true,
+                "isPermanent": false
+            },
+            {
+                "step": "Archetype",
+                "order": 4,
+                "displayName": "Choose Your Archetype",
+                "description": "Your fundamental approach to survival.",
+                "canGoBack": true,
+                "isPermanent": true,
+                "permanentWarning": "This choice is PERMANENT and cannot be changed after character creation."
+            },
+            {
+                "step": "Specialization",
+                "order": 5,
+                "displayName": "Choose Your Specialization",
+                "description": "Your tactical identity and unique abilities.",
+                "canGoBack": true,
+                "isPermanent": false
+            },
+            {
+                "step": "Summary",
+                "order": 6,
+                "displayName": "Confirm Your Survivor",
+                "description": "Review your choices and begin your saga.",
+                "canGoBack": true,
+                "isPermanent": false
+            }
+        ]
+    },
+    "nameValidation": {
+        "minLength": 2,
+        "maxLength": 20,
+        "allowedPattern": "^[a-zA-Z][a-zA-Z\\s\\-]*[a-zA-Z]$|^[a-zA-Z]{2}$",
+        "profanityFilter": []
+    },
+    "initialization": {
+        "startingLegend": 0,
+        "startingPP": 0,
+        "startingMilestone": 0,
+        "legendToNextMilestone": 500,
+        "startingStress": 0,
+        "resourcesAtMax": true
+    }
+}
