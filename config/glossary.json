@@ -2478,6 +2478,180 @@
                 "validation"
             ],
             "sortOrder": 65
+        },
+        {
+            "id": "creation-screen-interface",
+            "term": "Creation Screen Interface",
+            "definition": "Contract (ICreationScreen) for character creation step screens. Defines a Step property (CharacterCreationStep) and a DisplayAsync method that renders the screen using Spectre.Console's IAnsiConsole and returns a ScreenResult containing the user's action (Continue, GoBack, Cancel) and optional selection data. Implemented by LineageScreen, BackgroundScreen, AttributeScreen, ArchetypeScreen, SpecializationScreen, and SummaryScreen.",
+            "shortDefinition": "Interface contract for character creation step screen implementations.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "ICreationScreen",
+                "creation screen",
+                "step screen interface"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "screen-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "creation-wizard-view",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "interface",
+                "tui",
+                "presentation"
+            ],
+            "sortOrder": 66
+        },
+        {
+            "id": "creation-wizard-view",
+            "term": "Creation Wizard View",
+            "definition": "Top-level orchestrator view (CreationWizardView) that drives the six-step character creation workflow. Coordinates between ICharacterCreationController (state and validation) and ICreationScreen implementations (rendering and interaction). Routes the workflow loop: Initialize → get state → find screen → display → process result. Handles navigation (GoBack calls controller.GoBack(), Cancel calls controller.Cancel()), submits selections to the controller, and returns the created Player entity on completion or null on cancellation.",
+            "shortDefinition": "Orchestrator view driving the six-step character creation wizard loop.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "CreationWizardView",
+                "wizard view",
+                "creation wizard"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-controller",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "creation-screen-interface",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "tui",
+                "presentation",
+                "orchestrator"
+            ],
+            "sortOrder": 67
+        },
+        {
+            "id": "step-header-renderer",
+            "term": "Step Header Renderer",
+            "definition": "Static shared component (StepHeaderRenderer) that renders the step header section for character creation screens using Spectre.Console. Displays step number and title as a Rule, step description as markup text, and a yellow warning Panel for permanent choices (e.g., Archetype selection). Also provides RenderProgress() for showing filled/empty step indicators based on current progress through the wizard.",
+            "shortDefinition": "Shared component for rendering step headers and progress in creation screens.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "StepHeaderRenderer",
+                "step header",
+                "header renderer"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "creation-screen-interface",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "option-list-renderer",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "tui",
+                "presentation",
+                "component"
+            ],
+            "sortOrder": 68
+        },
+        {
+            "id": "option-list-renderer",
+            "term": "Option List Renderer",
+            "definition": "Static shared component (OptionListRenderer) that builds Spectre.Console SelectionPrompt instances with consistent styling for character creation screens. Provides navigation constants (BackChoice: '< Back', CancelChoice: 'Cancel Creation'), prompt creation with optional back navigation, TryParseNavigation() for mapping navigation choices to ScreenResult, and RenderValidationErrors() for displaying error lists.",
+            "shortDefinition": "Shared component for building selection prompts with navigation in creation screens.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "OptionListRenderer",
+                "option renderer",
+                "prompt builder"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "creation-screen-interface",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "step-header-renderer",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "tui",
+                "presentation",
+                "component"
+            ],
+            "sortOrder": 69
+        },
+        {
+            "id": "screen-result",
+            "term": "Screen Result",
+            "definition": "Immutable value object (readonly record struct) representing the outcome of displaying a character creation screen. Contains Action (ScreenAction enum: Continue, GoBack, Cancel) and Selection (object? — the user's choice, type varies by step). Created via factory methods: Selected(object) for Continue with data, GoBack() for back navigation, Cancel() for workflow cancellation. Consumed by CreationWizardView to route the wizard loop.",
+            "shortDefinition": "Value object representing the outcome of a creation screen display.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "ScreenResult",
+                "screen outcome",
+                "display result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "screen-action",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "creation-screen-interface",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "tui",
+                "presentation"
+            ],
+            "sortOrder": 70
+        },
+        {
+            "id": "screen-action",
+            "term": "Screen Action",
+            "definition": "Enum (ScreenAction) defining the three possible navigation outcomes from a character creation screen: Continue (0) — user made a selection and wants to proceed, GoBack (1) — user wants to return to the previous step, Cancel (2) — user wants to abort the entire creation workflow. Used as the Action property of ScreenResult and consumed by CreationWizardView's main loop switch statement.",
+            "shortDefinition": "Enum for creation screen navigation actions: Continue, GoBack, Cancel.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "ScreenAction",
+                "navigation action",
+                "screen navigation"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "screen-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "creation-wizard-view",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "enum",
+                "tui",
+                "presentation"
+            ],
+            "sortOrder": 71
         }
     ]
 }
