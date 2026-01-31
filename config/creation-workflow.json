@@ -57,7 +57,11 @@
         "minLength": 2,
         "maxLength": 20,
         "allowedPattern": "^[a-zA-Z][a-zA-Z\\s\\-]*[a-zA-Z]$|^[a-zA-Z]{2}$",
-        "profanityFilter": []
+        "profanityFilter": [
+            "admin",
+            "moderator",
+            "system"
+        ]
     },
     "initialization": {
         "startingLegend": 0,

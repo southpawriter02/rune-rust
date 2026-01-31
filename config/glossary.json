@@ -2213,6 +2213,95 @@
                 "builder"
             ],
             "sortOrder": 56
+        },
+        {
+            "id": "name-validator",
+            "term": "Name Validator",
+            "definition": "Application service (NameValidator implementing INameValidator) that validates character names against configurable rules during Step 6 (Summary) of the character creation wizard. Checks names against six sequential rules: required, minimum length (2), maximum length (20), boundary (starts/ends with ASCII letter), allowed characters (ASCII letters, spaces, hyphens only), and profanity filter (case-insensitive substring and word matching). Provides Sanitize() for diacritics normalization (e.g., ö → o) and IsValid() for quick boolean checks. Configuration loaded from the nameValidation section of creation-workflow.json. Operates independently of the domain-level PlayerNameValidator which has different constraints.",
+            "shortDefinition": "Application service for configurable character name validation with profanity filtering and sanitization.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "character name validator",
+                "creation name validator"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "name-validation-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "name-validation-config",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "application-service",
+                "validation"
+            ],
+            "sortOrder": 57
+        },
+        {
+            "id": "name-validation-result",
+            "term": "Name Validation Result",
+            "definition": "Immutable value object (readonly record struct) returned by INameValidator.Validate() containing three properties: IsValid (whether the name passed all rules), ErrorMessage (user-friendly failure description, null when valid), and SuggestedName (automatically corrected version from Sanitize(), null when no correction possible or name is valid). Created via factory methods Valid() and Invalid(errorMessage, suggestedName). Error messages are specific to the failing rule: 'Name is required.', 'Name must be at least 2 characters.', 'Name must be at most 20 characters.', 'Name must start and end with a letter.', 'Name can only contain letters, spaces, and hyphens.', 'Please choose a different name.' (profanity).",
+            "shortDefinition": "Value object containing name validation status, error message, and optional suggested correction.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "validation result",
+                "name result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "name-validator",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "name-validation-config",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "validation"
+            ],
+            "sortOrder": 58
+        },
+        {
+            "id": "name-validation-config",
+            "term": "Name Validation Config",
+            "definition": "Immutable value object (readonly record struct) containing configurable parameters for character name validation. Properties: MinLength (int, default 2), MaxLength (int, default 20), AllowedPattern (regex string for character validation), ProfanityFilter (IReadOnlyList<string> of blocked words). Loaded from the nameValidation section of creation-workflow.json configuration file. The Default static property provides standard values for unit testing and fallback scenarios. Consumed by the NameValidator application service constructor.",
+            "shortDefinition": "Configuration value object for name validation rules loaded from creation-workflow.json.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "name config",
+                "name validation configuration"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "name-validator",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "name-validation-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "creation-workflow-config",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "configuration"
+            ],
+            "sortOrder": 59
         }
     ]
 }
