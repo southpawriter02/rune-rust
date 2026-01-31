@@ -2418,6 +2418,66 @@
                 "workflow"
             ],
             "sortOrder": 63
+        },
+        {
+            "id": "character-factory",
+            "term": "Character Factory",
+            "definition": "Application service (CharacterFactory implementing ICharacterFactory) that transforms a completed CharacterCreationState into a fully initialized Player entity via a 13-step initialization sequence. Steps include: state validation, Player construction with base attributes, lineage attribute modifiers (including Clan-Born flexible +1), lineage passive bonuses (HP, AP, Soak, Movement, Skills), lineage trait registration, trauma baseline, background skill grants, derived stat calculation and application, resource pool initialization (Stamina, Aether Pool at maximum), archetype starting abilities (3), specialization application (Tier 1 abilities, special resource), and saga progression initialization (PP: 0, Rank: 1). Coordinates with ILineageProvider, IBackgroundProvider, IArchetypeProvider, ISpecializationProvider, and IDerivedStatCalculator.",
+            "shortDefinition": "Service creating fully initialized Player entities from completed creation state.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "ICharacterFactory",
+                "player factory",
+                "creation factory"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-creation-controller",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "factory-validation-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "application-service",
+                "factory",
+                "player"
+            ],
+            "sortOrder": 64
+        },
+        {
+            "id": "factory-validation-result",
+            "term": "Factory Validation Result",
+            "definition": "Immutable value object (readonly record struct) representing the outcome of validating a CharacterCreationState before character creation. Contains IsValid (bool) indicating whether all required selections are present and consistent, and Errors (IReadOnlyList<string>) listing user-friendly validation failure descriptions. Checks include: all selections present (lineage, background, attributes, archetype, specialization, name), attribute allocation complete (IsComplete), Clan-Born flexible bonus selected, and specialization-archetype compatibility. Created via factory methods Valid() and Invalid(params string[]).",
+            "shortDefinition": "Validation result for character creation state completeness and consistency.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "factory validation",
+                "creation validation result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "character-factory",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "character-creation-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "value-object",
+                "validation"
+            ],
+            "sortOrder": 65
         }
     ]
 }
