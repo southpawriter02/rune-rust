@@ -2474,5 +2474,47 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public bool? Enabled { get; set; }
         public bool? ConsumesAction { get; set; }
     }
+
+    // ===== Trauma Configuration (v0.18.3e) =====
+
+    private TraumaConfiguration? _traumaConfiguration;
+
+    /// <inheritdoc/>
+    public TraumaConfiguration GetTraumaConfiguration()
+    {
+        if (_traumaConfiguration != null) return _traumaConfiguration;
+
+        var filePath = Path.Combine(_configPath, "traumas.json");
+
+        if (!File.Exists(filePath))
+        {
+            _logger.LogWarning("Trauma configuration not found at {Path}", filePath);
+            _traumaConfiguration = new TraumaConfiguration();
+            return _traumaConfiguration;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(filePath);
+            _traumaConfiguration = JsonSerializer.Deserialize<TraumaConfiguration>(json, _jsonOptions)
+                ?? new TraumaConfiguration();
+
+            if (_traumaConfiguration.Traumas != null)
+            {
+                _logger.LogInformation(
+                    "Loaded {Count} trauma definitions from {Path}",
+                    _traumaConfiguration.Traumas.Count,
+                    filePath);
+            }
+
+            return _traumaConfiguration;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load trauma configuration from {Path}", filePath);
+            _traumaConfiguration = new TraumaConfiguration();
+            return _traumaConfiguration;
+        }
+    }
 }
 

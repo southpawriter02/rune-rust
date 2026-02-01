@@ -465,4 +465,19 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         _opportunityAttackConfiguration = new OpportunityAttackConfiguration();
         return this;
     }
+
+    // ===== Trauma Configuration (v0.18.3e) =====
+
+    private TraumaConfiguration _traumaConfiguration = new();
+
+    public TraumaConfiguration GetTraumaConfiguration() => _traumaConfiguration;
+
+    /// <summary>
+    /// Sets the trauma configuration.
+    /// </summary>
+    public MockConfigurationProvider WithTraumaConfiguration(TraumaConfiguration config)
+    {
+        _traumaConfiguration = config;
+        return this;
+    }
 }

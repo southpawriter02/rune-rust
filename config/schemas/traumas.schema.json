@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trauma Definitions Schema",
+  "description": "Schema for traumas.json configuration file",
+  "type": "object",
+  "required": ["version", "traumas"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Configuration version",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "traumas": {
+      "type": "array",
+      "description": "List of trauma definitions",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type", "description", "flavorText", "isRetirementTrauma", "isStackable"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique trauma identifier (lowercase kebab-case)",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name shown to players"
+          },
+          "type": {
+            "type": "string",
+            "description": "Trauma category",
+            "enum": ["Cognitive", "Emotional", "Physical", "Social", "Existential", "Corruption"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Mechanical description of trauma effects"
+          },
+          "flavorText": {
+            "type": "string",
+            "description": "Narrative/atmospheric text"
+          },
+          "isRetirementTrauma": {
+            "type": "boolean",
+            "description": "Whether this trauma can force character retirement"
+          },
+          "retirementCondition": {
+            "type": ["string", "null"],
+            "description": "When retirement triggers (e.g., 'On acquisition', '5+')"
+          },
+          "isStackable": {
+            "type": "boolean",
+            "description": "Whether acquiring multiple times increments stack count"
+          },
+          "acquisitionSources": {
+            "type": "array",
+            "description": "Event types that can cause this trauma",
+            "items": {
+              "type": "string"
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "description": "Events that activate trauma effects",
+            "items": {
+              "type": "object",
+              "required": ["triggerType"],
+              "properties": {
+                "triggerType": {
+                  "type": "string",
+                  "description": "Event type that triggers this"
+                },
+                "condition": {
+                  "type": ["string", "null"],
+                  "description": "Additional condition for activation"
+                },
+                "checkRequired": {
+                  "type": "boolean",
+                  "description": "Whether a check is needed"
+                },
+                "checkDifficulty": {
+                  "type": ["integer", "null"],
+                  "description": "Difficulty of the check (1-4)"
+                }
+              }
+            }
+          },
+          "effects": {
+            "type": "array",
+            "description": "Mechanical effects of this trauma",
+            "items": {
+              "type": "object",
+              "required": ["effectType", "target", "description"],
+              "properties": {
+                "effectType": {
+                  "type": "string",
+                  "description": "Type of effect (Penalty, Disadvantage, StressIncrease, etc.)"
+                },
+                "target": {
+                  "type": "string",
+                  "description": "What the effect applies to"
+                },
+                "value": {
+                  "type": ["integer", "null"],
+                  "description": "Numeric value for the effect"
+                },
+                "condition": {
+                  "type": ["string", "null"],
+                  "description": "When the effect activates"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Human-readable description"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "$schema": "./schemas/traumas.schema.json",
+  "version": "1.0",
+  "traumas": [
+    {
+      "id": "survivors-guilt",
+      "name": "Survivor's Guilt",
+      "type": "Emotional",
+      "description": "You carry the weight of those who didn't make it.",
+      "flavorText": "Why them? Why not me?",
+      "isRetirementTrauma": true,
+      "retirementCondition": "On acquisition",
+      "isStackable": false,
+      "acquisitionSources": ["AllyDeath", "PartyWipe"],
+      "triggers": [
+        {
+          "triggerType": "OnRest",
+          "checkRequired": true,
+          "checkDifficulty": 2
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "Disadvantage",
+          "target": "morale-checks",
+          "description": "Disadvantage on morale checks when allies are in danger"
+        },
+        {
+          "effectType": "StressIncrease",
+          "target": "stress",
+          "value": 5,
+          "condition": "OnAllyTakeCriticalHit",
+          "description": "+5 stress when ally takes critical damage"
+        }
+      ]
+    },
+    {
+      "id": "combat-flashbacks",
+      "name": "Combat Flashbacks",
+      "type": "Cognitive",
+      "description": "Intrusive memories of past combat situations.",
+      "flavorText": "The sounds, the sights... they won't go away.",
+      "isRetirementTrauma": false,
+      "retirementCondition": null,
+      "isStackable": true,
+      "acquisitionSources": ["CombatEvents", "NearDeathExperience"],
+      "triggers": [
+        {
+          "triggerType": "InCombat",
+          "checkRequired": true,
+          "checkDifficulty": 1
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "Disadvantage",
+          "target": "concentration-checks",
+          "description": "Disadvantage on concentration checks during combat"
+        },
+        {
+          "effectType": "Penalty",
+          "target": "initiative",
+          "value": -1,
+          "description": "-1 to initiative rolls"
+        }
+      ]
+    },
+    {
+      "id": "paranoid-ideation",
+      "name": "Paranoid Ideation",
+      "type": "Cognitive",
+      "description": "Pervasive and intrusive paranoid thoughts.",
+      "flavorText": "They're watching. They're always watching.",
+      "isRetirementTrauma": false,
+      "retirementCondition": null,
+      "isStackable": true,
+      "acquisitionSources": ["DeceptionEvent", "Betrayal"],
+      "triggers": [
+        {
+          "triggerType": "OnMeetNewNPC",
+          "checkRequired": false
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "Penalty",
+          "target": "insight-checks",
+          "value": -2,
+          "description": "-2 penalty to Insight checks"
+        },
+        {
+          "effectType": "Disadvantage",
+          "target": "trust-rolls",
+          "description": "Disadvantage on checks to trust NPCs"
+        }
+      ]
+    },
+    {
+      "id": "chronic-pain",
+      "name": "Chronic Pain",
+      "type": "Physical",
+      "description": "Persistent physical pain from old injuries.",
+      "flavorText": "Every movement reminds you of what you've endured.",
+      "isRetirementTrauma": false,
+      "retirementCondition": null,
+      "isStackable": true,
+      "acquisitionSources": ["SevereInjury", "NearDeathExperience"],
+      "triggers": [],
+      "effects": [
+        {
+          "effectType": "Penalty",
+          "target": "physical-activities",
+          "value": -1,
+          "description": "-1 penalty to Athletics and physical checks"
+        },
+        {
+          "effectType": "Penalty",
+          "target": "movement-speed",
+          "value": -5,
+          "description": "-5 ft movement speed"
+        }
+      ]
+    },
+    {
+      "id": "night-terrors",
+      "name": "Night Terrors",
+      "type": "Emotional",
+      "description": "Nightmares and terror from your subconscious.",
+      "flavorText": "Sleep is no longer refuge.",
+      "isRetirementTrauma": false,
+      "retirementCondition": null,
+      "isStackable": true,
+      "acquisitionSources": ["HorrorEvent", "TraumaticExperience"],
+      "triggers": [
+        {
+          "triggerType": "OnRest",
+          "checkRequired": true,
+          "checkDifficulty": 2
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "StressIncrease",
+          "target": "stress",
+          "value": 3,
+          "condition": "OnRest",
+          "description": "+3 stress during rest periods"
+        },
+        {
+          "effectType": "Penalty",
+          "target": "perception-checks",
+          "value": -1,
+          "condition": "AfterRest",
+          "description": "-1 penalty to Perception after rest"
+        }
+      ]
+    },
+    {
+      "id": "touch-aversion",
+      "name": "Touch Aversion",
+      "type": "Social",
+      "description": "Cannot tolerate being touched by others.",
+      "flavorText": "The thought of contact makes your skin crawl.",
+      "isRetirementTrauma": false,
+      "retirementCondition": null,
+      "isStackable": false,
+      "acquisitionSources": ["ViolentAssault", "TraumaticContact"],
+      "triggers": [],
+      "effects": [
+        {
+          "effectType": "Disadvantage",
+          "target": "social-checks",
+          "description": "Disadvantage on social checks involving physical contact"
+        },
+        {
+          "effectType": "Penalty",
+          "target": "healing-received",
+          "value": -2,
+          "condition": "FromAlly",
+          "description": "-2 healing received from ally touch-based healing"
+        }
+      ]
+    },
+    {
+      "id": "reality-doubt",
+      "name": "Reality Doubt",
+      "type": "Existential",
+      "description": "Questioning whether anything is real.",
+      "flavorText": "Is this a dream? Am I even real?",
+      "isRetirementTrauma": true,
+      "retirementCondition": "5+",
+      "isStackable": true,
+      "acquisitionSources": ["ParadoxExposure", "PsychicDamage"],
+      "triggers": [
+        {
+          "triggerType": "OnCriticalFail",
+          "checkRequired": false
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "Penalty",
+          "target": "will-saves",
+          "value": -1,
+          "description": "-1 penalty to Will saves"
+        },
+        {
+          "effectType": "StressIncrease",
+          "target": "stress",
+          "value": 2,
+          "condition": "OnParadoxEncounter",
+          "description": "+2 stress when encountering paradoxes"
+        }
+      ]
+    },
+    {
+      "id": "machine-affinity",
+      "name": "Machine Affinity",
+      "type": "Corruption",
+      "description": "An unnatural bond with machine entities.",
+      "flavorText": "The clicking and whirring speaks to you now.",
+      "isRetirementTrauma": true,
+      "retirementCondition": "On acquisition",
+      "isStackable": false,
+      "acquisitionSources": ["CorruptionThreshold75", "MachineIntegration"],
+      "triggers": [
+        {
+          "triggerType": "OnMachineContact",
+          "checkRequired": false
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "Bonus",
+          "target": "machine-interaction",
+          "value": 2,
+          "description": "+2 to checks involving machines"
+        },
+        {
+          "effectType": "Penalty",
+          "target": "humanity-checks",
+          "value": -3,
+          "description": "-3 to humanity and social connection checks"
+        }
+      ]
+    },
+    {
+      "id": "hollow-resonance",
+      "name": "Hollow Resonance",
+      "type": "Corruption",
+      "description": "Echo of the void within your mind.",
+      "flavorText": "The emptiness calls to you.",
+      "isRetirementTrauma": true,
+      "retirementCondition": "3+",
+      "isStackable": true,
+      "acquisitionSources": ["VoidExposure", "CorruptionThreshold50"],
+      "triggers": [
+        {
+          "triggerType": "OnVoidContact",
+          "checkRequired": true,
+          "checkDifficulty": 3
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "StressIncrease",
+          "target": "stress",
+          "value": 3,
+          "condition": "OnSolitude",
+          "description": "+3 stress when alone"
+        },
+        {
+          "effectType": "Penalty",
+          "target": "psychic-resistance",
+          "value": -2,
+          "description": "-2 to psychic resistance"
+        }
+      ]
+    },
+    {
+      "id": "death-wish",
+      "name": "Death Wish",
+      "type": "Emotional",
+      "description": "A subconscious desire for oblivion.",
+      "flavorText": "Maybe it would be easier to just... stop.",
+      "isRetirementTrauma": true,
+      "retirementCondition": "On acquisition",
+      "isStackable": false,
+      "acquisitionSources": ["RepeatedNearDeath", "TotalDespair"],
+      "triggers": [
+        {
+          "triggerType": "AtLowHealth",
+          "condition": "Below 25%",
+          "checkRequired": true,
+          "checkDifficulty": 2
+        }
+      ],
+      "effects": [
+        {
+          "effectType": "Penalty",
+          "target": "retreat-checks",
+          "value": -3,
+          "description": "-3 to checks for retreating or fleeing"
+        },
+        {
+          "effectType": "Bonus",
+          "target": "reckless-attacks",
+          "value": 2,
+          "description": "+2 to reckless or self-destructive attacks"
+        }
+      ]
+    }
+  ]
+}

@@ -314,6 +314,14 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Opportunity attack configuration, or null if not configured.</returns>
     OpportunityAttackConfiguration? GetOpportunityAttackConfiguration();
+
+    // ===== Trauma Configuration (v0.18.3e) =====
+
+    /// <summary>
+    /// Gets the trauma configuration.
+    /// </summary>
+    /// <returns>Trauma configuration with trauma definitions.</returns>
+    TraumaConfiguration GetTraumaConfiguration();
 }
 
 /// <summary>
