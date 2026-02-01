@@ -1,0 +1,108 @@
+{
+    "$schema": "schemas/corruption-sources.schema.json",
+    "version": "1.0",
+    "corruptionSources": {
+        "mysticMagic": [
+            {
+                "id": "standard-spell",
+                "name": "Standard Spell",
+                "minCorruption": 0,
+                "maxCorruption": 2
+            },
+            {
+                "id": "powerful-spell",
+                "name": "Powerful Spell",
+                "minCorruption": 3,
+                "maxCorruption": 5
+            },
+            {
+                "id": "overcasting",
+                "name": "Overcasting",
+                "minCorruption": 10,
+                "maxCorruption": 15
+            }
+        ],
+        "hereticalAbility": [
+            {
+                "id": "berserker-rage",
+                "name": "Berserker Rage Abilities",
+                "minCorruption": 2,
+                "maxCorruption": 5
+            },
+            {
+                "id": "blot-priest-hp-cast",
+                "name": "Sacrificial Casting",
+                "corruptionPerHp": 1
+            },
+            {
+                "id": "blot-priest-siphon",
+                "name": "Life Siphon",
+                "fixedCorruption": 1
+            },
+            {
+                "id": "seidkona-divination",
+                "name": "Forbidden Divination",
+                "minCorruption": 3,
+                "maxCorruption": 8
+            }
+        ],
+        "environmental": [
+            {
+                "id": "blight-zone",
+                "name": "Blight Zone Exposure",
+                "minCorruption": 1,
+                "maxCorruption": 3,
+                "perExposure": true
+            },
+            {
+                "id": "forlorn-contact",
+                "name": "Forlorn Contact",
+                "minCorruption": 5,
+                "maxCorruption": 10
+            }
+        ],
+        "items": [
+            {
+                "id": "glitched-artifact",
+                "name": "Glitched Artifact Use",
+                "minCorruption": 1,
+                "maxCorruption": 5
+            },
+            {
+                "id": "corrupted-consumable",
+                "name": "Corrupted Consumable",
+                "minCorruption": 2,
+                "maxCorruption": 5
+            }
+        ]
+    },
+    "thresholdEffects": {
+        "25": {
+            "description": "You feel the Blight's touch...",
+            "uiWarning": true
+        },
+        "50": {
+            "description": "Human faction reputation gains locked",
+            "factionLock": true
+        },
+        "75": {
+            "description": "Acquire [MACHINE AFFINITY] trauma",
+            "traumaId": "machine-affinity"
+        },
+        "100": {
+            "description": "Terminal Error - Character transformation",
+            "terminalError": true
+        }
+    },
+    "penalties": {
+        "maxHpPercent": {
+            "formula": "floor(corruption / 10) * 5"
+        },
+        "maxApPercent": {
+            "formula": "floor(corruption / 10) * 5"
+        },
+        "resolveDice": {
+            "formula": "floor(corruption / 20)"
+        }
+    }
+}

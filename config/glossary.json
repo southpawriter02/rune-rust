@@ -3593,6 +3593,134 @@
                 "trauma-economy"
             ],
             "sortOrder": 100
+        },
+        {
+            "id": "corruption-history-entry",
+            "term": "Corruption History Entry",
+            "definition": "Domain entity representing a single corruption change event in a character's history. Records all corruption additions, removals, and transfers for analytics, debugging, and UI display. Each entry captures the corruption amount and source category, new corruption total after the change, threshold crossing value (25/50/75/100) if a milestone was reached, transfer details for Blot-Priest corruption transfers, and UTC timestamp. Created via FromAddResult() factory from CorruptionAddResult objects or via Create() factory for manual construction (transfers, removals). Immutable once created — all properties have private setters. Persisted via ICorruptionRepository.AddHistoryEntryAsync() and mapped to the CorruptionHistory database table via EF Core configuration with a composite index on (CharacterId, CreatedAt) for efficient per-character history queries.",
+            "shortDefinition": "Immutable entity recording a single corruption change event with source, amount, and threshold details.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionHistoryEntry",
+                "corruption history",
+                "corruption event record"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-add-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-source",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-repository",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "entity",
+                "domain-layer",
+                "trauma-economy",
+                "history"
+            ],
+            "sortOrder": 101
+        },
+        {
+            "id": "corruption-configuration",
+            "term": "Corruption Configuration",
+            "definition": "Root DTO (CorruptionConfigurationDto) for deserializing the complete corruption configuration from config/corruption-sources.json. Contains four sections: version string in MAJOR.MINOR format, corruptionSources with four category arrays (mysticMagic, hereticalAbility, environmental, items) of CorruptionSourceDefinitionDto entries, thresholdEffects mapping threshold values (25/50/75/100) to ThresholdEffectDto definitions, and penalties with three PenaltyFormulasDto entries (maxHpPercent, maxApPercent, resolveDice). Validated against config/schemas/corruption-sources.schema.json at application startup. Nested DTOs include CorruptionSourceCategoriesDto, PenaltyFormulasDto, and FormulaDto.",
+            "shortDefinition": "Root DTO for deserializing corruption-sources.json with source categories, thresholds, and penalties.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionConfigurationDto",
+                "corruption config",
+                "corruption sources config"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-sources-schema",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-service-implementation",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "dto",
+                "application-layer",
+                "configuration",
+                "trauma-economy"
+            ],
+            "sortOrder": 102
+        },
+        {
+            "id": "corruption-sources-schema",
+            "term": "Corruption Sources Schema",
+            "definition": "JSON Schema (Draft-07) file at config/schemas/corruption-sources.schema.json that validates corruption source configuration files. Defines three reusable definitions: CorruptionSourceDefinition (id, name, and one of three corruption amount types: range min/max, fixed, or per-HP), ThresholdEffect (description plus optional uiWarning, factionLock, traumaId, terminalError triggers), and PenaltyFormula (formula string expression). Enforces kebab-case ID patterns, corruption value ranges (0-100 for min, 1-100 for max/fixed, 1-10 for per-HP), required fields (version, corruptionSources, thresholdEffects with all four levels, penalties with all three formulas), and additionalProperties: false at all levels to prevent configuration drift.",
+            "shortDefinition": "JSON Schema validating corruption-sources.json with source definitions, thresholds, and penalties.",
+            "categoryId": "combat",
+            "aliases": [
+                "corruption-sources.schema.json",
+                "corruption schema",
+                "corruption validation schema"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-configuration",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "schema",
+                "configuration",
+                "validation",
+                "trauma-economy"
+            ],
+            "sortOrder": 103
+        },
+        {
+            "id": "in-memory-corruption-repository",
+            "term": "In-Memory Corruption Repository",
+            "definition": "Thread-safe in-memory implementation of ICorruptionRepository for development, testing, and scenarios where database persistence is not yet configured. Stores CorruptionTracker entities in a ConcurrentDictionary keyed by character ID (one-to-one relationship), and CorruptionHistoryEntry records in a separate ConcurrentDictionary with per-character lists protected by lock statements during writes. Implements all 6 ICorruptionRepository methods: GetByCharacterIdAsync, AddAsync, UpdateAsync, DeleteAsync for tracker operations, plus AddHistoryEntryAsync and GetHistoryAsync for history audit trail. History entries are returned ordered by CreatedAt descending (most recent first). Data is lost when the application stops. Includes comprehensive structured logging via ILogger with optional null logger support.",
+            "shortDefinition": "Thread-safe in-memory ICorruptionRepository for development with tracker and history storage.",
+            "categoryId": "combat",
+            "aliases": [
+                "InMemoryCorruptionRepository",
+                "memory corruption repo",
+                "in-memory corruption storage"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-repository",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-history-entry",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "repository",
+                "infrastructure-layer",
+                "in-memory",
+                "trauma-economy"
+            ],
+            "sortOrder": 104
         }
     ]
 }

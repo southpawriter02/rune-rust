@@ -1,0 +1,171 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "corruption-sources.schema.json",
+    "title": "Corruption Sources Configuration",
+    "description": "Configuration schema for Runic Blight Corruption sources, thresholds, and penalties. Defines corruption costs for heretical abilities, environmental exposure, artifact use, and mystic magic. Validated at application startup to ensure all corruption source definitions are structurally valid.",
+    "type": "object",
+    "required": [
+        "version",
+        "corruptionSources",
+        "thresholdEffects",
+        "penalties"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$",
+            "description": "Configuration version in MAJOR.MINOR format (e.g., '1.0')."
+        },
+        "corruptionSources": {
+            "type": "object",
+            "description": "Corruption sources organized by category. Each category contains an array of CorruptionSourceDefinition objects defining individual corruption-inducing events.",
+            "properties": {
+                "mysticMagic": {
+                    "type": "array",
+                    "description": "Corruption from mystic magic and spellcasting. Standard spells cause minor corruption; overcasting causes significant corruption.",
+                    "items": {
+                        "$ref": "#/definitions/CorruptionSourceDefinition"
+                    }
+                },
+                "hereticalAbility": {
+                    "type": "array",
+                    "description": "Corruption from specialization heretical abilities. Includes Berserker rage, Blot-Priest sacrificial casting and life siphon, and Seidkona forbidden divination.",
+                    "items": {
+                        "$ref": "#/definitions/CorruptionSourceDefinition"
+                    }
+                },
+                "environmental": {
+                    "type": "array",
+                    "description": "Corruption from environmental exposure and hazards. Blight zone exposure applies per-exposure corruption; Forlorn contact causes significant one-time corruption.",
+                    "items": {
+                        "$ref": "#/definitions/CorruptionSourceDefinition"
+                    }
+                },
+                "items": {
+                    "type": "array",
+                    "description": "Corruption from using corrupted or glitched items. Includes glitched artifact interactions and corrupted consumable usage.",
+                    "items": {
+                        "$ref": "#/definitions/CorruptionSourceDefinition"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "thresholdEffects": {
+            "type": "object",
+            "description": "Effects triggered when corruption crosses specific thresholds. Each threshold represents a milestone in the character's corruption progression with mechanical and narrative consequences.",
+            "properties": {
+                "25": { "$ref": "#/definitions/ThresholdEffect" },
+                "50": { "$ref": "#/definitions/ThresholdEffect" },
+                "75": { "$ref": "#/definitions/ThresholdEffect" },
+                "100": { "$ref": "#/definitions/ThresholdEffect" }
+            },
+            "required": ["25", "50", "75", "100"],
+            "additionalProperties": false
+        },
+        "penalties": {
+            "type": "object",
+            "description": "Penalty calculation formulas applied based on current corruption level. All formulas use 'corruption' as the variable name.",
+            "required": ["maxHpPercent", "maxApPercent", "resolveDice"],
+            "properties": {
+                "maxHpPercent": { "$ref": "#/definitions/PenaltyFormula" },
+                "maxApPercent": { "$ref": "#/definitions/PenaltyFormula" },
+                "resolveDice": { "$ref": "#/definitions/PenaltyFormula" }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "CorruptionSourceDefinition": {
+            "type": "object",
+            "description": "Definition of a single corruption source. Sources may use range-based (minCorruption/maxCorruption), fixed (fixedCorruption), or per-HP (corruptionPerHp) corruption amounts. At least one corruption amount type should be specified alongside the required id and name.",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique identifier in kebab-case format (e.g., 'standard-spell', 'berserker-rage'). Must start with a lowercase letter and contain only lowercase letters, digits, and hyphens."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the corruption source shown in UI and combat log (e.g., 'Standard Spell', 'Berserker Rage Abilities')."
+                },
+                "minCorruption": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Minimum corruption for range-based sources. Used with maxCorruption to define a random range. A value of 0 means the source may not cause any corruption on some uses."
+                },
+                "maxCorruption": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Maximum corruption for range-based sources. Used with minCorruption to define a random range. Must be >= minCorruption."
+                },
+                "fixedCorruption": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Fixed corruption amount applied every use. Mutually exclusive with minCorruption/maxCorruption range."
+                },
+                "corruptionPerHp": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Corruption gained per HP spent. Used for sacrificial abilities (e.g., Blot-Priest HP casting). Total corruption = HP spent * corruptionPerHp."
+                },
+                "perExposure": {
+                    "type": "boolean",
+                    "description": "If true, corruption applies per discrete exposure event rather than as a one-time cost. Used for environmental hazards like Blight zone exposure."
+                }
+            },
+            "additionalProperties": false
+        },
+        "ThresholdEffect": {
+            "type": "object",
+            "description": "Effect triggered when a corruption threshold is crossed. Each threshold can trigger UI warnings, faction reputation locks, trauma acquisition, or the Terminal Error check.",
+            "required": ["description"],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description shown to the player when this threshold is crossed (e.g., 'You feel the Blight's touch...')."
+                },
+                "uiWarning": {
+                    "type": "boolean",
+                    "description": "If true, display a persistent UI warning indicator on the character sheet and HUD."
+                },
+                "factionLock": {
+                    "type": "boolean",
+                    "description": "If true, lock certain faction reputation gains. Human faction reputation can no longer increase."
+                },
+                "traumaId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "ID of the permanent trauma to acquire at this threshold (e.g., 'machine-affinity'). References a TraumaDefinition from v0.18.3."
+                },
+                "terminalError": {
+                    "type": "boolean",
+                    "description": "If true, this threshold triggers the Terminal Error check. A failed WILL check at Terminal Error means the character becomes Forlorn and is lost."
+                }
+            },
+            "additionalProperties": false
+        },
+        "PenaltyFormula": {
+            "type": "object",
+            "description": "Formula for calculating a corruption-based resource penalty. Uses 'corruption' as the variable name in the expression.",
+            "required": ["formula"],
+            "properties": {
+                "formula": {
+                    "type": "string",
+                    "description": "Formula expression using 'corruption' as variable. Examples: 'floor(corruption / 10) * 5' for percentage penalties, 'floor(corruption / 20)' for dice penalties."
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
