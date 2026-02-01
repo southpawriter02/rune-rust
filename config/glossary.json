@@ -2983,6 +2983,46 @@
                 "trauma-economy"
             ],
             "sortOrder": 82
+        },
+        {
+            "id": "stress-service-impl",
+            "term": "Stress Service Implementation",
+            "definition": "Application layer service class (StressService) implementing IStressService for all Psychic Stress management operations. Manages WILL-based resistance checks using IDiceService (rolling WILL d10 dice pool, mapping NetSuccesses to 0%/50%/75%/100% reduction table), formula-driven recovery (Short: WILL x 2, Long: WILL x 5, Sanctuary: full reset, Milestone: fixed 25), and post-Trauma Check reset (passed: 75, failed: 50). Dependencies: IPlayerRepository for character persistence, IDiceService for resistance dice rolls, ILogger for structured logging. Implements comprehensive logging at Debug (queries, resistance details), Information (stress changes, threshold crossings), and Warning (trauma triggers, missing characters) levels. Uses Player.SetPsychicStress() for stress mutation and IPlayerRepository.UpdateAsync() for persistence.",
+            "shortDefinition": "Application service implementing IStressService with WILL-based resistance, formula recovery, and trauma reset.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressService",
+                "stress service implementation"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-check-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-application-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-recovery-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "service",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 83
         }
     ]
 }

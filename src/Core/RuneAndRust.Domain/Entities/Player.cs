@@ -2213,6 +2213,38 @@ public class Player : IEntity
         StressResistanceModifier = stressResistModifier;
     }
 
+    /// <summary>
+    /// Sets the player's current Psychic Stress value.
+    /// </summary>
+    /// <param name="stress">
+    /// The new stress value. Must be in the range 0-100 inclusive.
+    /// Values outside this range are clamped to [0, 100].
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// This method is the primary mutation point for the Psychic Stress system
+    /// (v0.18.0d). It is called by <c>StressService</c> during stress application,
+    /// recovery, and post-Trauma Check reset operations.
+    /// </para>
+    /// <para>
+    /// The value is clamped rather than throwing to match the defensive behavior
+    /// of <see cref="StressState.Create(int)"/>, which also clamps to [0, 100].
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.SetPsychicStress(50);  // Set to Anxious threshold
+    /// player.SetPsychicStress(0);   // Reset to Calm
+    /// player.SetPsychicStress(100); // Trauma threshold
+    /// </code>
+    /// </example>
+    /// <seealso cref="PsychicStress"/>
+    /// <seealso cref="SetTraumaBaseline"/>
+    public void SetPsychicStress(int stress)
+    {
+        PsychicStress = Math.Clamp(stress, 0, 100);
+    }
+
     // ===== Specialization System (v0.17.4e) =====
 
     /// <summary>
