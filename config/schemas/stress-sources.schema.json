@@ -1,0 +1,137 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "stress-sources.schema.json",
+    "title": "Stress Sources Configuration",
+    "description": "Configuration schema for Psychic Stress sources, recovery rates, and trauma reset values.",
+    "type": "object",
+    "required": [
+        "version",
+        "stressSources",
+        "recoveryRates",
+        "traumaCheckReset"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$",
+            "description": "Configuration version in MAJOR.MINOR format."
+        },
+        "stressSources": {
+            "type": "object",
+            "description": "Stress sources organized by category.",
+            "properties": {
+                "combat": {
+                    "type": "array",
+                    "description": "Stress sources from combat encounters.",
+                    "items": { "$ref": "#/definitions/StressSourceDefinition" }
+                },
+                "exploration": {
+                    "type": "array",
+                    "description": "Stress sources from exploration and discovery.",
+                    "items": { "$ref": "#/definitions/StressSourceDefinition" }
+                },
+                "narrative": {
+                    "type": "array",
+                    "description": "Stress sources from story events and dialogue.",
+                    "items": { "$ref": "#/definitions/StressSourceDefinition" }
+                },
+                "heretical": {
+                    "type": "array",
+                    "description": "Stress sources from forbidden knowledge and eldritch encounters.",
+                    "items": { "$ref": "#/definitions/StressSourceDefinition" }
+                },
+                "environmental": {
+                    "type": "array",
+                    "description": "Stress sources from environmental hazards.",
+                    "items": { "$ref": "#/definitions/StressSourceDefinition" }
+                },
+                "corruption": {
+                    "type": "array",
+                    "description": "Stress sources from Runic Blight and corruption.",
+                    "items": { "$ref": "#/definitions/StressSourceDefinition" }
+                }
+            },
+            "additionalProperties": false
+        },
+        "recoveryRates": {
+            "type": "object",
+            "description": "Recovery formulas for each rest type.",
+            "required": ["shortRest", "longRest", "sanctuary", "milestone"],
+            "properties": {
+                "shortRest": { "$ref": "#/definitions/RecoveryRate" },
+                "longRest": { "$ref": "#/definitions/RecoveryRate" },
+                "sanctuary": { "$ref": "#/definitions/RecoveryRate" },
+                "milestone": { "$ref": "#/definitions/RecoveryRate" }
+            },
+            "additionalProperties": false
+        },
+        "traumaCheckReset": {
+            "type": "object",
+            "description": "Stress reset values after trauma check resolution.",
+            "required": ["passed", "failed"],
+            "properties": {
+                "passed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Stress value after passing a Trauma Check."
+                },
+                "failed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Stress value after failing a Trauma Check."
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "StressSourceDefinition": {
+            "type": "object",
+            "description": "Definition of a single stress-inducing event.",
+            "required": ["id", "baseStress", "resistDc"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique identifier in kebab-case format."
+                },
+                "baseStress": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Base stress amount before resistance."
+                },
+                "resistDc": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Difficulty class for WILL resistance check. 0 means no resistance allowed."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional narrative description of the stress source."
+                }
+            },
+            "additionalProperties": false
+        },
+        "RecoveryRate": {
+            "type": "object",
+            "description": "Recovery formula configuration.",
+            "required": ["formula"],
+            "properties": {
+                "formula": {
+                    "type": "string",
+                    "description": "Recovery formula. Supports 'WILL \u00d7 N', 'FULL_RESET', or fixed integer as string."
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

@@ -3023,6 +3023,104 @@
                 "trauma-economy"
             ],
             "sortOrder": 83
+        },
+        {
+            "id": "stress-source-config",
+            "term": "Stress Source Configuration",
+            "definition": "JSON configuration file (config/stress-sources.json) defining all psychic stress source events organized by six categories matching the StressSource enum: Combat, Exploration, Narrative, Heretical, Environmental, and Corruption. Each source specifies a unique kebab-case ID, base stress amount (integer 1-100), WILL resistance DC (integer 0-10 where 0 means no resistance allowed), and optional narrative description. Also defines recovery rate formulas for all four RestType values (Short Rest: WILL × 2, Long Rest: WILL × 5, Sanctuary: FULL_RESET, Milestone: fixed 25) and trauma check reset values (passed: 75, failed: 50). Validated by stress-sources.schema.json (JSON Schema Draft-07) which enforces additionalProperties: false, kebab-case ID patterns, and numeric range constraints.",
+            "shortDefinition": "JSON configuration defining stress source events, recovery rates, and trauma reset values for the Psychic Stress system.",
+            "categoryId": "combat",
+            "aliases": [
+                "stress-sources.json",
+                "stress configuration",
+                "stress source config"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-service-impl",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-source",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "rest-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "configuration",
+                "json-schema",
+                "trauma-economy"
+            ],
+            "sortOrder": 84
+        },
+        {
+            "id": "stress-source-definition-dto",
+            "term": "Stress Source Definition DTO",
+            "definition": "Application layer Data Transfer Object (sealed record) representing a single stress-inducing event from configuration. Properties: Id (kebab-case string matching pattern ^[a-z][a-z0-9-]*$), BaseStress (integer 1-100, base stress amount before WILL resistance), ResistDc (integer 0-10, difficulty class for WILL resistance check where 0 means no resistance allowed), and optional Description (narrative text for combat log and UI display). Part of the StressConfigurationDto hierarchy loaded from config/stress-sources.json. Uses [JsonPropertyName] attributes for explicit JSON key mapping.",
+            "shortDefinition": "Sealed record DTO representing a single stress source event with ID, base stress, resist DC, and description.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressSourceDefinitionDto",
+                "stress source definition"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-source-config",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-service-impl",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "dto",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 85
+        },
+        {
+            "id": "stress-recovery-config-dto",
+            "term": "Stress Recovery Config DTO",
+            "definition": "Application layer Data Transfer Object (sealed record) representing recovery rate configuration for all four rest types. Contains RecoveryRateDto entries for ShortRest (formula: WILL × 2), LongRest (formula: WILL × 5), Sanctuary (formula: FULL_RESET), and Milestone (formula: 25 fixed). Each RecoveryRateDto holds a Formula string describing the recovery calculation. Loaded from the recoveryRates section of config/stress-sources.json. The StressService interprets these formulas at runtime to calculate stress recovery amounts based on character WILL attribute.",
+            "shortDefinition": "Sealed record DTO representing recovery rate formulas for all four rest types.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressRecoveryConfigDto",
+                "RecoveryRateDto",
+                "recovery config"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-source-config",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-recovery-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "rest-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "dto",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 86
         }
     ]
 }

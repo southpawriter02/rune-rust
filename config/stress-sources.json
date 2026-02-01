@@ -1,0 +1,180 @@
+{
+    "$schema": "./schemas/stress-sources.schema.json",
+    "version": "1.0",
+    "stressSources": {
+        "combat": [
+            {
+                "id": "enemy-fear-aura",
+                "baseStress": 15,
+                "resistDc": 2,
+                "description": "An enemy's terrifying presence radiates fear."
+            },
+            {
+                "id": "overwhelming-odds",
+                "baseStress": 10,
+                "resistDc": 1,
+                "description": "Facing vastly superior enemy numbers."
+            },
+            {
+                "id": "ally-down",
+                "baseStress": 20,
+                "resistDc": 2,
+                "description": "Witnessing an ally fall in combat."
+            },
+            {
+                "id": "near-death-experience",
+                "baseStress": 25,
+                "resistDc": 3,
+                "description": "Being reduced to critical health."
+            }
+        ],
+        "exploration": [
+            {
+                "id": "darkness-isolation",
+                "baseStress": 8,
+                "resistDc": 1,
+                "description": "Alone in complete darkness."
+            },
+            {
+                "id": "strange-sounds",
+                "baseStress": 5,
+                "resistDc": 1,
+                "description": "Unexplained sounds in the distance."
+            },
+            {
+                "id": "corpse-discovery",
+                "baseStress": 12,
+                "resistDc": 2,
+                "description": "Finding remains of previous explorers."
+            },
+            {
+                "id": "impossible-architecture",
+                "baseStress": 15,
+                "resistDc": 2,
+                "description": "Geometry that defies natural law."
+            }
+        ],
+        "narrative": [
+            {
+                "id": "ally-betrayal",
+                "baseStress": 30,
+                "resistDc": 3,
+                "description": "A trusted ally reveals their treachery."
+            },
+            {
+                "id": "loved-one-death",
+                "baseStress": 40,
+                "resistDc": 4,
+                "description": "Learning of the death of someone dear."
+            },
+            {
+                "id": "moral-dilemma",
+                "baseStress": 15,
+                "resistDc": 2,
+                "description": "Forced to make an impossible choice."
+            },
+            {
+                "id": "dark-secret-revealed",
+                "baseStress": 20,
+                "resistDc": 2,
+                "description": "Learning a terrible truth about oneself."
+            }
+        ],
+        "heretical": [
+            {
+                "id": "forbidden-text",
+                "baseStress": 25,
+                "resistDc": 3,
+                "description": "Reading prohibited knowledge."
+            },
+            {
+                "id": "eldritch-symbol",
+                "baseStress": 20,
+                "resistDc": 2,
+                "description": "Seeing a symbol that burns the mind."
+            },
+            {
+                "id": "void-whispers",
+                "baseStress": 30,
+                "resistDc": 3,
+                "description": "Hearing voices from beyond reality."
+            },
+            {
+                "id": "reality-tear",
+                "baseStress": 35,
+                "resistDc": 4,
+                "description": "Witnessing a breach in the fabric of existence."
+            }
+        ],
+        "environmental": [
+            {
+                "id": "extreme-cold",
+                "baseStress": 10,
+                "resistDc": 1,
+                "description": "Exposure to life-threatening cold."
+            },
+            {
+                "id": "toxic-atmosphere",
+                "baseStress": 15,
+                "resistDc": 2,
+                "description": "Breathing poisoned air."
+            },
+            {
+                "id": "unstable-ground",
+                "baseStress": 12,
+                "resistDc": 1,
+                "description": "Floor crumbling underfoot."
+            },
+            {
+                "id": "lightning-storm",
+                "baseStress": 8,
+                "resistDc": 1,
+                "description": "Caught in a violent electrical storm."
+            }
+        ],
+        "corruption": [
+            {
+                "id": "blight-exposure",
+                "baseStress": 20,
+                "resistDc": 2,
+                "description": "Direct contact with Runic Blight."
+            },
+            {
+                "id": "corruption-touch",
+                "baseStress": 25,
+                "resistDc": 3,
+                "description": "Being touched by a corrupted entity."
+            },
+            {
+                "id": "mutation-pain",
+                "baseStress": 30,
+                "resistDc": 3,
+                "description": "Experiencing corruption-induced mutations."
+            },
+            {
+                "id": "blight-resonance",
+                "baseStress": 15,
+                "resistDc": 2,
+                "description": "Feeling the Blight's influence on the mind."
+            }
+        ]
+    },
+    "recoveryRates": {
+        "shortRest": {
+            "formula": "WILL \u00d7 2"
+        },
+        "longRest": {
+            "formula": "WILL \u00d7 5"
+        },
+        "sanctuary": {
+            "formula": "FULL_RESET"
+        },
+        "milestone": {
+            "formula": "25"
+        }
+    },
+    "traumaCheckReset": {
+        "passed": 75,
+        "failed": 50
+    }
+}
