@@ -1,0 +1,183 @@
+{
+    "$schema": "./schemas/panic-table.schema.json",
+    "version": "1.0",
+    "table": [
+        {
+            "dieRange": {
+                "min": 1,
+                "max": 1
+            },
+            "effect": "Frozen",
+            "effectName": "Logic Lock",
+            "description": "Your mind freezes, unable to process the paradox before you.",
+            "flavorText": "The gears of thought grind to a halt. You stand motionless, caught between realities.",
+            "mechanicalImpact": {
+                "statusEffects": ["Stunned"],
+                "duration": 1,
+                "defensePenalty": 5,
+                "selfDamage": null,
+                "forcedAction": null
+            }
+        },
+        {
+            "dieRange": {
+                "min": 2,
+                "max": 2
+            },
+            "effect": "Scream",
+            "effectName": "Involuntary Scream",
+            "description": "A scream tears from your throat before you can stop it.",
+            "flavorText": "The sound echoes through the corridors, announcing your presence to all who listen.",
+            "mechanicalImpact": {
+                "statusEffects": [],
+                "duration": null,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": null,
+                "alertsEnemies": true,
+                "stealthImpossible": true
+            }
+        },
+        {
+            "dieRange": {
+                "min": 3,
+                "max": 3
+            },
+            "effect": "Flee",
+            "effectName": "Evacuation Protocol",
+            "description": "Your survival instincts override all else. You MUST flee.",
+            "flavorText": "Your legs move before your mind can object. Distance is safety. Distance is survival.",
+            "mechanicalImpact": {
+                "statusEffects": [],
+                "duration": 1,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": "FleeFromSource"
+            }
+        },
+        {
+            "dieRange": {
+                "min": 4,
+                "max": 4
+            },
+            "effect": "Fetal",
+            "effectName": "Fetal Position",
+            "description": "You curl into a ball, trying to make yourself as small as possible.",
+            "flavorText": "The world is too much. You retreat inward, arms wrapped around knees.",
+            "mechanicalImpact": {
+                "statusEffects": ["Prone"],
+                "duration": null,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": null,
+                "disadvantageUntilRecovered": true
+            }
+        },
+        {
+            "dieRange": {
+                "min": 5,
+                "max": 5
+            },
+            "effect": "Blackout",
+            "effectName": "System Blackout",
+            "description": "Your mind shuts down to protect itself. Darkness takes you.",
+            "flavorText": "The world fades to black as consciousness flees from the unbearable.",
+            "mechanicalImpact": {
+                "statusEffects": ["Unconscious"],
+                "duration": 2,
+                "durationDice": "1d4",
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": null
+            }
+        },
+        {
+            "dieRange": {
+                "min": 6,
+                "max": 6
+            },
+            "effect": "Denial",
+            "effectName": "Reality Denial",
+            "description": "Your mind refuses to acknowledge the threat. It simply... isn't there.",
+            "flavorText": "What threat? There is no threat. Everything is fine. Everything has always been fine.",
+            "mechanicalImpact": {
+                "statusEffects": [],
+                "duration": 2,
+                "durationDice": "1d4",
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": null,
+                "cannotPerceiveTrigger": true
+            }
+        },
+        {
+            "dieRange": {
+                "min": 7,
+                "max": 7
+            },
+            "effect": "Violence",
+            "effectName": "Paradox Fury",
+            "description": "Rage fills the void where reason should be. ATTACK!",
+            "flavorText": "Red clouds your vision. Something must HURT for this to stop.",
+            "mechanicalImpact": {
+                "statusEffects": [],
+                "duration": 1,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": "AttackNearest"
+            }
+        },
+        {
+            "dieRange": {
+                "min": 8,
+                "max": 8
+            },
+            "effect": "Catatonia",
+            "effectName": "System Crash",
+            "description": "Your mind shuts down completely. Only pain can reboot you.",
+            "flavorText": "You are a statue. A monument to a mind that could not cope.",
+            "mechanicalImpact": {
+                "statusEffects": ["Prone", "Stunned"],
+                "duration": null,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": null,
+                "wakeOnDamage": true
+            }
+        },
+        {
+            "dieRange": {
+                "min": 9,
+                "max": 9
+            },
+            "effect": "Dissociation",
+            "effectName": "Reality Drift",
+            "description": "Your mind and body disconnect. You act without intent.",
+            "flavorText": "You watch yourself from somewhere else, a passenger in your own form.",
+            "mechanicalImpact": {
+                "statusEffects": [],
+                "duration": 1,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": "RandomAction"
+            }
+        },
+        {
+            "dieRange": {
+                "min": 10,
+                "max": 10
+            },
+            "effect": "None",
+            "effectName": "Lucky Break",
+            "description": "Your mind holds together... for now.",
+            "flavorText": "Against all odds, you find a moment of clarity amidst the chaos.",
+            "mechanicalImpact": {
+                "statusEffects": [],
+                "duration": null,
+                "defensePenalty": null,
+                "selfDamage": null,
+                "forcedAction": null
+            }
+        }
+    ]
+}

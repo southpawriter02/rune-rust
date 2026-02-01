@@ -1,0 +1,184 @@
+{
+    "$schema": "./schemas/cps-stages.schema.json",
+    "version": "1.0",
+    "stages": [
+        {
+            "stage": 0,
+            "stageName": "None",
+            "displayName": "Clear",
+            "description": "The mind is clear and untroubled by paradox.",
+            "stressRange": {
+                "min": 0,
+                "max": 19
+            },
+            "symptoms": [],
+            "fieldSigns": [],
+            "uiEffects": {
+                "distortionIntensity": 0.0,
+                "peripheralStatic": false,
+                "textGlitching": false,
+                "leetSpeakLevel": 0,
+                "colorTint": "#FFFFFF"
+            },
+            "recoveryProtocol": null
+        },
+        {
+            "stage": 1,
+            "stageName": "WeightOfKnowing",
+            "displayName": "The Weight of Knowing",
+            "description": "Reality feels slightly 'off'. An unsettling awareness begins.",
+            "stressRange": {
+                "min": 20,
+                "max": 39
+            },
+            "symptoms": [
+                "Mild migraines",
+                "Vivid dreams",
+                "Déjà vu",
+                "Subtle unease"
+            ],
+            "fieldSigns": [
+                "Thoughtful pauses",
+                "Distant looks",
+                "Minor concentration lapses"
+            ],
+            "uiEffects": {
+                "distortionIntensity": 0.1,
+                "peripheralStatic": true,
+                "textGlitching": false,
+                "leetSpeakLevel": 0,
+                "colorTint": "#F5F5DC"
+            },
+            "recoveryProtocol": {
+                "protocolName": "Cognitive Hygiene",
+                "urgency": "Low",
+                "estimatedRecoveryTime": "12-24 hours",
+                "steps": [
+                    "Avoid paradox-inducing stimuli",
+                    "Rest in a familiar environment",
+                    "Engage in grounding activities",
+                    "Limit exposure to reality-bending effects"
+                ]
+            }
+        },
+        {
+            "stage": 2,
+            "stageName": "GlimmerMadness",
+            "displayName": "Glimmer-Madness",
+            "description": "Reality flickers and distorts. Hallucinations intrude upon perception.",
+            "stressRange": {
+                "min": 40,
+                "max": 59
+            },
+            "symptoms": [
+                "Visual hallucinations",
+                "Auditory distortions",
+                "Temporal confusion",
+                "Paranoid ideation"
+            ],
+            "fieldSigns": [
+                "Talking to unseen entities",
+                "Unpredictable emotional shifts",
+                "Difficulty distinguishing reality from memory"
+            ],
+            "uiEffects": {
+                "distortionIntensity": 0.35,
+                "peripheralStatic": true,
+                "textGlitching": true,
+                "leetSpeakLevel": 1,
+                "colorTint": "#E6E6FA"
+            },
+            "recoveryProtocol": {
+                "protocolName": "Silent Room Protocol",
+                "urgency": "Medium",
+                "estimatedRecoveryTime": "48+ hours",
+                "steps": [
+                    "Complete sensory isolation",
+                    "No exposure to paradox stimuli",
+                    "Professional oversight recommended",
+                    "Gradual reintroduction to normal reality"
+                ]
+            }
+        },
+        {
+            "stage": 3,
+            "stageName": "RuinMadness",
+            "displayName": "Ruin-Madness",
+            "description": "The mind fractures under paradox pressure. Panic Table is now active.",
+            "stressRange": {
+                "min": 60,
+                "max": 79
+            },
+            "symptoms": [
+                "Loss of impulse control",
+                "Severe dissociation",
+                "Reality breaks",
+                "Compulsive behaviors"
+            ],
+            "fieldSigns": [
+                "Erratic, unpredictable actions",
+                "Speaking in fragments or nonsense",
+                "Violent outbursts",
+                "Complete withdrawal"
+            ],
+            "uiEffects": {
+                "distortionIntensity": 0.7,
+                "peripheralStatic": true,
+                "textGlitching": true,
+                "leetSpeakLevel": 2,
+                "colorTint": "#FFD700"
+            },
+            "recoveryProtocol": {
+                "protocolName": "Terminal Protocol",
+                "urgency": "Critical",
+                "estimatedRecoveryTime": "Unknown",
+                "steps": [
+                    "Recovery not possible through normal means",
+                    "Requires Sanctuary Rest or special intervention",
+                    "GM discretion for recovery path",
+                    "Consider character retirement"
+                ]
+            }
+        },
+        {
+            "stage": 4,
+            "stageName": "HollowShell",
+            "displayName": "Hollow Shell",
+            "description": "The mind has collapsed. The character is lost to paradox.",
+            "stressRange": {
+                "min": 80,
+                "max": 100
+            },
+            "symptoms": [
+                "Complete dissociation",
+                "Loss of identity",
+                "Catatonic episodes",
+                "Terminal psychosis"
+            ],
+            "fieldSigns": [
+                "Blank stare",
+                "No recognition of allies",
+                "Robotic movements",
+                "Whispers of impossible things"
+            ],
+            "uiEffects": {
+                "distortionIntensity": 1.0,
+                "peripheralStatic": true,
+                "textGlitching": true,
+                "leetSpeakLevel": 3,
+                "colorTint": "#FF4444"
+            },
+            "recoveryProtocol": {
+                "protocolName": "None",
+                "urgency": "Terminal",
+                "estimatedRecoveryTime": "N/A",
+                "steps": [
+                    "Character is effectively lost",
+                    "May become NPC antagonist per GM discretion",
+                    "Retirement or death scene recommended",
+                    "Memorial for fallen character"
+                ]
+            }
+        }
+    ]
+}

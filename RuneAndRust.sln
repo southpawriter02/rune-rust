@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneAndRust.Architecture.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneAndRust.TestUtilities", "tests\RuneAndRust.TestUtilities\RuneAndRust.TestUtilities.csproj", "{07AD5EF4-0270-4089-81FC-5194C072BB62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneAndRust.Infrastructure.UnitTests", "tests\RuneAndRust.Infrastructure.UnitTests\RuneAndRust.Infrastructure.UnitTests.csproj", "{21AACBA5-BC14-437F-A506-1E12D66F4623}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{07AD5EF4-0270-4089-81FC-5194C072BB62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07AD5EF4-0270-4089-81FC-5194C072BB62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07AD5EF4-0270-4089-81FC-5194C072BB62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21AACBA5-BC14-437F-A506-1E12D66F4623}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21AACBA5-BC14-437F-A506-1E12D66F4623}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21AACBA5-BC14-437F-A506-1E12D66F4623}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21AACBA5-BC14-437F-A506-1E12D66F4623}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D0F2277A-7F19-46CD-B7FA-D7CCD62C3449} = {1B2D2E65-69B3-49EC-8C82-AA8FA012B2A5}
@@ -104,5 +110,6 @@ Global
 		{A191973D-F180-4206-8542-1E73FCA4C2F3} = {91EA74C0-94FE-4E24-8541-FD01871A2D89}
 		{F06F47AD-E924-4EEB-A3F2-B4C49A5C96AB} = {91EA74C0-94FE-4E24-8541-FD01871A2D89}
 		{07AD5EF4-0270-4089-81FC-5194C072BB62} = {91EA74C0-94FE-4E24-8541-FD01871A2D89}
+		{21AACBA5-BC14-437F-A506-1E12D66F4623} = {91EA74C0-94FE-4E24-8541-FD01871A2D89}
 	EndGlobalSection
 EndGlobal
