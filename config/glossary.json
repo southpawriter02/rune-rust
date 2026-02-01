@@ -3211,6 +3211,64 @@
                 "trauma-economy"
             ],
             "sortOrder": 89
+        },
+        {
+            "id": "corruption-stage",
+            "term": "Corruption Stage",
+            "definition": "Enum (CorruptionStage) representing the six progressive stages of Runic Blight Corruption in the Trauma Economy. Each stage corresponds to a 20-point corruption range and indicates escalating physical and spiritual contamination from exposure to corrupted runic energies: Uncorrupted (0-19, no effects), Tainted (20-39, minor cosmetic signs), Infected (40-59, visible marks, -1 social), Blighted (60-79, mutations begin, -2 social, +1 horror), Corrupted (80-99, severe mutations, -3 social, +2 horror), Consumed (100, Mutation Check required). Integer values (0-5) are explicitly assigned for stable serialization. Parallels StressThreshold from the Psychic Stress system.",
+            "shortDefinition": "Enum defining six corruption stages from Uncorrupted to Consumed with mutation risk thresholds.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionStage",
+                "corruption tier",
+                "blight stage"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "enum",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 90
+        },
+        {
+            "id": "corruption-state",
+            "term": "Corruption State",
+            "definition": "Immutable value object (readonly record struct CorruptionState) representing a character's current Runic Blight Corruption state. Encapsulates the corruption value (clamped to 0-100) and derives all gameplay properties: Stage (CorruptionStage tier), PercentageToConsumption (0.0-1.0), RequiresMutationCheck (true at 100), HasMutationRisk (true at 80+), IsUncorrupted, and IsConsumed. Created via factory method Create(int) or static Uncorrupted property. Includes DetermineStage static method for threshold resolution and threshold constants (TaintedThreshold=20, InfectedThreshold=40, BlightedThreshold=60, CorruptedThreshold=80, ConsumedThreshold=100). Parallels StressState from the Psychic Stress system.",
+            "shortDefinition": "Immutable value object tracking corruption level with mutation risk flags and stage determination.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionState",
+                "runic blight state",
+                "corruption snapshot"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-stage",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-state",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "value-object",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 91
         }
     ]
 }
