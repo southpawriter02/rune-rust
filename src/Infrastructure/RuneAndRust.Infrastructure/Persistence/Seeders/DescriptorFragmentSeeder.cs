@@ -420,7 +420,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "tinged with ozone and electricity",
+            "tinged with the bitter scent of lightning",
             AtmosphericSubcategory.Smell,
             weight: 2);
 
@@ -560,7 +560,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "An electrical buzz fills the air",
+            "The hum of sleeping thunder fills the air",
             AtmosphericSubcategory.Sound,
             weight: 2);
 
@@ -675,7 +675,7 @@ public static class DescriptorFragmentSeeder
             weight: 1);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Sparks of static electricity dance in the shadows",
+            "Ghost-sparks dance in the shadows",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.Surface,
             weight: 2);

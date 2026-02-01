@@ -8,15 +8,15 @@ namespace RuneAndRust.Domain.Enums;
 /// who remain in or pass through affected areas. Each type has distinct
 /// visual and mechanical characteristics that affect gameplay:
 /// <list type="bullet">
-///   <item><description><see cref="PoisonGas"/> - Toxic clouds that poison on failed saves</description></item>
-///   <item><description><see cref="Fire"/> - Flames that burn with fire damage</description></item>
-///   <item><description><see cref="Ice"/> - Extreme cold that slows movement</description></item>
-///   <item><description><see cref="Spikes"/> - Physical hazards dealing piercing damage</description></item>
-///   <item><description><see cref="AcidPool"/> - Corrosive pools that damage equipment</description></item>
-///   <item><description><see cref="Darkness"/> - Magical darkness affecting visibility (no damage)</description></item>
-///   <item><description><see cref="Electricity"/> - Electrical fields that shock</description></item>
-///   <item><description><see cref="Radiant"/> - Holy energy effective against undead</description></item>
-///   <item><description><see cref="Necrotic"/> - Life-draining dark energy</description></item>
+///   <item><description><see cref="PoisonGas"/> - Choking fumes that sicken the body</description></item>
+///   <item><description><see cref="Fire"/> - Unsleeping fire that hungers</description></item>
+///   <item><description><see cref="Ice"/> - The grave-cold that slows movement</description></item>
+///   <item><description><see cref="Spikes"/> - Teeth of iron and stone</description></item>
+///   <item><description><see cref="AcidPool"/> - Biting water that eats metal</description></item>
+///   <item><description><see cref="Darkness"/> - Shadows thick enough to drown in</description></item>
+///   <item><description><see cref="Electricity"/> - The anger of storms made manifest</description></item>
+///   <item><description><see cref="Radiant"/> - Sun-fire that scours the shadows</description></item>
+///   <item><description><see cref="Necrotic"/> - Shadow-sickness that drains the spirit</description></item>
 /// </list>
 /// </remarks>
 /// <seealso cref="RuneAndRust.Domain.Entities.HazardZone"/>
@@ -47,31 +47,31 @@ public enum HazardType
     Spikes = 3,
 
     /// <summary>
-    /// Corrosive acid that damages and corrodes equipment.
+    /// Biting water that eats through metal and flesh.
     /// Deals acid damage and may damage armor or weapons over time.
     /// </summary>
     AcidPool = 4,
 
     /// <summary>
-    /// Magical darkness that obscures vision.
+    /// Unnatural shadow that drowns all light.
     /// Does not deal damage but imposes penalties to perception and attacks.
     /// </summary>
     Darkness = 5,
 
     /// <summary>
-    /// Electrical energy that shocks creatures within.
+    /// The invisible fire of storms.
     /// Deals lightning damage and may cause paralysis on critical failures.
     /// </summary>
     Electricity = 6,
 
     /// <summary>
-    /// Holy or radiant energy.
+    /// Sun-fire or star-light.
     /// Deals radiant damage, particularly effective against undead creatures.
     /// </summary>
     Radiant = 7,
 
     /// <summary>
-    /// Necrotic energy that drains life force.
+    /// Shadow-sickness that drains the spirit.
     /// Deals necrotic damage and may reduce maximum health temporarily.
     /// </summary>
     Necrotic = 8,

@@ -284,16 +284,16 @@ public class HazardZone : IEntity
     /// <returns>A descriptive string for the hazard type.</returns>
     public string GetHazardTypeDescription() => HazardType switch
     {
-        HazardType.PoisonGas => "Poisonous gas fills the area",
-        HazardType.Fire => "Flames burn throughout the area",
-        HazardType.Ice => "Bitter cold permeates the area",
-        HazardType.Spikes => "Sharp spikes cover the ground",
-        HazardType.AcidPool => "Corrosive acid pools on the floor",
-        HazardType.Darkness => "Magical darkness obscures vision",
-        HazardType.Electricity => "Electrical energy crackles through the air",
-        HazardType.Radiant => "Radiant energy fills the area",
-        HazardType.Necrotic => "Necrotic energy drains life force",
-        _ => "An unknown hazard affects this area"
+        HazardType.PoisonGas => "Choking fumes cling to the air",
+        HazardType.Fire => "Unsleeping fire hungers here",
+        HazardType.Ice => "The air bites with the cold of the grave",
+        HazardType.Spikes => "The ground is teeth and jagged iron",
+        HazardType.AcidPool => "Pools of biting water scar the floor",
+        HazardType.Darkness => "Shadows thick enough to drown in",
+        HazardType.Electricity => "The anger of storms crackles unseen",
+        HazardType.Radiant => "A burning light scours the shadows",
+        HazardType.Necrotic => "The air itself tastes of ash and endings",
+        _ => "The area feels wrong, though the reason is hidden"
     };
 
     /// <summary>

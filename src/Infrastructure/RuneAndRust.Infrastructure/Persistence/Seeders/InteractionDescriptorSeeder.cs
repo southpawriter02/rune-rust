@@ -77,7 +77,7 @@ public static class InteractionDescriptorSeeder
         // Terminals (Oracle-Boxes)
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Terminal", "Active",
-            "The oracle-box hums with power, glass face swimming with ghost-light");
+            "The oracle-box hums with invisible fire, glass face swimming with ghost-light");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Terminal", "Dormant",
@@ -434,7 +434,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Trade", "Runeforging",
-            "The inscriptions are degraded but readable. Power remains here");
+            "The inscriptions are degraded but readable. The old strength remains here");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Trade", "Runeforging2",
@@ -447,7 +447,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "JotunReader2",
-            "This is Giant-tech. Original. Unmolested since the Glitch");
+            "This is Giant-craft. Original. Unmolested since the Glitch");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "RuinStalker",
