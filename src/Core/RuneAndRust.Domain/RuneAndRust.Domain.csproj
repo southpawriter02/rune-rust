@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="RuneAndRust.Domain.UnitTests" />
+    <InternalsVisibleTo Include="RuneAndRust.Application" />
+    <InternalsVisibleTo Include="RuneAndRust.Application.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

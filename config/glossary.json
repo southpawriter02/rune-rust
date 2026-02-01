@@ -3507,6 +3507,92 @@
                 "trauma-economy"
             ],
             "sortOrder": 98
+        },
+        {
+            "id": "corruption-repository",
+            "term": "Corruption Repository",
+            "definition": "Repository interface (ICorruptionRepository) defining the persistence contract for per-character CorruptionTracker entities. Provides three async methods: GetByCharacterIdAsync (retrieves the tracker for a character, or null if none exists), AddAsync (persists a newly created tracker), and UpdateAsync (persists changes to an existing tracker). Each character has at most one CorruptionTracker, identified by CharacterId. The service layer wraps retrieval with a GetOrCreateTracker pattern that creates a new tracker if none exists, ensuring all service methods can assume a tracker is available. Implementations include InMemoryCorruptionRepository (thread-safe in-memory storage, v0.18.1e) and future EF Core database persistence.",
+            "shortDefinition": "Repository interface for CorruptionTracker persistence with get, add, and update operations.",
+            "categoryId": "combat",
+            "aliases": [
+                "ICorruptionRepository",
+                "corruption repository interface",
+                "corruption persistence"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-service-implementation",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-service",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "interface",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 99
+        },
+        {
+            "id": "corruption-service-implementation",
+            "term": "Corruption Service Implementation",
+            "definition": "Concrete implementation (CorruptionService class) of the ICorruptionService interface that manages all Runic Blight Corruption operations. Depends on four services: ICorruptionRepository (tracker persistence), IPlayerRepository (character WILL attribute for Terminal Error checks), IDiceService (dice rolling for WILL-based survival checks), and ILogger (structured logging). Implements 9 interface methods across three categories: 5 query methods (GetCorruptionState, GetMaxHpPenaltyPercent, GetMaxApPenaltyPercent, GetResolveDicePenalty, GetSkillModifiers), 3 command methods (AddCorruption, TransferCorruption, RemoveCorruption), and 1 terminal method (PerformTerminalErrorCheck). Uses GetOrCreateTracker pattern to lazily initialize trackers, sync-over-async repository access matching StressService conventions, and comprehensive structured logging at Debug/Information/Warning/Error levels for all corruption events.",
+            "shortDefinition": "Concrete CorruptionService class implementing all 9 ICorruptionService methods for corruption management.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionService",
+                "corruption service class",
+                "corruption service impl"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-repository",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-transfer-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-skill-modifiers",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "terminal-error-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-service-implementation",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "service",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 100
         }
     ]
 }
