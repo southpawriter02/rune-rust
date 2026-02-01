@@ -3121,6 +3121,96 @@
                 "trauma-economy"
             ],
             "sortOrder": 86
+        },
+        {
+            "id": "stress-history-entry",
+            "term": "Stress History Entry",
+            "definition": "Domain entity (StressHistoryEntry) representing a single stress event in a character's history. Records all stress applications for analytics, debugging, and UI display. Each entry captures the original stress amount before resistance (Amount), the stress source category (Source), resistance check details (ResistDc for successes rolled, Resisted flag), final stress after resistance (FinalAmount), before/after stress values (PreviousStress/NewStress), threshold crossing information (ThresholdCrossed), and UTC timestamp (CreatedAt). Created via factory methods: FromApplicationResult() for automatic mapping from StressApplicationResult, or Create() for manual construction. Implements IEntity with application-managed Guid ID. Entries are immutable once created — all properties have private setters.",
+            "shortDefinition": "Domain entity recording individual stress events for analytics and history tracking.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressHistoryEntry",
+                "stress history",
+                "stress event record"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-application-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-source",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-threshold",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "entity",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 87
+        },
+        {
+            "id": "stress-history-repository",
+            "term": "Stress History Repository",
+            "definition": "Repository interface (IStressHistoryRepository) and in-memory implementation (InMemoryStressHistoryRepository) for StressHistoryEntry persistence operations. The interface defines three async methods: AddAsync() for appending history entries, GetByCharacterIdAsync() for retrieving all entries for a character ordered by most recent first, and a limit overload for retrieving only the N most recent entries. The InMemoryStressHistoryRepository uses ConcurrentDictionary<Guid, List<StressHistoryEntry>> for thread-safe storage with lock-protected list mutations and Debug-level logging for all operations. Returns entries ordered by CreatedAt descending. Will be replaced by an EF Core implementation when full database persistence is configured.",
+            "shortDefinition": "Repository interface and in-memory implementation for stress event persistence.",
+            "categoryId": "combat",
+            "aliases": [
+                "IStressHistoryRepository",
+                "InMemoryStressHistoryRepository",
+                "stress history repo"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-history-entry",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-service-impl",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "repository",
+                "infrastructure-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 88
+        },
+        {
+            "id": "stress-history-ef-config",
+            "term": "Stress History EF Configuration",
+            "definition": "Entity Framework Core entity type configuration (StressHistoryEntryConfiguration) that maps StressHistoryEntry to the StressHistory database table. Configures Guid primary key with ValueGeneratedNever() (application-managed), string conversion for StressSource and StressThreshold enum columns with appropriate max lengths, composite index on (CharacterId, CreatedAt) named IX_StressHistory_CharacterCreatedAt for efficient per-character history queries, and cascading foreign key to the Player entity. Follows existing codebase conventions: PascalCase table names, HasConversion<string>() for enums, HasDatabaseName() for explicit index names.",
+            "shortDefinition": "EF Core configuration mapping StressHistoryEntry to the StressHistory database table.",
+            "categoryId": "combat",
+            "aliases": [
+                "StressHistoryEntryConfiguration",
+                "stress history config"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress-history-entry",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-history-repository",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "psychic-stress",
+                "ef-core",
+                "infrastructure-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 89
         }
     ]
 }
