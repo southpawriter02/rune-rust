@@ -3269,6 +3269,130 @@
                 "trauma-economy"
             ],
             "sortOrder": 91
+        },
+        {
+            "id": "corruption-source",
+            "term": "Corruption Source",
+            "definition": "Enum categorizing the origins of Runic Blight Corruption accumulation. Eight source categories track where corruption comes from: MysticMagic (standard spellcasting), HereticalAbility (forbidden powers like Berserker rage and Blot-Priest abilities), Artifact (glitched artifact interaction), Environmental (Blight zone exposure), Consumable (corrupted substance usage), Ritual (forbidden ritual participation), ForlornContact (direct Forlorn contact), and BlightTransfer (Blot-Priest transfer received). Source tracking enables contextual resistance modifiers, history recording for analytics, and descriptive logging.",
+            "shortDefinition": "Enum categorizing eight origins of Runic Blight Corruption for tracking, analytics, and contextual modifiers.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionSource",
+                "corruption origin",
+                "blight source"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-stage",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "enum",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 92
+        },
+        {
+            "id": "corruption-tracker",
+            "term": "Corruption Tracker",
+            "definition": "Mutable domain entity that tracks per-character Runic Blight Corruption accumulation and effects. Unlike the immutable CorruptionState value object, CorruptionTracker maintains persistent state including character association, threshold trigger history (one-time events at 25/50/75 corruption), and provides domain methods for corruption manipulation. Computed properties include: MaxHpPenaltyPercent and MaxApPenaltyPercent (floor(corruption/10)*5, ranging 0-50%), ResolveDicePenalty (floor(corruption/20), ranging 0-5), stage-based TechBonus (+0/+1/+2) and SocialPenalty (0/-1/-2), IsFactionLocked (corruption >= 50), and IsTerminalError (corruption = 100).",
+            "shortDefinition": "Mutable entity tracking per-character corruption with computed penalties, threshold crossings, and Terminal Error detection.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionTracker",
+                "corruption entity",
+                "blight tracker"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-source",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-add-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "terminal-error-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "entity",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 93
+        },
+        {
+            "id": "corruption-add-result",
+            "term": "Corruption Add Result",
+            "definition": "Immutable value object representing the result of adding corruption to a character's CorruptionTracker. Captures the complete before/after state of a corruption change including: PreviousCorruption and NewCorruption values, AmountGained (computed delta), CorruptionSource, ThresholdCrossed (25/50/75 or null for one-time narrative events), StageCrossed flag with PreviousStage and NewStage, IsTerminalError flag (corruption reached 100), and NowFactionLocked arrow property detecting when corruption first crosses 50.",
+            "shortDefinition": "Immutable result capturing before/after corruption state, threshold crossings, stage transitions, and Terminal Error detection.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionAddResult",
+                "corruption result",
+                "blight result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-source",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "value-object",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 94
+        },
+        {
+            "id": "terminal-error-result",
+            "term": "Terminal Error Result",
+            "definition": "Immutable value object representing the outcome of a Terminal Error survival check. When corruption reaches 100, the character must make a WILL dice pool check vs DC (default 3) to avoid becoming Forlorn. Properties include: Survived (bool), FinalCorruption (99 if survived, 100 if Forlorn), BecameForlorn (inverse of Survived), SuccessesRolled and RequiredDc for the check details, and WasCriticalSuccess (arrow property: survived AND successes >= 2x DC). Factory methods: Success(successes, dc) and Failure(successes, dc).",
+            "shortDefinition": "Immutable result capturing Terminal Error survival check outcome — whether the character survived or became Forlorn.",
+            "categoryId": "combat",
+            "aliases": [
+                "TerminalErrorResult",
+                "terminal error outcome",
+                "forlorn check result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-stage",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "value-object",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 95
         }
     ]
 }
