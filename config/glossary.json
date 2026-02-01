@@ -3393,6 +3393,120 @@
                 "trauma-economy"
             ],
             "sortOrder": 95
+        },
+        {
+            "id": "corruption-transfer-result",
+            "term": "Corruption Transfer Result",
+            "definition": "Immutable value object (readonly record struct CorruptionTransferResult) representing the outcome of transferring corruption between two characters. This is the signature mechanic of the Blot-Priest specialization. Properties include: Success (bool indicating transfer completion), AmountTransferred (corruption moved, 0 on failure), SourceNewCorruption and TargetNewCorruption (both characters' resulting corruption values), and TargetTerminalError (bool flagging if the absorbing character reached 100 corruption). Created via factory method Create(success, amountTransferred, sourceNewCorruption, targetNewCorruption, targetTerminalError). Custom ToString shows transfer outcome, amount moved, both corruption values, and Terminal Error warning.",
+            "shortDefinition": "Immutable result capturing corruption transfer outcome between two characters with Terminal Error detection.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionTransferResult",
+                "blight transfer result",
+                "corruption transfer outcome"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "terminal-error-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-service",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "value-object",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 96
+        },
+        {
+            "id": "corruption-skill-modifiers",
+            "term": "Corruption Skill Modifiers",
+            "definition": "Immutable value object (readonly record struct CorruptionSkillModifiers) representing the stage-based skill check modifiers derived from a character's Runic Blight Corruption level. Encapsulates three properties: TechBonus (0/+1/+2 bonus to technology checks), SocialPenalty (0/-1/-2 penalty to social checks), and FactionLocked (bool indicating human faction reputation gains are blocked at corruption >= 50). Arrow property HasModifiers returns true when any modifier is active. Created via factory method Create(techBonus, socialPenalty, factionLocked) or static None property for uncorrupted characters. Stage mapping: Uncorrupted (0/0/false), Tainted (+1/-1/false), Infected through Corrupted (+2/-2/true), Consumed (N/A — Terminal Error).",
+            "shortDefinition": "Immutable composite of stage-based tech bonus, social penalty, and faction lock status from corruption.",
+            "categoryId": "combat",
+            "aliases": [
+                "CorruptionSkillModifiers",
+                "corruption modifiers",
+                "blight skill modifiers"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-stage",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-service",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "value-object",
+                "domain-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 97
+        },
+        {
+            "id": "corruption-service",
+            "term": "Corruption Service",
+            "definition": "Application layer service interface (ICorruptionService) defining the contract for all Runic Blight Corruption management operations. Exposes 9 methods across three categories: Query methods (GetCorruptionState, GetMaxHpPenaltyPercent, GetMaxApPenaltyPercent, GetResolveDicePenalty, GetSkillModifiers) for reading corruption state and derived penalties without side effects; Command methods (AddCorruption with source tracking and threshold crossing detection, TransferCorruption for Blot-Priest cleansing mechanic, RemoveCorruption for extremely rare narrative purification) for modifying character corruption state; Terminal Error methods (PerformTerminalErrorCheck for WILL-based survival check at corruption 100). Uses domain types from v0.18.1a (CorruptionState, CorruptionStage, CorruptionSource), result objects from v0.18.1b (CorruptionAddResult, TerminalErrorResult), and new value objects from v0.18.1c (CorruptionTransferResult, CorruptionSkillModifiers). Consumed by CombatService, SkillCheckService, AbilityService, Blot-Priest Mechanics, and the UI layer.",
+            "shortDefinition": "Application layer interface defining the contract for corruption queries, application, transfer, removal, and Terminal Error checks.",
+            "categoryId": "combat",
+            "aliases": [
+                "ICorruptionService",
+                "corruption service interface"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "corruption-state",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-tracker",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-add-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-transfer-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "corruption-skill-modifiers",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "terminal-error-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "stress-service",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "corruption",
+                "interface",
+                "application-layer",
+                "trauma-economy"
+            ],
+            "sortOrder": 98
         }
     ]
 }
