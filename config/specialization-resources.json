@@ -1,0 +1,250 @@
+{
+  "$schema": "./schemas/specialization-resources.schema.json",
+  "version": "1.0",
+  "metadata": {
+    "createdDate": "2026-02-02",
+    "description": "Configuration for specialization-specific resources (Rage, Momentum, Coherence)"
+  },
+  "rage": {
+    "maxValue": 100,
+    "minValue": 0,
+    "decayPerTurn": 10,
+    "decayMinutesBeforeNonCombat": 1,
+    "thresholds": [
+      {
+        "name": "Calm",
+        "minValue": 0,
+        "maxValue": 20,
+        "damageBonus": 0,
+        "soakBonus": 0,
+        "fearImmune": false,
+        "mustAttackNearest": false,
+        "partyStressReduction": null
+      },
+      {
+        "name": "Simmering",
+        "minValue": 21,
+        "maxValue": 40,
+        "damageBonus": 3,
+        "soakBonus": 1,
+        "fearImmune": false,
+        "mustAttackNearest": false,
+        "partyStressReduction": null
+      },
+      {
+        "name": "Burning",
+        "minValue": 41,
+        "maxValue": 60,
+        "damageBonus": 5,
+        "soakBonus": 2,
+        "fearImmune": false,
+        "mustAttackNearest": false,
+        "partyStressReduction": null
+      },
+      {
+        "name": "BerserkFury",
+        "minValue": 61,
+        "maxValue": 80,
+        "damageBonus": 7,
+        "soakBonus": 3,
+        "fearImmune": false,
+        "mustAttackNearest": true,
+        "partyStressReduction": null
+      },
+      {
+        "name": "FrenzyBeyondReason",
+        "minValue": 81,
+        "maxValue": 100,
+        "damageBonus": 9,
+        "soakBonus": 4,
+        "fearImmune": true,
+        "mustAttackNearest": true,
+        "partyStressReduction": 10
+      }
+    ],
+    "sources": {
+      "takingDamage": {
+        "type": "formula",
+        "formula": "floor(damage / 5)",
+        "description": "Rage gained from taking damage"
+      },
+      "dealingDamage": {
+        "type": "formula",
+        "formula": "floor(damage / 10)",
+        "description": "Rage gained from dealing damage"
+      },
+      "allyDamaged": {
+        "type": "flat",
+        "value": 5,
+        "description": "Rage gained when ally takes damage"
+      },
+      "enemyKill": {
+        "type": "flat",
+        "value": 15,
+        "description": "Rage gained from killing an enemy"
+      },
+      "rageMaintenance": {
+        "type": "flat",
+        "value": 5,
+        "description": "Passive rage gain at FrenzyBeyondReason"
+      }
+    }
+  },
+  "momentum": {
+    "maxValue": 100,
+    "minValue": 0,
+    "decayOnMiss": 25,
+    "decayOnStun": 100,
+    "decayOnIdleTurn": 15,
+    "thresholds": [
+      {
+        "name": "Stationary",
+        "minValue": 0,
+        "maxValue": 20,
+        "bonusAttacks": 0,
+        "attackBonus": 0,
+        "defenseBonus": 0,
+        "criticalChance": null,
+        "movementBonusPerTwenty": 1
+      },
+      {
+        "name": "Moving",
+        "minValue": 21,
+        "maxValue": 40,
+        "bonusAttacks": 0,
+        "attackBonus": 1,
+        "defenseBonus": 1,
+        "criticalChance": null,
+        "movementBonusPerTwenty": 1
+      },
+      {
+        "name": "Flowing",
+        "minValue": 41,
+        "maxValue": 60,
+        "bonusAttacks": 1,
+        "attackBonus": 2,
+        "defenseBonus": 2,
+        "criticalChance": null,
+        "movementBonusPerTwenty": 1
+      },
+      {
+        "name": "Surging",
+        "minValue": 61,
+        "maxValue": 80,
+        "bonusAttacks": 1,
+        "attackBonus": 3,
+        "defenseBonus": 3,
+        "criticalChance": null,
+        "movementBonusPerTwenty": 1
+      },
+      {
+        "name": "Unstoppable",
+        "minValue": 81,
+        "maxValue": 100,
+        "bonusAttacks": 2,
+        "attackBonus": 4,
+        "defenseBonus": 4,
+        "criticalChance": 10,
+        "movementBonusPerTwenty": 1,
+        "healOnKill": true
+      }
+    ],
+    "sources": {
+      "successfulAttack": {
+        "type": "flat",
+        "value": 10,
+        "description": "Momentum from successful attack hit"
+      },
+      "killingBlow": {
+        "type": "flat",
+        "value": 20,
+        "description": "Momentum from defeating an enemy"
+      },
+      "chainAttack": {
+        "type": "formula",
+        "formula": "floor(consecutiveHits * 5)",
+        "description": "Momentum bonus from attack chain"
+      },
+      "movement": {
+        "type": "formula",
+        "formula": "floor(distanceMoved / 2)",
+        "description": "Momentum from repositioning"
+      }
+    }
+  },
+  "coherence": {
+    "maxValue": 100,
+    "minValue": 0,
+    "defaultValue": 50,
+    "meditationGain": 20,
+    "castGain": 5,
+    "channelGainPerTurn": 3,
+    "apotheosisStressCost": 10,
+    "thresholds": [
+      {
+        "name": "Destabilized",
+        "minValue": 0,
+        "maxValue": 20,
+        "spellPowerBonus": -2,
+        "criticalCastChance": 0,
+        "cascadeRisk": 25
+      },
+      {
+        "name": "Unstable",
+        "minValue": 21,
+        "maxValue": 40,
+        "spellPowerBonus": -1,
+        "criticalCastChance": 0,
+        "cascadeRisk": 10
+      },
+      {
+        "name": "Balanced",
+        "minValue": 41,
+        "maxValue": 60,
+        "spellPowerBonus": 0,
+        "criticalCastChance": 5,
+        "cascadeRisk": 0
+      },
+      {
+        "name": "Focused",
+        "minValue": 61,
+        "maxValue": 80,
+        "spellPowerBonus": 2,
+        "criticalCastChance": 10,
+        "cascadeRisk": 0
+      },
+      {
+        "name": "Apotheosis",
+        "minValue": 81,
+        "maxValue": 100,
+        "spellPowerBonus": 5,
+        "criticalCastChance": 20,
+        "cascadeRisk": 0,
+        "ultimateAbilitiesEnabled": true
+      }
+    ],
+    "sources": {
+      "successfulCast": {
+        "type": "flat",
+        "value": 5,
+        "description": "Coherence from completed spell"
+      },
+      "controlledChannel": {
+        "type": "formula",
+        "formula": "3 per turn",
+        "description": "Coherence from maintained spell"
+      },
+      "meditation": {
+        "type": "flat",
+        "value": 20,
+        "description": "Coherence from meditation action"
+      },
+      "stabilityField": {
+        "type": "variable",
+        "minValue": 1,
+        "maxValue": 10,
+        "description": "Coherence from environmental effects"
+      }
+    }
+  }
+}

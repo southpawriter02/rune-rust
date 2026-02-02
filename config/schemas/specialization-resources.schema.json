@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Specialization Resources Configuration",
+  "description": "Configuration schema for Rage, Momentum, and Coherence systems",
+  "type": "object",
+  "required": ["version", "rage", "momentum", "coherence"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Configuration version (e.g., 1.0)"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "createdDate": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "rage": {
+      "$ref": "#/definitions/rageSection"
+    },
+    "momentum": {
+      "$ref": "#/definitions/momentumSection"
+    },
+    "coherence": {
+      "$ref": "#/definitions/coherenceSection"
+    }
+  },
+  "definitions": {
+    "rageSection": {
+      "type": "object",
+      "required": ["maxValue", "minValue", "decayPerTurn", "thresholds", "sources"],
+      "properties": {
+        "maxValue": { "type": "integer", "minimum": 100, "maximum": 100 },
+        "minValue": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "decayPerTurn": { "type": "integer", "minimum": 1 },
+        "decayMinutesBeforeNonCombat": { "type": "integer", "minimum": 1 },
+        "thresholds": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/definitions/rageThreshold" }
+        },
+        "sources": { "type": "object" }
+      }
+    },
+    "rageThreshold": {
+      "type": "object",
+      "required": ["name", "minValue", "maxValue", "soakBonus"],
+      "properties": {
+        "name": { "type": "string" },
+        "minValue": { "type": "integer", "minimum": 0 },
+        "maxValue": { "type": "integer", "maximum": 100 },
+        "damageBonus": { "type": "integer" },
+        "soakBonus": { "type": "integer" },
+        "fearImmune": { "type": "boolean" },
+        "mustAttackNearest": { "type": "boolean" },
+        "partyStressReduction": { "type": ["integer", "null"] }
+      }
+    },
+    "momentumSection": {
+      "type": "object",
+      "required": ["maxValue", "minValue", "decayOnMiss", "thresholds", "sources"],
+      "properties": {
+        "maxValue": { "type": "integer", "minimum": 100, "maximum": 100 },
+        "minValue": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "decayOnMiss": { "type": "integer", "minimum": 1 },
+        "decayOnStun": { "type": "integer", "minimum": 1 },
+        "decayOnIdleTurn": { "type": "integer", "minimum": 1 },
+        "thresholds": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/definitions/momentumThreshold" }
+        },
+        "sources": { "type": "object" }
+      }
+    },
+    "momentumThreshold": {
+      "type": "object",
+      "required": ["name", "minValue", "maxValue", "bonusAttacks", "attackBonus", "defenseBonus"],
+      "properties": {
+        "name": { "type": "string" },
+        "minValue": { "type": "integer", "minimum": 0 },
+        "maxValue": { "type": "integer", "maximum": 100 },
+        "bonusAttacks": { "type": "integer", "minimum": 0 },
+        "attackBonus": { "type": "integer" },
+        "defenseBonus": { "type": "integer" },
+        "criticalChance": { "type": ["integer", "null"] },
+        "movementBonusPerTwenty": { "type": "integer" },
+        "healOnKill": { "type": "boolean" }
+      }
+    },
+    "coherenceSection": {
+      "type": "object",
+      "required": ["maxValue", "minValue", "defaultValue", "thresholds", "sources"],
+      "properties": {
+        "maxValue": { "type": "integer", "minimum": 100, "maximum": 100 },
+        "minValue": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "defaultValue": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "meditationGain": { "type": "integer", "minimum": 1 },
+        "castGain": { "type": "integer", "minimum": 1 },
+        "channelGainPerTurn": { "type": "integer", "minimum": 1 },
+        "apotheosisStressCost": { "type": "integer", "minimum": 1 },
+        "thresholds": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/definitions/coherenceThreshold" }
+        },
+        "sources": { "type": "object" }
+      }
+    },
+    "coherenceThreshold": {
+      "type": "object",
+      "required": ["name", "minValue", "maxValue", "spellPowerBonus", "criticalCastChance", "cascadeRisk"],
+      "properties": {
+        "name": { "type": "string" },
+        "minValue": { "type": "integer", "minimum": 0 },
+        "maxValue": { "type": "integer", "maximum": 100 },
+        "spellPowerBonus": { "type": "integer" },
+        "criticalCastChance": { "type": "integer", "minimum": 0 },
+        "cascadeRisk": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "ultimateAbilitiesEnabled": { "type": "boolean" }
+      }
+    },
+    "resourceSource": {
+      "type": "object",
+      "required": ["type", "description"],
+      "properties": {
+        "type": { "type": "string", "enum": ["flat", "formula", "variable"] },
+        "value": { "type": "integer" },
+        "formula": { "type": "string" },
+        "minValue": { "type": "integer" },
+        "maxValue": { "type": "integer" },
+        "description": { "type": "string" }
+      }
+    }
+  }
+}

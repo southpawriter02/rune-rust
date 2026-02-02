@@ -480,4 +480,19 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         _traumaConfiguration = config;
         return this;
     }
+
+    // ===== Specialization Resource Configuration (v0.18.4f) =====
+
+    private SpecializationResourceConfiguration _specializationResourceConfiguration = new();
+
+    public SpecializationResourceConfiguration GetSpecializationResourceConfiguration() => _specializationResourceConfiguration;
+
+    /// <summary>
+    /// Sets the specialization resource configuration.
+    /// </summary>
+    public MockConfigurationProvider WithSpecializationResourceConfiguration(SpecializationResourceConfiguration config)
+    {
+        _specializationResourceConfiguration = config;
+        return this;
+    }
 }

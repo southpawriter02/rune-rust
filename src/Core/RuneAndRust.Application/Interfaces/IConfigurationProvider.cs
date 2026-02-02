@@ -322,6 +322,18 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Trauma configuration with trauma definitions.</returns>
     TraumaConfiguration GetTraumaConfiguration();
+
+    // ===== Specialization Resource Configuration (v0.18.4f) =====
+
+    /// <summary>
+    /// Gets the specialization resource configuration.
+    /// </summary>
+    /// <remarks>
+    /// Contains configuration for Rage (Berserker), Momentum (Storm Blade),
+    /// and Coherence (Arcanist) resource systems.
+    /// </remarks>
+    /// <returns>Specialization resource configuration with all three resource sections.</returns>
+    SpecializationResourceConfiguration GetSpecializationResourceConfiguration();
 }
 
 /// <summary>

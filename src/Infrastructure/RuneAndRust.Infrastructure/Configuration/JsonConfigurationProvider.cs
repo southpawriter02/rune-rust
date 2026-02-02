@@ -2516,5 +2516,46 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             return _traumaConfiguration;
         }
     }
+
+    // ===== Specialization Resource Configuration (v0.18.4f) =====
+
+    private SpecializationResourceConfiguration? _specializationResourceConfiguration;
+
+    /// <inheritdoc/>
+    public SpecializationResourceConfiguration GetSpecializationResourceConfiguration()
+    {
+        if (_specializationResourceConfiguration != null) return _specializationResourceConfiguration;
+
+        var filePath = Path.Combine(_configPath, "specialization-resources.json");
+
+        if (!File.Exists(filePath))
+        {
+            _logger.LogWarning("Specialization resource configuration not found at {Path}", filePath);
+            _specializationResourceConfiguration = new SpecializationResourceConfiguration();
+            return _specializationResourceConfiguration;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(filePath);
+            _specializationResourceConfiguration = JsonSerializer.Deserialize<SpecializationResourceConfiguration>(json, _jsonOptions)
+                ?? new SpecializationResourceConfiguration();
+
+            _logger.LogInformation(
+                "Loaded specialization resource configuration from {Path}: Rage thresholds={RageCount}, Momentum thresholds={MomentumCount}, Coherence thresholds={CoherenceCount}",
+                filePath,
+                _specializationResourceConfiguration.Rage.Thresholds.Count,
+                _specializationResourceConfiguration.Momentum.Thresholds.Count,
+                _specializationResourceConfiguration.Coherence.Thresholds.Count);
+
+            return _specializationResourceConfiguration;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load specialization resource configuration from {Path}", filePath);
+            _specializationResourceConfiguration = new SpecializationResourceConfiguration();
+            return _specializationResourceConfiguration;
+        }
+    }
 }
 
