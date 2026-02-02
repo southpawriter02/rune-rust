@@ -39,6 +39,11 @@ public class GameSession : IEntity
     public GameState State { get; private set; }
 
     /// <summary>
+    /// Gets the current turn count.
+    /// </summary>
+    public int TurnCount { get; private set; }
+
+    /// <summary>
     /// Gets the UTC timestamp when this session was created.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
@@ -48,6 +53,12 @@ public class GameSession : IEntity
     /// </summary>
     public DateTime LastPlayedAt { get; private set; }
 
+    /// <summary>
+    /// Gets the ID of the room the player was previously in (for flee mechanics).
+    /// </summary>
+    public Guid? PreviousRoomId { get; private set; }
+
+    private readonly HashSet<Guid> _visitedRooms = [];
     private readonly HashSet<string> _revealedSolutionIds = [];
 
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
@@ -99,6 +110,16 @@ public class GameSession : IEntity
     {
         var player = new Player(playerName);
         return new GameSession(player, dungeon);
+    }
+
+    /// <summary>
+    /// Advances the game turn counter.
+    /// </summary>
+    /// <returns>The new turn count.</returns>
+    public int AdvanceTurn()
+    {
+        TurnCount++;
+        return TurnCount;
     }
 
     public bool TryMovePlayer(Direction direction)
