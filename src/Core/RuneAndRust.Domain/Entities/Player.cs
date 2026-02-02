@@ -2604,5 +2604,85 @@ public class Player : IEntity
         ArgumentOutOfRangeException.ThrowIfLessThan(rank, 1);
         ProgressionRank = rank;
     }
+
+    // ===== Specialization Resource States (v0.18.4e) =====
+
+    /// <summary>
+    /// Gets the player's Rage state (Berserker specialization only).
+    /// </summary>
+    /// <remarks>
+    /// Rage is the combat resource for Berserkers, building from dealing/taking damage
+    /// and decaying outside combat. Higher rage grants damage bonuses but may
+    /// force certain behaviors (must attack nearest at high thresholds).
+    /// </remarks>
+    /// <seealso cref="HasRageState"/>
+    /// <seealso cref="SetRageState"/>
+    public RageState? RageState { get; private set; }
+
+    /// <summary>
+    /// Gets whether this player has a Rage state (is a Berserker).
+    /// </summary>
+    public bool HasRageState => RageState != null;
+
+    /// <summary>
+    /// Sets the player's Rage state.
+    /// </summary>
+    /// <param name="rageState">The new rage state.</param>
+    public void SetRageState(RageState? rageState)
+    {
+        RageState = rageState;
+    }
+
+    /// <summary>
+    /// Gets the player's Momentum state (Storm Blade specialization only).
+    /// </summary>
+    /// <remarks>
+    /// Momentum is the combat resource for Storm Blades, building from successful
+    /// attacks and consecutive hits. Higher momentum grants attack/defense bonuses
+    /// and additional attacks. Resets on missed attacks or stuns.
+    /// </remarks>
+    /// <seealso cref="HasMomentumState"/>
+    /// <seealso cref="SetMomentumState"/>
+    public MomentumState? MomentumState { get; private set; }
+
+    /// <summary>
+    /// Gets whether this player has a Momentum state (is a Storm Blade).
+    /// </summary>
+    public bool HasMomentumState => MomentumState != null;
+
+    /// <summary>
+    /// Sets the player's Momentum state.
+    /// </summary>
+    /// <param name="momentumState">The new momentum state.</param>
+    public void SetMomentumState(MomentumState? momentumState)
+    {
+        MomentumState = momentumState;
+    }
+
+    /// <summary>
+    /// Gets the player's Coherence state (Arcanist specialization only).
+    /// </summary>
+    /// <remarks>
+    /// Coherence is the magical focus resource for Arcanists. Both extremes are
+    /// dangerous: low coherence risks cascade effects, high coherence enters
+    /// Apotheosis (powerful but stressful).
+    /// </remarks>
+    /// <seealso cref="HasCoherenceState"/>
+    /// <seealso cref="SetCoherenceState"/>
+    public CoherenceState? CoherenceState { get; private set; }
+
+    /// <summary>
+    /// Gets whether this player has a Coherence state (is an Arcanist).
+    /// </summary>
+    public bool HasCoherenceState => CoherenceState != null;
+
+    /// <summary>
+    /// Sets the player's Coherence state.
+    /// </summary>
+    /// <param name="coherenceState">The new coherence state.</param>
+    public void SetCoherenceState(CoherenceState? coherenceState)
+    {
+        CoherenceState = coherenceState;
+    }
 }
 
