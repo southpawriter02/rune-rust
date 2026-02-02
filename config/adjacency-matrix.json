@@ -1,0 +1,99 @@
+{
+  "$schema": "./schemas/adjacency-matrix.schema.json",
+  "version": "1.0",
+  "description": "Realm adjacency rules for the Nine Realms biome system",
+  "rules": [
+    {
+      "realmA": 8,
+      "realmB": 5,
+      "compatibility": 2,
+      "comment": "Muspelheim (Fire) ↔ Niflheim (Ice): Incompatible"
+    },
+    {
+      "realmA": 8,
+      "realmB": 3,
+      "compatibility": 2,
+      "comment": "Muspelheim (Fire) ↔ Vanaheim (Bio): Incompatible"
+    },
+    {
+      "realmA": 4,
+      "realmB": 3,
+      "compatibility": 0,
+      "transitionTheme": "River ferries upstream... canopy shadows deepen...",
+      "comment": "Midgard ↔ Vanaheim: Compatible"
+    },
+    {
+      "realmA": 6,
+      "realmB": 8,
+      "compatibility": 0,
+      "transitionTheme": "Volcanic heat fades into geothermal stability...",
+      "comment": "Svartalfheim ↔ Muspelheim: Compatible"
+    },
+    {
+      "realmA": 6,
+      "realmB": 9,
+      "compatibility": 0,
+      "transitionTheme": "Elevators descend... decontamination airlocks seal...",
+      "comment": "Svartalfheim ↔ Helheim: Compatible"
+    },
+    {
+      "realmA": 4,
+      "realmB": 2,
+      "compatibility": 1,
+      "minTransitionRooms": 1,
+      "maxTransitionRooms": 2,
+      "transitionTheme": "Reality shifts... the air thickens with aetheric energy...",
+      "comment": "Midgard ↔ Alfheim: Requires Transition"
+    },
+    {
+      "realmA": 5,
+      "realmB": 9,
+      "compatibility": 1,
+      "minTransitionRooms": 2,
+      "maxTransitionRooms": 3,
+      "transitionTheme": "Frost gives way to choking toxicity...",
+      "comment": "Niflheim ↔ Helheim: Requires Transition"
+    },
+    {
+      "realmA": 4,
+      "realmB": 7,
+      "compatibility": 1,
+      "minTransitionRooms": 1,
+      "maxTransitionRooms": 3,
+      "transitionTheme": "The world grows... everything expands to impossible scale...",
+      "comment": "Midgard ↔ Jotunheim: Requires Transition"
+    },
+    {
+      "realmA": 1,
+      "realmB": 4,
+      "compatibility": 1,
+      "minTransitionRooms": 2,
+      "maxTransitionRooms": 3,
+      "transitionTheme": "Command protocols flicker... reality stabilizes...",
+      "comment": "Asgard ↔ Midgard: Requires Transition"
+    },
+    {
+      "realmA": 1,
+      "realmB": 2,
+      "compatibility": 0,
+      "transitionTheme": "Research corridors shimmer with residual aetheric light...",
+      "comment": "Asgard ↔ Alfheim: Compatible"
+    },
+    {
+      "realmA": 2,
+      "realmB": 3,
+      "compatibility": 0,
+      "transitionTheme": "Bioluminescence gives way to verdant overgrowth...",
+      "comment": "Alfheim ↔ Vanaheim: Compatible"
+    },
+    {
+      "realmA": 7,
+      "realmB": 5,
+      "compatibility": 1,
+      "minTransitionRooms": 1,
+      "maxTransitionRooms": 2,
+      "transitionTheme": "Giant ice formations loom in the mist...",
+      "comment": "Jotunheim ↔ Niflheim: Requires Transition"
+    }
+  ]
+}

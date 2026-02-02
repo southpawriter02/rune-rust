@@ -1,0 +1,148 @@
+{
+  "$schema": "./schemas/realm-biomes.schema.json",
+  "version": "1.0",
+  "biomes": [
+    {
+      "realmId": 4,
+      "name": "Midgard",
+      "subtitle": "The Tamed Ruin",
+      "deckNumber": 4,
+      "preGlitchFunction": "Civilian Habitation and Agricultural Production",
+      "postGlitchState": "Agricultural heartland; most populous realm. Survivors have carved civilization from the ruins.",
+      "baseProperties": {
+        "temperatureCelsius": 18,
+        "aethericIntensity": 0.3,
+        "humidityPercent": 60,
+        "lightLevel": 0.7,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.2
+      },
+      "primaryCondition": 0,
+      "minVerticalZone": 0,
+      "maxVerticalZone": 1,
+      "zones": [
+        {
+          "zoneId": "the-greatwood",
+          "name": "The Greatwood",
+          "conditionDcModifier": 2,
+          "description": "Dense forest that has reclaimed the urban ruins."
+        },
+        {
+          "zoneId": "the-scar",
+          "name": "The Scar",
+          "conditionDcModifier": 0,
+          "description": "Crater from the initial impact; relatively safe trading hub."
+        },
+        {
+          "zoneId": "the-mires",
+          "name": "The Mires",
+          "conditionDcModifier": 4,
+          "description": "Flooded lowlands with mutated wildlife."
+        }
+      ],
+      "flavorQuote": "In Midgard, we don't just survive—we endure.",
+      "colorPalette": "earth-greens-browns"
+    }
+  ],
+  "environmentalConditions": [
+    {
+      "type": 0,
+      "displayName": "None",
+      "checkAttribute": "STURDINESS",
+      "baseDc": 0,
+      "damageDice": "0",
+      "damageType": "",
+      "frequency": "Never",
+      "description": "No environmental hazard.",
+      "mitigations": []
+    },
+    {
+      "type": 1,
+      "displayName": "Intense Heat",
+      "checkAttribute": "STURDINESS",
+      "baseDc": 12,
+      "damageDice": "2d6",
+      "damageType": "Fire",
+      "frequency": "Per Turn",
+      "description": "The volcanic heat of Muspelheim sears exposed flesh and causes rapid dehydration.",
+      "mitigations": ["Fire Resistance", "Cooling equipment", "Hearth shelter"]
+    },
+    {
+      "type": 2,
+      "displayName": "Extreme Cold",
+      "checkAttribute": "STURDINESS",
+      "baseDc": 12,
+      "damageDice": "2d6",
+      "damageType": "Cold",
+      "frequency": "Per Turn",
+      "description": "Flash-frozen temperatures that cause rapid hypothermia and frostbite.",
+      "mitigations": ["Cold Resistance", "Heating equipment", "Warm clothing"]
+    },
+    {
+      "type": 3,
+      "displayName": "Toxic Atmosphere",
+      "checkAttribute": "STURDINESS",
+      "baseDc": 12,
+      "damageDice": "2d4",
+      "damageType": "Poison",
+      "frequency": "Per Turn",
+      "description": "Industrial pollutants and biological decay create a poisonous miasma.",
+      "mitigations": ["Poison Resistance", "Respirator", "Environmental seal"]
+    },
+    {
+      "type": 4,
+      "displayName": "Mutagenic Spores",
+      "checkAttribute": "STURDINESS",
+      "baseDc": 12,
+      "damageDice": "1d6",
+      "damageType": "Poison",
+      "frequency": "Per Hour",
+      "description": "Fungal spores that cause cellular mutation and biological corruption.",
+      "mitigations": ["Bio-filter", "Sealed suit", "Antifungal treatment"]
+    },
+    {
+      "type": 5,
+      "displayName": "Reality Flux",
+      "checkAttribute": "WILL",
+      "baseDc": 12,
+      "damageDice": "1d8",
+      "damageType": "Psychic",
+      "frequency": "Per Turn",
+      "description": "Unstable reality warps perception and causes psychic damage.",
+      "mitigations": ["Psi-shield", "Mental training", "Reality anchor"]
+    },
+    {
+      "type": 6,
+      "displayName": "CPS Exposure",
+      "checkAttribute": "WILL",
+      "baseDc": 12,
+      "damageDice": "1d4",
+      "damageType": "Stress",
+      "frequency": "Per Hour",
+      "description": "Psychic radiation that accelerates Cognitive Paradox Syndrome progression.",
+      "mitigations": ["Psi-dampener", "Mental fortitude", "Limited exposure"]
+    },
+    {
+      "type": 7,
+      "displayName": "Total Darkness",
+      "checkAttribute": "AGILITY",
+      "baseDc": 12,
+      "damageDice": "0",
+      "damageType": "",
+      "frequency": "Continuous",
+      "description": "Complete absence of natural light. All actions requiring sight have disadvantage.",
+      "mitigations": ["Darkvision", "Light source", "Echolocation equipment"]
+    },
+    {
+      "type": 8,
+      "displayName": "Giant Scale",
+      "checkAttribute": "AGILITY",
+      "baseDc": 12,
+      "damageDice": "0",
+      "damageType": "",
+      "frequency": "Situational",
+      "description": "Everything is 3-10x normal scale. Increased fall distances, oversized obstacles.",
+      "mitigations": ["Climbing gear", "Size-altering equipment", "Flight"]
+    }
+  ]
+}

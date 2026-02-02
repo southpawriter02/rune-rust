@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "realm-biomes.schema.json",
+  "title": "Realm Biomes Configuration",
+  "description": "Configuration for the Nine Realms biome system",
+  "type": "object",
+  "required": ["version", "biomes", "environmentalConditions"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version"
+    },
+    "biomes": {
+      "type": "array",
+      "description": "List of realm biome definitions",
+      "items": {
+        "$ref": "#/$defs/biomeDefinition"
+      }
+    },
+    "environmentalConditions": {
+      "type": "array",
+      "description": "List of environmental condition definitions",
+      "items": {
+        "$ref": "#/$defs/environmentalCondition"
+      }
+    }
+  },
+  "$defs": {
+    "biomeDefinition": {
+      "type": "object",
+      "required": ["realmId", "name", "subtitle", "deckNumber", "preGlitchFunction", "postGlitchState", "baseProperties", "primaryCondition", "minVerticalZone", "maxVerticalZone"],
+      "properties": {
+        "realmId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "description": "Realm ID (1=Asgard, 2=Alfheim, 3=Vanaheim, 4=Midgard, 5=Niflheim, 6=Svartalfheim, 7=Jotunheim, 8=Muspelheim, 9=Helheim)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the realm"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Realm epithet (e.g., 'The Tamed Ruin')"
+        },
+        "deckNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "description": "YGGDRASIL deck number"
+        },
+        "preGlitchFunction": {
+          "type": "string",
+          "description": "Original function before The Glitch"
+        },
+        "postGlitchState": {
+          "type": "string",
+          "description": "Current state after The Glitch"
+        },
+        "baseProperties": {
+          "$ref": "#/$defs/biomeProperties"
+        },
+        "primaryCondition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8,
+          "description": "Primary environmental condition type"
+        },
+        "minVerticalZone": {
+          "type": "integer",
+          "minimum": -3,
+          "maximum": 4,
+          "description": "Minimum vertical zone"
+        },
+        "maxVerticalZone": {
+          "type": "integer",
+          "minimum": -3,
+          "maximum": 4,
+          "description": "Maximum vertical zone"
+        },
+        "zones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/biomeZone"
+          }
+        },
+        "flavorQuote": {
+          "type": "string"
+        },
+        "colorPalette": {
+          "type": "string"
+        }
+      }
+    },
+    "biomeProperties": {
+      "type": "object",
+      "required": ["temperatureCelsius", "aethericIntensity", "humidityPercent", "lightLevel", "scaleFactor", "corrosionRate"],
+      "properties": {
+        "temperatureCelsius": {
+          "type": "integer",
+          "description": "Temperature in Celsius"
+        },
+        "aethericIntensity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Aetheric energy intensity (0.0-1.0)"
+        },
+        "humidityPercent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Humidity percentage"
+        },
+        "lightLevel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ambient light level (0.0-1.0)"
+        },
+        "scaleFactor": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10,
+          "description": "Environmental scale factor"
+        },
+        "corrosionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Corrosion rate (0.0-1.0)"
+        }
+      }
+    },
+    "biomeZone": {
+      "type": "object",
+      "required": ["zoneId", "name"],
+      "properties": {
+        "zoneId": {
+          "type": "string",
+          "description": "Unique zone identifier within the realm"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name"
+        },
+        "conditionDcModifier": {
+          "type": "integer",
+          "minimum": -6,
+          "maximum": 8,
+          "description": "DC modifier for environmental checks"
+        },
+        "damageOverride": {
+          "type": "string",
+          "description": "Override damage dice (e.g., '4d6')"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "environmentalCondition": {
+      "type": "object",
+      "required": ["type", "displayName", "checkAttribute", "baseDc", "damageDice", "damageType", "frequency", "description"],
+      "properties": {
+        "type": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8,
+          "description": "Condition type enum value"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "checkAttribute": {
+          "type": "string",
+          "enum": ["STURDINESS", "WILL", "AGILITY"]
+        },
+        "baseDc": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "damageDice": {
+          "type": "string",
+          "description": "Dice expression (e.g., '2d6') or '0' for no damage"
+        },
+        "damageType": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "string",
+          "enum": ["Never", "Per Turn", "Per Round", "Per Hour", "Per Watch", "Continuous", "Situational"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "mitigations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
