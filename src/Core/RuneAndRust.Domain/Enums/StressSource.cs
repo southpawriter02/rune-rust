@@ -150,5 +150,21 @@ public enum StressSource
     /// it is an automatic consequence of failing a Corruption check.
     /// </para>
     /// </remarks>
-    Corruption
+    Corruption,
+
+    /// <summary>
+    /// Stress from maintaining Apotheosis state.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// While in Apotheosis, Arcanists pay 10 stress per turn to maintain
+    /// their transcendent connection to arcane forces. This creates a
+    /// strategic trade-off between the power bonuses and the stress cost.
+    /// </para>
+    /// <para>
+    /// ApotheosisStrain stress is <strong>not</strong> resistable — it is
+    /// an automatic consequence of maintaining the Apotheosis state.
+    /// </para>
+    /// </remarks>
+    ApotheosisStrain
 }
