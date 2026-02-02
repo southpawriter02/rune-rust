@@ -1,0 +1,45 @@
+{
+  "$schema": "./schemas/trauma-economy.schema.json",
+  "version": "1.0",
+  "description": "Trauma Economy Integration Configuration",
+  "traumaEconomy": {
+    "integration": {
+      "damageToStress": {
+        "enabled": true,
+        "formula": "floor(damage / 10)",
+        "criticalBonus": 5,
+        "nearDeathBonus": 10,
+        "allyDeathBonus": 15
+      },
+      "restRecovery": {
+        "shortRest": {
+          "rageReset": 0,
+          "momentumReset": 0
+        },
+        "longRest": {
+          "coherenceRestore": 50
+        },
+        "sanctuary": {
+          "coherenceRestore": 50
+        }
+      },
+      "turnEffects": {
+        "rageDecayOutOfCombat": 10,
+        "momentumDecayIdle": 15,
+        "apotheosisStressCost": 10,
+        "maxEnvironmentalStress": 5
+      }
+    },
+    "thresholds": {
+      "criticalWarning": 80,
+      "terminalTrigger": 100
+    },
+    "warningMessages": {
+      "stressHigh": "Your mind strains under the weight of reality.",
+      "corruptionRising": "The corruption spreads through your essence.",
+      "rageOverflow": "Your rage threatens to consume you.",
+      "momentumCritical": "Your momentum reaches a fever pitch.",
+      "coherenceCritical": "Reality bends around your heightened awareness."
+    }
+  }
+}
