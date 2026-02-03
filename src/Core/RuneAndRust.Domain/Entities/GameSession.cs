@@ -39,6 +39,11 @@ public class GameSession : IEntity
     public GameState State { get; private set; }
 
     /// <summary>
+    /// Gets the current turn count for this session.
+    /// </summary>
+    public int TurnCount { get; private set; }
+
+    /// <summary>
     /// Gets the UTC timestamp when this session was created.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
@@ -48,7 +53,13 @@ public class GameSession : IEntity
     /// </summary>
     public DateTime LastPlayedAt { get; private set; }
 
+    /// <summary>
+    /// Gets the ID of the previous room the player was in (for flee mechanics).
+    /// </summary>
+    public Guid? PreviousRoomId { get; private set; }
+
     private readonly HashSet<string> _revealedSolutionIds = [];
+    private readonly HashSet<Guid> _visitedRooms = [];
 
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
     public IReadOnlySet<string> RevealedSolutions => _revealedSolutionIds;
@@ -75,6 +86,7 @@ public class GameSession : IEntity
         Dungeon = dungeon ?? throw new ArgumentNullException(nameof(dungeon));
         CurrentRoomId = dungeon.StartingRoomId;
         State = GameState.Playing;
+        TurnCount = 1;
         CreatedAt = DateTime.UtcNow;
         LastPlayedAt = DateTime.UtcNow;
         _visitedRooms = [dungeon.StartingRoomId]; // Mark starting room as visited
@@ -183,6 +195,17 @@ public class GameSession : IEntity
     public void UpdateLastPlayed()
     {
         LastPlayedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Advances the game turn counter.
+    /// </summary>
+    /// <returns>The new turn count.</returns>
+    public int AdvanceTurn()
+    {
+        TurnCount++;
+        UpdateLastPlayed();
+        return TurnCount;
     }
 
     /// <summary>

@@ -25,6 +25,14 @@ public class RoomTemplate : IEntity
     public IReadOnlyList<string> Tags => _tags.AsReadOnly();
     public IReadOnlyList<RoomFeature> Features => _features.AsReadOnly();
 
+    // Compatibility properties for Validation Service
+    public string NamePattern => Name;
+    public string DescriptionPattern => BaseDescription;
+    public IReadOnlyList<Biome> ValidBiomes => [Biome];
+    public int MinDepth { get; private set; } = 1;
+    public int MaxDepth { get; private set; } = 100;
+    public IReadOnlyList<object> Slots => []; // Placeholder object for Slots
+
     private RoomTemplate()
     {
         TemplateId = null!;
@@ -119,6 +127,9 @@ public class RoomTemplate : IEntity
     /// Checks if this template is compatible with a specific biome.
     /// </summary>
     public bool IsCompatibleWithBiome(Biome biome) => Biome == biome;
+    public bool IsValidForBiome(Biome biome) => Biome == biome;
+
+    public IEnumerable<object> GetSlotsByType(object type) => []; // Placeholder
 
     /// <summary>
     /// Creates a room name from this template, with optional placeholder replacement.

@@ -110,21 +110,42 @@ public class GameSessionService
     /// <param name="experienceService">The service for managing experience points.</param>
     /// <param name="progressionService">The service for managing level-up progression.</param>
     /// <param name="lootService">The service for generating and collecting loot.</param>
-    /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
+    /// <param name="skillCheckService">The service for performing skill checks.</param>
+    /// <param name="examinationService">Optional service for detailed examination.</param>
+    /// <param name="dungeonGenerator">Optional service for dungeon generation.</param>
     /// <param name="eventLogger">Optional event logger for comprehensive game event tracking.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
+        ItemEffectService itemEffectService,
+        AbilityService abilityService,
+        ResourceService resourceService,
+        IDiceService diceService,
+        EquipmentService equipmentService,
+        ExperienceService experienceService,
+        ProgressionService progressionService,
+        ILootService lootService,
+        SkillCheckService skillCheckService,
         IExaminationService? examinationService = null,
-        IDungeonGenerator? dungeonGenerator = null)
+        IDungeonGenerator? dungeonGenerator = null,
+        IGameEventLogger? eventLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
+        _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
+        _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
+        _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
+        _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
+        _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
+        _progressionService = progressionService ?? throw new ArgumentNullException(nameof(progressionService));
+        _lootService = lootService ?? throw new ArgumentNullException(nameof(lootService));
+        _skillCheckService = skillCheckService ?? throw new ArgumentNullException(nameof(skillCheckService));
         _combatService = new CombatService();
         _examinationService = examinationService;
-        _skillCheckService = new SkillCheckService();
         _dungeonGenerator = dungeonGenerator;
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -133,22 +154,24 @@ public class GameSessionService
     /// <param name="playerName">The name for the new player character.</param>
     /// <param name="ct">Cancellation token for async operation.</param>
     /// <returns>The initial game state as a DTO.</returns>
-    public async Task<GameStateDto> StartNewGameAsync(string playerName, CancellationToken ct = default)
+    public async Task<GameStateDto> StartNewGameAsync(string playerName, string context = "Unspecified", CancellationToken ct = default)
     {
-        _logger.LogInformation("Starting new game for player: {PlayerName}", playerName);
+        _logger.LogTrace("StartNewGameAsync called for {Context}: Player {PlayerName}", context, playerName);
+        _logger.LogInformation("Starting new game for player: {PlayerName} (Context: {Context})", playerName, context);
 
         _currentSession = GameSession.CreateNew(playerName);
         await _repository.SaveAsync(_currentSession, ct);
 
-        _logger.LogInformation("New game session created: {SessionId}", _currentSession.Id);
+        _logger.LogInformation("New game session created: {SessionId} (Context: {Context})", _currentSession.Id, context);
 
         _eventLogger?.SetSession(_currentSession.Id, _currentSession.Player.Id);
         _eventLogger?.LogSession("SessionStarted", $"New game started for {playerName}");
         _eventLogger?.LogExploration("RoomEntered", $"Started in {_currentSession.CurrentRoom?.Name}", _currentSession.CurrentRoom?.Id);
 
         _logger.LogDebug(
-            "Initial game state - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
+            "Initial game state for {Context} - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
             "StartingRoom: {RoomName}, Position: ({X},{Y}), DungeonRooms: {RoomCount}",
+            context,
             _currentSession.Player.Name,
             _currentSession.Player.Health,
             _currentSession.Player.Stats.MaxHealth,
@@ -176,11 +199,16 @@ public class GameSessionService
         DifficultyTier difficulty,
         int roomCount = 15,
         int? seed = null,
+        string context = "Unspecified",
         CancellationToken ct = default)
     {
+        _logger.LogTrace(
+            "StartGeneratedGameAsync called for {Context}: Player {PlayerName}, Biome {Biome}, Difficulty {Difficulty}, RoomCount {RoomCount}, Seed {Seed}",
+            context, playerName, biome, difficulty, roomCount, seed);
+
         _logger.LogInformation(
-            "Starting generated game for player: {PlayerName}, Biome: {Biome}, Difficulty: {Difficulty}",
-            playerName, biome, difficulty);
+            "Starting generated game for player: {PlayerName}, Biome: {Biome}, Difficulty: {Difficulty} (Context: {Context})",
+            playerName, biome, difficulty, context);
 
         if (_dungeonGenerator == null)
             throw new InvalidOperationException("Dungeon generator is required for generated games. Inject IDungeonGenerator into GameSessionService.");
@@ -204,31 +232,35 @@ public class GameSessionService
         await _repository.SaveAsync(_currentSession, ct);
 
         _logger.LogInformation(
-            "Generated game session created: {SessionId}, Rooms: {RoomCount}",
-            _currentSession.Id, dungeon.RoomCount);
+            "Generated game session created: {SessionId}, Rooms: {RoomCount} (Context: {Context})",
+            _currentSession.Id, dungeon.RoomCount, context);
+
+        _logger.LogDebug("StartGeneratedGameAsync complete for {Context}", context);
 
         return _currentSession.ToDto();
     }
 
-    public async Task<GameStateDto?> LoadGameAsync(Guid sessionId, CancellationToken ct = default)
+    public async Task<GameStateDto?> LoadGameAsync(Guid sessionId, string context = "Unspecified", CancellationToken ct = default)
     {
-        _logger.LogInformation("Loading game session: {SessionId}", sessionId);
+        _logger.LogTrace("LoadGameAsync called for {Context}: SessionId {SessionId}", context, sessionId);
+        _logger.LogInformation("Loading game session: {SessionId} (Context: {Context})", sessionId, context);
 
         _currentSession = await _repository.GetByIdAsync(sessionId, ct);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("Game session not found: {SessionId}", sessionId);
+            _logger.LogWarning("Game session not found: {SessionId} (Context: {Context})", sessionId, context);
             return null;
         }
 
         _currentSession.UpdateLastPlayed();
         await _repository.SaveAsync(_currentSession, ct);
 
-        _logger.LogInformation("Game session loaded successfully: {SessionId}", sessionId);
+        _logger.LogInformation("Game session loaded successfully: {SessionId} (Context: {Context})", sessionId, context);
         _logger.LogDebug(
-            "Loaded game state - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
+            "Loaded game state for {Context} - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
             "CurrentRoom: {RoomName}, Position: ({X},{Y}), InventoryCount: {InventoryCount}/{InventoryCapacity}",
+            context,
             _currentSession.Player.Name,
             _currentSession.Player.Health,
             _currentSession.Player.Stats.MaxHealth,
@@ -248,7 +280,7 @@ public class GameSessionService
     /// <returns>A read-only list of saved game summaries.</returns>
     public async Task<IReadOnlyList<GameSessionSummary>> GetSavedGamesAsync(CancellationToken ct = default)
     {
-        _logger.LogDebug("Retrieving saved games list");
+        _logger.LogTrace("GetSavedGamesAsync called");
         var savedGames = await _repository.GetSavedGamesAsync(ct);
         _logger.LogDebug("Found {SavedGameCount} saved games", savedGames.Count);
         return savedGames;
@@ -261,20 +293,23 @@ public class GameSessionService
     /// <remarks>
     /// If there is no active session, this method logs a warning and returns without action.
     /// </remarks>
-    public async Task SaveCurrentGameAsync(CancellationToken ct = default)
+    public async Task SaveCurrentGameAsync(string context = "Unspecified", CancellationToken ct = default)
     {
+        _logger.LogTrace("SaveCurrentGameAsync called for {Context}", context);
+
         if (_currentSession == null)
         {
-            _logger.LogWarning("No active session to save");
+            _logger.LogWarning("No active session to save (Context: {Context})", context);
             return;
         }
 
         _currentSession.UpdateLastPlayed();
         await _repository.SaveAsync(_currentSession, ct);
-        _logger.LogInformation("Game saved: {SessionId}", _currentSession.Id);
+        _logger.LogInformation("Game saved: {SessionId} (Context: {Context})", _currentSession.Id, context);
         _logger.LogDebug(
-            "Save state - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
+            "Save state for {Context} - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
             "Room: {RoomName}, InventoryCount: {InventoryCount}",
+            context,
             _currentSession.Player.Name,
             _currentSession.Player.Health,
             _currentSession.Player.Stats.MaxHealth,
@@ -291,20 +326,20 @@ public class GameSessionService
     /// Returns failure if there is no active session, the current room cannot be found,
     /// or there is no exit in the specified direction.
     /// </remarks>
-    public (bool Success, string Message) TryMove(Direction direction)
+    public (bool Success, string Message) TryMove(Direction direction, string context = "Unspecified")
     {
-        _logger.LogDebug("TryMove called with direction: {Direction}", direction);
+        _logger.LogTrace("TryMove called for {Context} with direction: {Direction}", context, direction);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryMove failed: No active game session");
+            _logger.LogWarning("TryMove failed for {Context}: No active game session", context);
             return (false, "No active game session.");
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
-            _logger.LogError("TryMove failed: Current room is null for session {SessionId}", _currentSession.Id);
+            _logger.LogError("TryMove failed for {Context}: Current room is null for session {SessionId}", context, _currentSession.Id);
             return (false, "Error: Current room not found.");
         }
 
@@ -314,7 +349,8 @@ public class GameSessionService
         if (!currentRoom.HasExit(direction))
         {
             _logger.LogDebug(
-                "Move blocked: No exit {Direction} from room {RoomName}. Available exits: {Exits}",
+                "Move blocked for {Context}: No exit {Direction} from room {RoomName}. Available exits: {Exits}",
+                context,
                 direction,
                 fromRoom,
                 string.Join(", ", currentRoom.Exits.Keys));
@@ -326,8 +362,9 @@ public class GameSessionService
             var newRoom = _currentSession.CurrentRoom;
             var toPosition = _currentSession.Player.Position;
             _logger.LogInformation(
-                "Player moved {Direction}: {FromRoom} ({FromX},{FromY}) -> {ToRoom} ({ToX},{ToY})",
+                "Player moved {Direction} for {Context}: {FromRoom} ({FromX},{FromY}) -> {ToRoom} ({ToX},{ToY})",
                 direction,
+                context,
                 fromRoom,
                 fromPosition.X,
                 fromPosition.Y,
@@ -347,25 +384,27 @@ public class GameSessionService
             {
                 var monsters = newRoom.GetAliveMonsters().ToList();
                 _logger.LogDebug(
-                    "Room {RoomName} contains {MonsterCount} monster(s): {MonsterNames}",
+                    "Room {RoomName} contains {MonsterCount} monster(s): {MonsterNames} (Context: {Context})",
                     newRoom.Name,
                     monsters.Count,
-                    string.Join(", ", monsters.Select(m => $"{m.Name} (HP:{m.Health})")));
+                    string.Join(", ", monsters.Select(m => $"{m.Name} (HP:{m.Health})")),
+                    context);
             }
 
             if (newRoom?.HasItems == true)
             {
                 _logger.LogDebug(
-                    "Room {RoomName} contains {ItemCount} item(s): {ItemNames}",
+                    "Room {RoomName} contains {ItemCount} item(s): {ItemNames} (Context: {Context})",
                     newRoom.Name,
                     newRoom.Items.Count(),
-                    string.Join(", ", newRoom.Items.Select(i => i.Name)));
+                    string.Join(", ", newRoom.Items.Select(i => i.Name)),
+                    context);
             }
 
             return (true, $"You head {direction.ToString().ToLower()}.");
         }
 
-        _logger.LogWarning("TryMove failed unexpectedly for direction {Direction}", direction);
+        _logger.LogWarning("TryMove failed unexpectedly for {Context}, direction {Direction}", context, direction);
         return (false, "You cannot move in that direction.");
     }
 
@@ -378,20 +417,20 @@ public class GameSessionService
     /// Returns failure if there is no active session, the item is not found in the room,
     /// or the player's inventory is full.
     /// </remarks>
-    public (bool Success, string Message) TryPickUpItem(string itemName)
+    public (bool Success, string Message) TryPickUpItem(string itemName, string context = "Unspecified")
     {
-        _logger.LogDebug("TryPickUpItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryPickUpItem called for {Context}, item: {ItemName}", context, itemName);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryPickUpItem failed: No active game session");
+            _logger.LogWarning("TryPickUpItem failed for {Context}: No active game session", context);
             return (false, "No active game session.");
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
-            _logger.LogError("TryPickUpItem failed: Current room is null for session {SessionId}", _currentSession.Id);
+            _logger.LogError("TryPickUpItem failed for {Context}: Current room is null for session {SessionId}", context, _currentSession.Id);
             return (false, "Error: Current room not found.");
         }
 
@@ -399,8 +438,9 @@ public class GameSessionService
         if (item == null)
         {
             _logger.LogDebug(
-                "Item not found in room: {ItemName}. Available items: {AvailableItems}",
+                "Item not found in room: {ItemName} (Context: {Context}). Available items: {AvailableItems}",
                 itemName,
+                context,
                 currentRoom.HasItems ? string.Join(", ", currentRoom.Items.Select(i => i.Name)) : "none");
             return (false, $"There is no '{itemName}' here.");
         }
@@ -409,8 +449,9 @@ public class GameSessionService
         if (_currentSession.Player.Inventory.IsFull)
         {
             _logger.LogWarning(
-                "Inventory full: Cannot pick up {ItemName}. Inventory: {Count}/{Capacity}",
+                "Inventory full: Cannot pick up {ItemName} (Context: {Context}). Inventory: {Count}/{Capacity}",
                 itemName,
+                context,
                 inventoryBefore,
                 _currentSession.Player.Inventory.Capacity);
             return (false, "Your inventory is full!");
@@ -419,8 +460,9 @@ public class GameSessionService
         if (_currentSession.TryPickUpItem(itemName))
         {
             _logger.LogInformation(
-                "Item picked up: {ItemName} (Type: {ItemType}, Value: {ItemValue}). Inventory: {Before} -> {After}/{Capacity}",
+                "Item picked up: {ItemName} (Context: {Context}). Type: {ItemType}, Value: {ItemValue}. Inventory: {Before} -> {After}/{Capacity}",
                 item.Name,
+                context,
                 item.Type,
                 item.Value,
                 inventoryBefore,
@@ -429,7 +471,7 @@ public class GameSessionService
             return (true, $"You picked up the {item.Name}.");
         }
 
-        _logger.LogWarning("TryPickUpItem failed unexpectedly for item: {ItemName}", itemName);
+        _logger.LogWarning("TryPickUpItem failed unexpectedly for item: {ItemName} (Context: {Context})", itemName, context);
         return (false, $"Could not pick up '{itemName}'.");
     }
 
@@ -444,27 +486,27 @@ public class GameSessionService
     /// If the monster is defeated, experience points are awarded to the player and loot is generated.
     /// If the player gains enough XP to level up, level-up is applied automatically.
     /// </remarks>
-    public (bool Success, string Message, ExperienceGainDto? ExperienceGain, LevelUpDto? LevelUp, LootDropDto? LootDrop) TryAttack()
+    public (bool Success, string Message, ExperienceGainDto? ExperienceGain, LevelUpDto? LevelUp, LootDropDto? LootDrop) TryAttack(string context = "Unspecified")
     {
-        _logger.LogDebug("TryAttack called");
+        _logger.LogTrace("TryAttack called for {Context}", context);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryAttack failed: No active game session");
+            _logger.LogWarning("TryAttack failed for {Context}: No active game session", context);
             return (false, "No active game session.", null, null, null);
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
-            _logger.LogError("TryAttack failed: Current room is null for session {SessionId}", _currentSession.Id);
+            _logger.LogError("TryAttack failed for {Context}: Current room is null for session {SessionId}", context, _currentSession.Id);
             return (false, "Error: Current room not found.", null, null, null);
         }
 
         var monster = currentRoom.GetAliveMonsters().FirstOrDefault();
         if (monster == null)
         {
-            _logger.LogDebug("No monsters to attack in room: {RoomName}", currentRoom.Name);
+            _logger.LogDebug("No monsters to attack in room: {RoomName} (Context: {Context})", currentRoom.Name, context);
             return (false, "There is nothing to attack here.", null, null, null);
         }
 
@@ -472,8 +514,9 @@ public class GameSessionService
         var monsterHealthBefore = monster.Health;
 
         _logger.LogDebug(
-            "Combat initiated - Player: {PlayerName} (HP:{PlayerHealth}, Finesse:{Finesse}, Might:{Might}) vs " +
+            "Combat initiated for {Context} - Player: {PlayerName} (HP:{PlayerHealth}, Finesse:{Finesse}, Might:{Might}) vs " +
             "Monster: {MonsterName} (HP:{MonsterHealth}, ATK:{MonsterAtk}, DEF:{MonsterDef})",
+            context,
             _currentSession.Player.Name,
             playerHealthBefore,
             _currentSession.Player.Attributes.Finesse,
@@ -492,8 +535,9 @@ public class GameSessionService
         );
 
         _logger.LogInformation(
-            "Combat result - Attack: [{Roll}]+{Mod}={Total} ({AttackResult}), Damage dealt: {DamageDealt}, Received: {DamageReceived}, " +
+            "Combat result for {Context} - Attack: [{Roll}]+{Mod}={Total} ({AttackResult}), Damage dealt: {DamageDealt}, Received: {DamageReceived}, " +
             "Player HP: {PlayerBefore} -> {PlayerAfter}, Monster HP: {MonsterBefore} -> {MonsterAfter}",
+            context,
             result.AttackRoll.Rolls[0],
             result.AttackTotal - result.AttackRoll.Total,
             result.AttackTotal,
@@ -511,7 +555,7 @@ public class GameSessionService
 
         if (result.MonsterDefeated)
         {
-            _logger.LogInformation("Monster defeated: {MonsterName}", monster.Name);
+            _logger.LogInformation("Monster defeated: {MonsterName} (Context: {Context})", monster.Name, context);
 
             // Award experience points (v0.0.8a)
             var xpResult = _experienceService.AwardExperienceFromMonster(_currentSession.Player, monster);
@@ -538,8 +582,9 @@ public class GameSessionService
             {
                 currentRoom.AddLoot(loot);
                 lootDropDto = LootDropDto.FromDomain(loot);
-                _logger.LogInformation("Loot generated for {MonsterName}: {ItemCount} items, {CurrencyTypes} currency types",
+                _logger.LogInformation("Loot generated for {MonsterName} (Context: {Context}): {ItemCount} items, {CurrencyTypes} currency types",
                     monster.Name,
+                    context,
                     loot.Items?.Count ?? 0,
                     loot.Currency?.Count ?? 0);
             }
@@ -548,9 +593,10 @@ public class GameSessionService
         if (result.PlayerDefeated)
         {
             _logger.LogWarning(
-                "Player defeated! Setting game state to GameOver. Session: {SessionId}, Player: {PlayerName}",
+                "Player defeated! Setting game state to GameOver. Session: {SessionId}, Player: {PlayerName}, Context: {Context}",
                 _currentSession.Id,
-                _currentSession.Player.Name);
+                _currentSession.Player.Name,
+                context);
             _currentSession.SetState(GameState.GameOver);
         }
 
@@ -624,27 +670,27 @@ public class GameSessionService
     /// </summary>
     /// <param name="itemName">The name of the item to drop (case-insensitive).</param>
     /// <returns>A tuple indicating success and a descriptive message.</returns>
-    public (bool Success, string Message) TryDropItem(string itemName)
+    public (bool Success, string Message) TryDropItem(string itemName, string context = "Unspecified")
     {
-        _logger.LogDebug("TryDropItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryDropItem called for {Context}, item: {ItemName}", context, itemName);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryDropItem failed: No active game session");
+            _logger.LogWarning("TryDropItem failed for {Context}: No active game session", context);
             return (false, "No active game session.");
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
-            _logger.LogError("TryDropItem failed: Current room is null");
+            _logger.LogError("TryDropItem failed for {Context}: Current room is null", context);
             return (false, "Error: Current room not found.");
         }
 
         var item = _currentSession.Player.Inventory.GetByName(itemName);
         if (item == null)
         {
-            _logger.LogDebug("Item not found in inventory: {ItemName}", itemName);
+            _logger.LogDebug("Item not found in inventory: {ItemName} (Context: {Context})", itemName, context);
             return (false, $"You don't have '{itemName}' in your inventory.");
         }
 
@@ -652,15 +698,16 @@ public class GameSessionService
         {
             currentRoom.AddItem(item);
             _logger.LogInformation(
-                "Item dropped: {ItemName} in room {RoomName}. Inventory: {InventoryCount}/{Capacity}",
+                "Item dropped: {ItemName} in room {RoomName} (Context: {Context}). Inventory: {InventoryCount}/{Capacity}",
                 item.Name,
                 currentRoom.Name,
+                context,
                 _currentSession.Player.Inventory.Count,
                 _currentSession.Player.Inventory.Capacity);
             return (true, $"You drop the {item.Name}.");
         }
 
-        _logger.LogWarning("TryDropItem failed unexpectedly for item: {ItemName}", itemName);
+        _logger.LogWarning("TryDropItem failed unexpectedly for item: {ItemName} (Context: {Context})", itemName, context);
         return (false, $"Could not drop '{itemName}'.");
     }
 
@@ -669,26 +716,26 @@ public class GameSessionService
     /// </summary>
     /// <param name="itemName">The name of the item to use (case-insensitive).</param>
     /// <returns>A tuple indicating success and a descriptive message.</returns>
-    public (bool Success, string Message) TryUseItem(string itemName)
+    public (bool Success, string Message) TryUseItem(string itemName, string context = "Unspecified")
     {
-        _logger.LogDebug("TryUseItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryUseItem called for {Context}, item: {ItemName}", context, itemName);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryUseItem failed: No active game session");
+            _logger.LogWarning("TryUseItem failed for {Context}: No active game session", context);
             return (false, "No active game session.");
         }
 
         var item = _currentSession.Player.Inventory.GetByName(itemName);
         if (item == null)
         {
-            _logger.LogDebug("Item not found in inventory: {ItemName}", itemName);
+            _logger.LogDebug("Item not found in inventory: {ItemName} (Context: {Context})", itemName, context);
             return (false, $"You don't have '{itemName}' in your inventory.");
         }
 
         if (item.Type != ItemType.Consumable)
         {
-            _logger.LogDebug("Item not usable: {ItemName} (Type: {ItemType})", itemName, item.Type);
+            _logger.LogDebug("Item not usable: {ItemName} (Type: {ItemType}) (Context: {Context})", itemName, item.Type, context);
             return (false, $"You cannot use the {item.Name}.");
         }
 
@@ -698,12 +745,13 @@ public class GameSessionService
         {
             _currentSession.Player.Inventory.TryRemove(item);
             _logger.LogInformation(
-                "Item used: {ItemName}, Effect: {Effect}, Value: {Value}, Player HP: {Health}/{MaxHealth}",
+                "Item used: {ItemName}, Effect: {Effect}, Value: {Value}, Player HP: {Health}/{MaxHealth} (Context: {Context})",
                 item.Name,
                 item.Effect,
                 item.EffectValue,
                 _currentSession.Player.Health,
-                _currentSession.Player.Stats.MaxHealth);
+                _currentSession.Player.Stats.MaxHealth,
+                context);
         }
 
         return effectResult;
@@ -714,13 +762,13 @@ public class GameSessionService
     /// </summary>
     /// <param name="target">The name of the target to examine.</param>
     /// <returns>Examination result DTO or null if target not found.</returns>
-    public ExamineResultDto? GetExamineInfo(string target)
+    public ExamineResultDto? GetExamineInfo(string target, string context = "Unspecified")
     {
-        _logger.LogDebug("GetExamineInfo called for target: {Target}", target);
+        _logger.LogTrace("GetExamineInfo called for {Context}, target: {Target}", context, target);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("GetExamineInfo failed: No active game session");
+            _logger.LogWarning("GetExamineInfo failed for {Context}: No active game session", context);
             return null;
         }
 
@@ -755,7 +803,7 @@ public class GameSessionService
             return CreateMonsterExamineResult(monster);
         }
 
-        _logger.LogDebug("Examine target not found: {Target}", target);
+        _logger.LogDebug("Examine target not found: {Target} (Context: {Context})", target, context);
         return null;
     }
 
@@ -811,11 +859,13 @@ public class GameSessionService
     /// Gets comprehensive player statistics.
     /// </summary>
     /// <returns>Player stats DTO, or null if no active session.</returns>
-    public PlayerStatsDto? GetPlayerStats()
+    public PlayerStatsDto? GetPlayerStats(string context = "Unspecified")
     {
+        _logger.LogTrace("GetPlayerStats called for {Context}", context);
+
         if (_currentSession == null)
         {
-            _logger.LogWarning("GetPlayerStats failed: No active game session");
+            _logger.LogWarning("GetPlayerStats failed for {Context}: No active game session", context);
             return null;
         }
 
@@ -823,8 +873,8 @@ public class GameSessionService
         var room = _currentSession.CurrentRoom;
 
         _logger.LogDebug(
-            "GetPlayerStats - Player: {Name}, HP: {Health}/{MaxHealth}, ATK: {Attack}, DEF: {Defense}",
-            player.Name, player.Health, player.Stats.MaxHealth, player.Stats.Attack, player.Stats.Defense);
+            "GetPlayerStats for {Context} - Player: {Name}, HP: {Health}/{MaxHealth}, ATK: {Attack}, DEF: {Defense}",
+            context, player.Name, player.Health, player.Stats.MaxHealth, player.Stats.Attack, player.Stats.Defense);
 
         return new PlayerStatsDto(
             player.Name,
@@ -844,18 +894,20 @@ public class GameSessionService
     /// Gets the current room as a DTO.
     /// </summary>
     /// <returns>The current room DTO, or null if no session is active.</returns>
-    public RoomDto? GetCurrentRoom()
+    public RoomDto? GetCurrentRoom(string context = "Unspecified")
     {
+        _logger.LogTrace("GetCurrentRoom called for {Context}", context);
+
         var room = _currentSession?.CurrentRoom;
         if (room == null)
         {
-            _logger.LogDebug("GetCurrentRoom called, returning: null");
+            _logger.LogDebug("GetCurrentRoom returning null for {Context}", context);
             return null;
         }
 
         var isFirstVisit = !_currentSession!.HasVisitedRoom(room.Id);
         var dto = room.ToDto(isFirstVisit);
-        _logger.LogDebug("GetCurrentRoom called, returning: {RoomName}, IsFirstVisit: {IsFirstVisit}", dto.Name, isFirstVisit);
+        _logger.LogDebug("GetCurrentRoom for {Context} returning: {RoomName}, IsFirstVisit: {IsFirstVisit}", context, dto.Name, isFirstVisit);
         return dto;
     }
 
@@ -863,11 +915,14 @@ public class GameSessionService
     /// Gets the player's inventory as a DTO.
     /// </summary>
     /// <returns>The inventory DTO, or null if no session is active.</returns>
-    public InventoryDto? GetInventory()
+    public InventoryDto? GetInventory(string context = "Unspecified")
     {
+        _logger.LogTrace("GetInventory called for {Context}", context);
+
         var inventory = _currentSession?.Player.Inventory.ToDto();
         _logger.LogDebug(
-            "GetInventory called, returning: {ItemCount}/{Capacity} items",
+            "GetInventory for {Context} returning: {ItemCount}/{Capacity} items",
+            context,
             inventory?.Count ?? 0,
             inventory?.Capacity ?? 0);
         return inventory;
@@ -880,27 +935,32 @@ public class GameSessionService
     /// After calling this method, <see cref="HasActiveSession"/> will return false
     /// and <see cref="CurrentState"/> will return null.
     /// </remarks>
-    public void EndSession()
+    public void EndSession(string context = "Unspecified")
     {
+        _logger.LogTrace("EndSession called for {Context}", context);
         var sessionId = _currentSession?.Id;
         var playerName = _currentSession?.Player.Name;
         _currentSession = null;
-        _logger.LogInformation("Game session ended: {SessionId}, Player: {PlayerName}", sessionId, playerName);
+        _logger.LogInformation("Game session ended: {SessionId}, Player: {PlayerName} (Context: {Context})", sessionId, playerName, context);
     }
 
     /// <summary>
     /// Gets the player's abilities as DTOs.
     /// </summary>
     /// <returns>List of player abilities, or empty list if no active session.</returns>
-    public IReadOnlyList<PlayerAbilityDto> GetPlayerAbilities()
+    public IReadOnlyList<PlayerAbilityDto> GetPlayerAbilities(string context = "Unspecified")
     {
+        _logger.LogTrace("GetPlayerAbilities called for {Context}", context);
+
         if (_currentSession == null)
         {
-            _logger.LogWarning("GetPlayerAbilities failed: No active game session");
+            _logger.LogWarning("GetPlayerAbilities failed for {Context}: No active game session", context);
             return [];
         }
 
-        return _abilityService.GetPlayerAbilities(_currentSession.Player);
+        var result = _abilityService.GetPlayerAbilities(_currentSession.Player);
+        _logger.LogDebug("GetPlayerAbilities returned {Count} abilities for {Context}", result.Count, context);
+        return result;
     }
 
     /// <summary>
@@ -908,13 +968,13 @@ public class GameSessionService
     /// </summary>
     /// <param name="abilityName">The name or ID of the ability to use.</param>
     /// <returns>A tuple indicating success and a descriptive message.</returns>
-    public (bool Success, string Message) TryUseAbility(string abilityName)
+    public (bool Success, string Message) TryUseAbility(string abilityName, string context = "Unspecified")
     {
-        _logger.LogDebug("TryUseAbility called for ability: {AbilityName}", abilityName);
+        _logger.LogTrace("TryUseAbility called for {Context}, ability: {AbilityName}", context, abilityName);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryUseAbility failed: No active game session");
+            _logger.LogWarning("TryUseAbility failed for {Context}: No active game session", context);
             return (false, "No active game session.");
         }
 
@@ -922,7 +982,7 @@ public class GameSessionService
         var definition = _abilityService.FindAbilityByName(_currentSession.Player, abilityName);
         if (definition == null)
         {
-            _logger.LogDebug("Ability not found: {AbilityName}", abilityName);
+            _logger.LogDebug("Ability not found: {AbilityName} (Context: {Context})", abilityName, context);
             return (false, $"Unknown ability: {abilityName}");
         }
 
@@ -936,7 +996,7 @@ public class GameSessionService
 
             if (target == null && definition.TargetType == AbilityTargetType.SingleEnemy)
             {
-                _logger.LogDebug("No target available for ability: {AbilityName}", abilityName);
+                _logger.LogDebug("No target available for ability: {AbilityName} (Context: {Context})", abilityName, context);
                 return (false, "There is no target to use this ability on.");
             }
         }
@@ -946,20 +1006,20 @@ public class GameSessionService
 
         if (!result.Success)
         {
-            _logger.LogDebug("Ability use failed: {Message}", result.Message);
+            _logger.LogDebug("Ability use failed: {Message} (Context: {Context})", result.Message, context);
             return (false, result.Message);
         }
 
         _logger.LogInformation(
-            "Ability used: {PlayerName} used {AbilityName}. Result: {Message}",
-            _currentSession.Player.Name, definition.Name, result.Message);
+            "Ability used: {PlayerName} used {AbilityName} (Context: {Context}). Result: {Message}",
+            _currentSession.Player.Name, definition.Name, context, result.Message);
 
         var messageBuilder = new System.Text.StringBuilder(result.Message);
 
         // Check if monster was defeated
         if (target != null && !target.IsAlive)
         {
-            _logger.LogInformation("Monster defeated by ability: {MonsterName}", target.Name);
+            _logger.LogInformation("Monster defeated by ability: {MonsterName} (Context: {Context})", target.Name, context);
             messageBuilder.AppendLine().Append($"{target.Name} has been defeated!");
         }
         // Monster counterattack if still alive after an offensive ability
@@ -992,8 +1052,8 @@ public class GameSessionService
                 }
 
                 _logger.LogInformation(
-                    "Monster counterattack: {MonsterName} [{Roll}]+{Mod}={Total} -> {Damage} damage to {PlayerName}",
-                    target.Name, counter.AttackRoll.Rolls[0],
+                    "Monster counterattack for {Context}: {MonsterName} [{Roll}]+{Mod}={Total} -> {Damage} damage to {PlayerName}",
+                    context, target.Name, counter.AttackRoll.Rolls[0],
                     counter.AttackTotal - counter.AttackRoll.Total, counter.AttackTotal,
                     counter.DamageDealt, _currentSession.Player.Name);
 
@@ -1002,7 +1062,7 @@ public class GameSessionService
 
             if (_currentSession.Player.Health <= 0)
             {
-                _logger.LogWarning("Player defeated by monster counterattack!");
+                _logger.LogWarning("Player defeated by monster counterattack! (Context: {Context})", context);
                 _currentSession.SetState(GameState.GameOver);
             }
         }
@@ -1026,11 +1086,13 @@ public class GameSessionService
     /// Processes end-of-turn effects including resource regeneration/decay and cooldown reduction.
     /// </summary>
     /// <returns>A structured result containing all turn-end changes.</returns>
-    public TurnEndResult ProcessTurnEnd()
+    public TurnEndResult ProcessTurnEnd(string context = "Unspecified")
     {
+        _logger.LogTrace("ProcessTurnEnd called for {Context}", context);
+
         if (_currentSession == null)
         {
-            _logger.LogWarning("ProcessTurnEnd called with no active session");
+            _logger.LogWarning("ProcessTurnEnd called with no active session (Context: {Context})", context);
             return TurnEndResult.Empty(0);
         }
 
@@ -1039,7 +1101,7 @@ public class GameSessionService
 
         // Advance turn counter
         var newTurnCount = _currentSession.AdvanceTurn();
-        _logger.LogDebug("Turn advanced to {TurnCount}", newTurnCount);
+        _logger.LogDebug("Turn advanced to {TurnCount} for {Context}", newTurnCount, context);
 
         // Process resource regeneration/decay
         var resourceResult = _resourceService.ProcessTurnEnd(player, inCombat);
@@ -1055,8 +1117,8 @@ public class GameSessionService
             .ToList();
 
         _logger.LogInformation(
-            "Turn {Turn} ended: {ResourceChanges} resource changes, {CooldownChanges} cooldown changes, {AbilitiesReady} abilities now ready",
-            newTurnCount, resourceChanges.Count, cooldownChanges.Count, abilitiesNowReady.Count);
+            "Turn {Turn} ended (Context: {Context}): {ResourceChanges} resource changes, {CooldownChanges} cooldown changes, {AbilitiesReady} abilities now ready",
+            newTurnCount, context, resourceChanges.Count, cooldownChanges.Count, abilitiesNowReady.Count);
 
         return new TurnEndResult(newTurnCount, resourceChanges, cooldownChanges.ToList(), abilitiesNowReady);
     }
@@ -1081,17 +1143,18 @@ public class GameSessionService
     /// </summary>
     /// <param name="itemName">The name of the item to equip.</param>
     /// <returns>The result of the equip operation as a DTO.</returns>
-    public EquipResultDto TryEquipItem(string itemName)
+    public EquipResultDto TryEquipItem(string itemName, string context = "Unspecified")
     {
-        _logger.LogDebug("TryEquipItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryEquipItem called for {Context}, item: {ItemName}", context, itemName);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryEquipItem failed: No active game session");
+            _logger.LogWarning("TryEquipItem failed for {Context}: No active game session", context);
             return new EquipResultDto(false, "No active game session.");
         }
 
         var result = _equipmentService.TryEquipByName(_currentSession.Player, itemName);
+        _logger.LogDebug("TryEquipItem result for {Context}: {Success}, {Message}", context, result.Success, result.Message);
         return EquipResultDto.FromResult(result);
     }
 
@@ -1100,17 +1163,18 @@ public class GameSessionService
     /// </summary>
     /// <param name="slot">The equipment slot to unequip from.</param>
     /// <returns>The result of the unequip operation as a DTO.</returns>
-    public EquipResultDto TryUnequipItem(EquipmentSlot slot)
+    public EquipResultDto TryUnequipItem(EquipmentSlot slot, string context = "Unspecified")
     {
-        _logger.LogDebug("TryUnequipItem called for slot: {Slot}", slot);
+        _logger.LogTrace("TryUnequipItem called for {Context}, slot: {Slot}", context, slot);
 
         if (_currentSession == null)
         {
-            _logger.LogWarning("TryUnequipItem failed: No active game session");
+            _logger.LogWarning("TryUnequipItem failed for {Context}: No active game session", context);
             return new EquipResultDto(false, "No active game session.");
         }
 
         var result = _equipmentService.TryUnequip(_currentSession.Player, slot);
+        _logger.LogDebug("TryUnequipItem result for {Context}: {Success}, {Message}", context, result.Success, result.Message);
         return EquipResultDto.FromResult(result);
     }
 
@@ -1118,25 +1182,37 @@ public class GameSessionService
     /// Gets the player's current equipment.
     /// </summary>
     /// <returns>Equipment slots DTO, or null if no active session.</returns>
-    public EquipmentSlotsDto? GetEquipment()
+    public EquipmentSlotsDto? GetEquipment(string context = "Unspecified")
     {
+        _logger.LogTrace("GetEquipment called for {Context}", context);
+
         if (_currentSession == null)
         {
-            _logger.LogWarning("GetEquipment failed: No active game session");
+            _logger.LogWarning("GetEquipment failed for {Context}: No active game session", context);
             return null;
         }
 
-        return EquipmentSlotsDto.FromPlayer(_currentSession.Player);
+        var result = EquipmentSlotsDto.FromPlayer(_currentSession.Player);
+        _logger.LogDebug("GetEquipment returned for {Context}", context);
+        return result;
     }
 
-    public (bool Success, string? Description, string? ErrorMessage) TryLookAtTarget(string target)
+    public (bool Success, string? Description, string? ErrorMessage) TryLookAtTarget(string target, string context = "Unspecified")
     {
+        _logger.LogTrace("TryLookAtTarget called for {Context}, target: {Target}", context, target);
+
         if (_currentSession == null)
+        {
+            _logger.LogWarning("TryLookAtTarget failed for {Context}: No active game session", context);
             return (false, null, "No active game session.");
+        }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
+        {
+            _logger.LogError("TryLookAtTarget failed for {Context}: Current room is null", context);
             return (false, null, "Error: Current room not found.");
+        }
 
         // Check for items in the room
         var item = currentRoom.GetItemByName(target);
@@ -1182,17 +1258,26 @@ public class GameSessionService
             return (true, description, null);
         }
 
+        _logger.LogDebug("TryLookAtTarget result for {Context}: Not found", context);
         return (false, null, $"Cannot find '{target}' here.");
     }
 
-    public (bool Success, string Message) TrySearch(string? target)
+    public (bool Success, string Message) TrySearch(string? target, string context = "Unspecified")
     {
+        _logger.LogTrace("TrySearch called for {Context}, target: {Target}", context, target);
+
         if (_currentSession == null)
+        {
+            _logger.LogWarning("TrySearch failed for {Context}: No active game session", context);
             return (false, "No active game session.");
+        }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
+        {
+            _logger.LogError("TrySearch failed for {Context}: Current room is null", context);
             return (false, "Error: Current room not found.");
+        }
 
         if (string.IsNullOrWhiteSpace(target))
         {
@@ -1203,25 +1288,38 @@ public class GameSessionService
                 var corpseNames = currentRoom.Monsters.Where(m => !m.IsAlive).Select(m => $"{m.Name} (corpse)");
                 var allSearchables = itemNames.Concat(corpseNames);
                 var searchables = string.Join(", ", allSearchables);
+
+                _logger.LogDebug("TrySearch found searchables for {Context}: {Searchables}", context, searchables);
                 return (true, $"You can search: {searchables}");
             }
+            _logger.LogDebug("TrySearch found nothing for {Context}", context);
             return (false, "There is nothing to search here.");
         }
 
         // Search specific target (simplified for now)
+        _logger.LogDebug("TrySearch for target '{Target}' not implemented for {Context}", target, context);
         return (false, $"Search functionality for '{target}' is not yet fully implemented.");
     }
 
-    public (bool Success, string Message) TryInvestigate(string target)
+    public (bool Success, string Message) TryInvestigate(string target, string context = "Unspecified")
     {
+        _logger.LogTrace("TryInvestigate called for {Context}, target: {Target}", context, target);
+
         if (_currentSession == null)
+        {
+            _logger.LogWarning("TryInvestigate failed for {Context}: No active game session", context);
             return (false, "No active game session.");
+        }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
+        {
+            _logger.LogError("TryInvestigate failed for {Context}: Current room is null", context);
             return (false, "Error: Current room not found.");
+        }
 
         // Simplified investigation for now
+        _logger.LogDebug("TryInvestigate for target '{Target}' not implemented for {Context}", target, context);
         return (false, $"Investigation functionality for '{target}' is not yet fully implemented. This feature requires WITS checks and secret discovery mechanics.");
     }
 
@@ -1230,14 +1328,23 @@ public class GameSessionService
     /// </summary>
     public async Task<(bool Success, ExaminationResultDto? Result, string? ErrorMessage)> TryExamineAsync(
         string target,
+        string context = "Unspecified",
         CancellationToken ct = default)
     {
+        _logger.LogTrace("TryExamineAsync called for {Context}, target: {Target}", context, target);
+
         if (_currentSession == null)
+        {
+            _logger.LogWarning("TryExamineAsync failed for {Context}: No active game session", context);
             return (false, null, "No active game session.");
+        }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
+        {
+            _logger.LogError("TryExamineAsync failed for {Context}: Current room is null", context);
             return (false, null, "Error: Current room not found.");
+        }
 
         var witsValue = _currentSession.Player.Stats.Wits;
         var biome = currentRoom.Biome;
@@ -1352,21 +1459,30 @@ public class GameSessionService
     /// Performs an active search of the room with WITS check.
     /// </summary>
     public async Task<(bool Success, SearchResultDto? Result, string? ErrorMessage)> TryActiveSearchAsync(
+        string context = "Unspecified",
         CancellationToken ct = default)
     {
+        _logger.LogTrace("TryActiveSearchAsync called for {Context}", context);
+
         if (_currentSession == null)
+        {
+            _logger.LogWarning("TryActiveSearchAsync failed for {Context}: No active game session", context);
             return (false, null, "No active game session.");
+        }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
+        {
+            _logger.LogError("TryActiveSearchAsync failed for {Context}: Current room is null", context);
             return (false, null, "Error: Current room not found.");
+        }
 
         var witsValue = _currentSession.Player.Stats.Wits;
 
         if (_examinationService == null)
         {
             // Fallback: perform basic search with skill check
-            var checkResult = _skillCheckService.PerformCheck(witsValue, 0);
+            var checkResult = _skillCheckService.PerformCheckWithDC(_currentSession.Player, "wits", 15, "Search");
             var revealed = currentRoom.PerformActiveSearch(checkResult.TotalResult);
 
             if (revealed.Count > 0)
@@ -1376,7 +1492,7 @@ public class GameSessionService
 
                 return (true, new SearchResultDto(
                     currentRoom.Id,
-                    checkResult.RollResult,
+                    checkResult.DiceResult.Total,
                     checkResult.TotalResult,
                     revealedDtos,
                     narrative,
@@ -1386,7 +1502,7 @@ public class GameSessionService
 
             return (true, new SearchResultDto(
                 currentRoom.Id,
-                checkResult.RollResult,
+                checkResult.DiceResult.Total,
                 checkResult.TotalResult,
                 [],
                 "You search the area carefully but find nothing hidden.",
@@ -1403,8 +1519,10 @@ public class GameSessionService
     /// <summary>
     /// Checks passive perception when entering a room.
     /// </summary>
-    public async Task<PassivePerceptionResultDto?> CheckRoomPerceptionAsync(CancellationToken ct = default)
+    public async Task<PassivePerceptionResultDto?> CheckRoomPerceptionAsync(string context = "Unspecified", CancellationToken ct = default)
     {
+        _logger.LogTrace("CheckRoomPerceptionAsync called for {Context}", context);
+
         if (_currentSession == null)
             return null;
 
@@ -1439,8 +1557,9 @@ public class GameSessionService
         Room currentRoom)
     {
         // Basic examination without the full service - uses skill check for layer determination
-        var (highestLayer, checkResult) = _skillCheckService.DetermineExaminationLayer(witsValue);
-        var maxLayer = (ExaminationLayer)highestLayer;
+        // Fallback since DetermineExaminationLayer is not available
+        var checkResult = _skillCheckService.PerformCheckWithDC(_currentSession!.Player, "wits", 12, "Examination");
+        var maxLayer = checkResult.IsSuccess ? ExaminationLayer.Detailed : ExaminationLayer.Cursory;
 
         var item = currentRoom.GetItemByName(target);
         if (item != null)
@@ -1461,7 +1580,7 @@ public class GameSessionService
             var composite = string.Join("\n\n", layerTexts.Select(l => l.Text));
 
             var result = new ExaminationResultDto(
-                item.Id, item.Name, checkResult.RollResult, checkResult.TotalResult,
+                item.Id, item.Name, checkResult.DiceResult.Total, checkResult.TotalResult,
                 maxLayer, composite, false, null, layerTexts);
 
             return Task.FromResult<(bool, ExaminationResultDto?, string?)>((true, result, null));
@@ -1477,7 +1596,7 @@ public class GameSessionService
 
             var layerTexts = new List<LayerTextDto> { new(ExaminationLayer.Cursory, description, 0) };
             var result = new ExaminationResultDto(
-                monster.Id, monster.Name, checkResult.RollResult, checkResult.TotalResult,
+                monster.Id, monster.Name, checkResult.DiceResult.Total, checkResult.TotalResult,
                 maxLayer, description, false, null, layerTexts);
 
             return Task.FromResult<(bool, ExaminationResultDto?, string?)>((true, result, null));
