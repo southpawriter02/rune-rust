@@ -198,9 +198,9 @@ public partial class ShopWindowViewModel : ViewModelBase
             "A finely crafted steel blade.", 150, 75, "Damage: 1d8+2"));
         ShopItems.Add(new ShopItemViewModel(Guid.NewGuid(), "🛡", "Iron Shield",
             "A sturdy iron shield.", 100, 50, "Defense: +3"));
-        ShopItems.Add(new ShopItemViewModel(Guid.NewGuid(), "🧪", "Health Potion",
+        ShopItems.Add(new ShopItemViewModel(Guid.NewGuid(), "🧪", "Alchemical Mending",
             "Restores 25 HP.", 25, 12, "Healing: 25 HP"));
-        ShopItems.Add(new ShopItemViewModel(Guid.NewGuid(), "🧪", "Mana Potion",
+        ShopItems.Add(new ShopItemViewModel(Guid.NewGuid(), "🧪", "Aetheric Essence",
             "Restores 20 MP.", 30, 15, "Mana: 20 MP"));
         ShopItems.Add(new ShopItemViewModel(Guid.NewGuid(), "💍", "Ring of Strength",
             "Increases strength by 2.", 200, 100, "Strength: +2"));
