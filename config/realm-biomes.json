@@ -78,6 +78,151 @@
       ],
       "flavorQuote": "The Wall is the soul of the Hold.",
       "colorPalette": "green-brown-gray-rust"
+    },
+    {
+      "realmId": 6,
+      "name": "Svartalfheim",
+      "subtitle": "The Dvergr Forges",
+      "deckNumber": 6,
+      "preGlitchFunction": "Industrial Manufacturing and Resource Processing",
+      "postGlitchState": "Lightless underground manufacturing complex; perpetual darkness broken only by sacred forges and trade illumination.",
+      "baseProperties": {
+        "temperatureCelsius": 25,
+        "aethericIntensity": 0.4,
+        "humidityPercent": 30,
+        "lightLevel": 0.3,
+        "scaleFactor": 0.9,
+        "corrosionRate": 0.1
+      },
+      "primaryCondition": 7,
+      "minVerticalZone": -2,
+      "maxVerticalZone": 0,
+      "zones": [
+        {
+          "zoneId": "svartalfheim-bright-halls",
+          "name": "The Bright Halls",
+          "description": "Upper trading halls with merchant stalls, administrative chambers, and the only sustained illumination in Svartalfheim. Dvergr artisans display their finest work under carefully maintained lumen arrays.",
+          "overrideProperties": {
+            "temperatureCelsius": 25,
+            "humidityPercent": 25,
+            "lightLevel": 0.6,
+            "aethericIntensity": 0.4,
+            "scaleFactor": 0.9,
+            "corrosionRate": 0.1
+          },
+          "overrideCondition": 0,
+          "conditionDcModifier": 0,
+          "factionPools": ["dvergr", "humanoid", "constructs"]
+        },
+        {
+          "zoneId": "svartalfheim-black-veins",
+          "name": "The Black Veins",
+          "description": "Ancient mining tunnels with absolute darkness and obsidian veins. Without light sources, vision is completely blocked. The tunnels wind through compressed geological strata rich in rare minerals.",
+          "overrideProperties": {
+            "temperatureCelsius": 25,
+            "humidityPercent": 28,
+            "lightLevel": 0.0,
+            "aethericIntensity": 0.4,
+            "scaleFactor": 0.9,
+            "corrosionRate": 0.1
+          },
+          "overrideCondition": 7,
+          "conditionDcModifier": 4,
+          "factionPools": ["dvergr", "constructs", "blighted-beasts"]
+        },
+        {
+          "zoneId": "svartalfheim-forge-core",
+          "name": "Forge Core",
+          "description": "Sacred forges and crafting areas with intense magical flames. The heat is oppressive but the forgelight provides partial visibility. Master smiths work tirelessly at anvils that have burned since before The Glitch.",
+          "overrideProperties": {
+            "temperatureCelsius": 45,
+            "humidityPercent": 20,
+            "lightLevel": 0.3,
+            "aethericIntensity": 0.5,
+            "scaleFactor": 0.9,
+            "corrosionRate": 0.1
+          },
+          "overrideCondition": 1,
+          "conditionDcModifier": 0,
+          "damageOverride": "1d6",
+          "factionPools": ["dvergr", "constructs"]
+        }
+      ],
+      "flavorQuote": "In the dark, the hammer sings. In the forge, the world is remade.",
+      "colorPalette": "black-orange-iron-obsidian"
+    },
+    {
+      "realmId": 9,
+      "name": "Helheim",
+      "subtitle": "The Gangrenous Gut",
+      "deckNumber": 9,
+      "preGlitchFunction": "Medical and Recycling Facilities",
+      "postGlitchState": "Toxic waste reclamation facility consumed by biological corruption; gangrenous processing center of decomposition and decay.",
+      "baseProperties": {
+        "temperatureCelsius": 28,
+        "aethericIntensity": 0.2,
+        "humidityPercent": 90,
+        "lightLevel": 0.4,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.8
+      },
+      "primaryCondition": 3,
+      "minVerticalZone": -3,
+      "maxVerticalZone": -1,
+      "zones": [
+        {
+          "zoneId": "helheim-upper-bile",
+          "name": "Upper Bile",
+          "description": "Surface processing chambers with bioluminescent molds and waste collection. The air is thick with toxic fumes that burn the lungs and corrode exposed metal.",
+          "overrideProperties": {
+            "temperatureCelsius": 28,
+            "humidityPercent": 90,
+            "lightLevel": 0.4,
+            "aethericIntensity": 0.2,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.7
+          },
+          "overrideCondition": 3,
+          "conditionDcModifier": 0,
+          "damageOverride": "1d6",
+          "factionPools": ["forlorn", "blighted-beasts", "constructs"]
+        },
+        {
+          "zoneId": "helheim-dissolution-pits",
+          "name": "The Dissolution Pits",
+          "description": "Deep recycling vats with caustic chemical solutions and toxic mist. The concentration of pollutants here is lethal without protection. Equipment degrades rapidly in the corrosive atmosphere.",
+          "overrideProperties": {
+            "temperatureCelsius": 28,
+            "humidityPercent": 95,
+            "lightLevel": 0.2,
+            "aethericIntensity": 0.1,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.9
+          },
+          "overrideCondition": 3,
+          "conditionDcModifier": 8,
+          "damageOverride": "3d8",
+          "factionPools": ["forlorn", "blighted-beasts"]
+        },
+        {
+          "zoneId": "helheim-garms-watch",
+          "name": "Garm's Watch",
+          "description": "Fortified checkpoint and neutral transition zone between Svartalfheim and Helheim. Protective wards negate realm-specific environmental hazards, providing safe passage between the realms.",
+          "overrideProperties": {
+            "temperatureCelsius": 26,
+            "humidityPercent": 60,
+            "lightLevel": 0.5,
+            "aethericIntensity": 0.3,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 0,
+          "conditionDcModifier": 0,
+          "factionPools": ["humanoid", "dvergr"]
+        }
+      ],
+      "flavorQuote": "The Gut digests all. Even hope.",
+      "colorPalette": "sickly-green-bile-yellow-rust-black"
     }
   ],
   "environmentalConditions": [
