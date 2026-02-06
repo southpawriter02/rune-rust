@@ -1,6 +1,6 @@
 {
   "$schema": "./schemas/realm-biomes.schema.json",
-  "version": "1.1",
+  "version": "1.2",
   "biomes": [
     {
       "realmId": 4,
@@ -371,6 +371,152 @@
       ],
       "flavorQuote": "The cold does not kill. It preserves — forever.",
       "colorPalette": "pale-blue-white-crystalline-silver"
+    },
+    {
+      "realmId": 7,
+      "name": "Jötunheim",
+      "subtitle": "The Industrial Graveyard",
+      "deckNumber": 7,
+      "preGlitchFunction": "Megafauna Habitats and Ecological Reserves",
+      "postGlitchState": "Colossal graveyard of broken machinery and giant remains; GiantScale mechanics triple fall damage and physical effects.",
+      "baseProperties": {
+        "temperatureCelsius": 10,
+        "aethericIntensity": 0.2,
+        "humidityPercent": 40,
+        "lightLevel": 0.5,
+        "scaleFactor": 3.0,
+        "corrosionRate": 0.5
+      },
+      "primaryCondition": 8,
+      "minVerticalZone": -1,
+      "maxVerticalZone": 3,
+      "zones": [
+        {
+          "zoneId": "jotunheim-bone-yards",
+          "name": "The Bone Yards",
+          "description": "Scattered remains of giant skeletons and broken mechanical parts. Entry-level zone with moderate navigation challenges across slippery bone surfaces and debris fields.",
+          "overrideProperties": {
+            "temperatureCelsius": 10,
+            "aethericIntensity": 0.2,
+            "humidityPercent": 40,
+            "lightLevel": 0.5,
+            "scaleFactor": 3.0,
+            "corrosionRate": 0.5
+          },
+          "overrideCondition": 8,
+          "conditionDcModifier": -2,
+          "factionPools": ["constructs", "blighted-beasts", "humanoid"]
+        },
+        {
+          "zoneId": "jotunheim-utgards-shadow",
+          "name": "Utgard's Shadow",
+          "description": "Massive iron and steel structures casting deep shadows. Corroded machinery dominates the landscape with treacherous platforms and falling debris hazards.",
+          "overrideProperties": {
+            "temperatureCelsius": 8,
+            "aethericIntensity": 0.2,
+            "humidityPercent": 40,
+            "lightLevel": 0.3,
+            "scaleFactor": 3.0,
+            "corrosionRate": 0.7
+          },
+          "overrideCondition": 8,
+          "conditionDcModifier": 0,
+          "factionPools": ["constructs", "blighted-beasts"]
+        },
+        {
+          "zoneId": "jotunheim-grinding-hall",
+          "name": "The Grinding Hall",
+          "description": "Central chamber with colossal grinding mechanisms still partially operational. Extreme hazard density with active machinery, deafening noise, and unpredictable mechanical movements.",
+          "overrideProperties": {
+            "temperatureCelsius": 5,
+            "aethericIntensity": 0.3,
+            "humidityPercent": 35,
+            "lightLevel": 0.2,
+            "scaleFactor": 3.0,
+            "corrosionRate": 0.8
+          },
+          "overrideCondition": 8,
+          "conditionDcModifier": 4,
+          "damageOverride": "2d6",
+          "factionPools": ["constructs"]
+        }
+      ],
+      "flavorQuote": "The bones of giants grind beneath your feet. Everything here was built for something far larger than you.",
+      "colorPalette": "rust-iron-gray-bone-white-dark-green"
+    },
+    {
+      "realmId": 3,
+      "name": "Vanaheim",
+      "subtitle": "The Overgrown Laboratory",
+      "deckNumber": 3,
+      "preGlitchFunction": "Biodome Agricultural Sector",
+      "postGlitchState": "Abandoned magical research facility consumed by mutagenic botanical mutations; spore exposure causes cumulative Corruption.",
+      "baseProperties": {
+        "temperatureCelsius": 28,
+        "aethericIntensity": 0.5,
+        "humidityPercent": 85,
+        "lightLevel": 0.6,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.4
+      },
+      "primaryCondition": 4,
+      "minVerticalZone": -2,
+      "maxVerticalZone": 3,
+      "zones": [
+        {
+          "zoneId": "vanaheim-undergrowth",
+          "name": "The Undergrowth",
+          "description": "Dense ground-level vegetation with massive root systems and initial spore exposure. Low to moderate spore density with 1x corruption multiplier.",
+          "overrideProperties": {
+            "temperatureCelsius": 28,
+            "aethericIntensity": 0.5,
+            "humidityPercent": 85,
+            "lightLevel": 0.6,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.4
+          },
+          "overrideCondition": 4,
+          "conditionDcModifier": -2,
+          "damageOverride": "1d4",
+          "factionPools": ["blighted-beasts", "humanoid", "constructs"]
+        },
+        {
+          "zoneId": "vanaheim-canopy-sea",
+          "name": "The Canopy Sea",
+          "description": "Dense aerial fungal cloud with floating platforms and extreme biological activity. Extreme spore density with 2x corruption multiplier — accelerated accumulation zone.",
+          "overrideProperties": {
+            "temperatureCelsius": 31,
+            "aethericIntensity": 0.6,
+            "humidityPercent": 95,
+            "lightLevel": 0.4,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.5
+          },
+          "overrideCondition": 4,
+          "conditionDcModifier": 4,
+          "damageOverride": "2d4",
+          "factionPools": ["blighted-beasts"]
+        },
+        {
+          "zoneId": "vanaheim-ymirs-roots",
+          "name": "Ymir's Roots",
+          "description": "Ancient root systems forming cavern walls with slow-moving biomass and ancient corruption sources. Moderate spore density with 1x corruption multiplier and elevated aetheric saturation.",
+          "overrideProperties": {
+            "temperatureCelsius": 33,
+            "aethericIntensity": 0.6,
+            "humidityPercent": 90,
+            "lightLevel": 0.3,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.5
+          },
+          "overrideCondition": 4,
+          "conditionDcModifier": 0,
+          "damageOverride": "1d6",
+          "factionPools": ["blighted-beasts", "constructs"]
+        }
+      ],
+      "flavorQuote": "The green does not grow. It hunts.",
+      "colorPalette": "deep-green-spore-yellow-vine-brown-bioluminescent"
     }
   ],
   "environmentalConditions": [
