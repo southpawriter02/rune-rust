@@ -1,6 +1,6 @@
 {
   "$schema": "./schemas/realm-biomes.schema.json",
-  "version": "1.2",
+  "version": "1.3",
   "biomes": [
     {
       "realmId": 4,
@@ -517,6 +517,164 @@
       ],
       "flavorQuote": "The green does not grow. It hunts.",
       "colorPalette": "deep-green-spore-yellow-vine-brown-bioluminescent"
+    },
+    {
+      "realmId": 2,
+      "name": "Alfheim",
+      "subtitle": "The Glimmering Wound",
+      "deckNumber": 2,
+      "preGlitchFunction": "Aetheric Research Laboratories",
+      "postGlitchState": "Bioluminescent wasteland saturated with reality-warping aetheric radiation. Blinding light and psychic distortion create a hostile, hallucinatory environment.",
+      "baseProperties": {
+        "temperatureCelsius": 22,
+        "aethericIntensity": 0.9,
+        "humidityPercent": 30,
+        "lightLevel": 1.0,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.1
+      },
+      "primaryCondition": 5,
+      "minVerticalZone": 0,
+      "maxVerticalZone": 3,
+      "zones": [
+        {
+          "zoneId": "alfheim-luminous-waste",
+          "name": "The Luminous Waste",
+          "description": "Blinding expanse of crystallized light and fractured research equipment. Entry-level zone with moderate RealityFlux accumulation and disorienting visual distortion.",
+          "overrideProperties": {
+            "temperatureCelsius": 22,
+            "aethericIntensity": 0.85,
+            "humidityPercent": 30,
+            "lightLevel": 1.0,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.1
+          },
+          "overrideCondition": 5,
+          "conditionDcModifier": -2,
+          "factionPools": ["constructs", "aetheric-entities"]
+        },
+        {
+          "zoneId": "alfheim-prismatic-maze",
+          "name": "The Prismatic Maze",
+          "description": "Labyrinthine corridors of refracted light where perception and reality diverge. Accelerated RealityFlux accumulation and high navigation difficulty.",
+          "overrideProperties": {
+            "temperatureCelsius": 22,
+            "aethericIntensity": 0.95,
+            "humidityPercent": 25,
+            "lightLevel": 0.9,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.2
+          },
+          "overrideCondition": 5,
+          "conditionDcModifier": 4,
+          "factionPools": ["aetheric-entities", "genius-loci"]
+        },
+        {
+          "zoneId": "alfheim-dreaming-core",
+          "name": "The Dreaming Core",
+          "description": "Heart of the aetheric research complex where reality has fully collapsed. Dreams and waking merge; Genius Loci manifestations are guaranteed at high flux levels.",
+          "overrideProperties": {
+            "temperatureCelsius": 22,
+            "aethericIntensity": 1.0,
+            "humidityPercent": 35,
+            "lightLevel": 0.7,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.3
+          },
+          "overrideCondition": 5,
+          "conditionDcModifier": 2,
+          "factionPools": ["genius-loci", "aetheric-entities"]
+        }
+      ],
+      "flavorQuote": "The light does not illuminate. It remembers.",
+      "colorPalette": "blinding-white-prismatic-iridescent-pale-gold-ghostly-blue"
+    },
+    {
+      "realmId": 1,
+      "name": "Asgard",
+      "subtitle": "The Shattered Spire",
+      "deckNumber": 1,
+      "preGlitchFunction": "Command and Control Hub",
+      "postGlitchState": "Reality-warped command deck haunted by temporal loops and cognitive paradoxes. The Heimdallr Signal broadcasts navigation data at the cost of sanity.",
+      "baseProperties": {
+        "temperatureCelsius": 15,
+        "aethericIntensity": 1.0,
+        "humidityPercent": 20,
+        "lightLevel": 0.8,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.0
+      },
+      "primaryCondition": 6,
+      "minVerticalZone": 1,
+      "maxVerticalZone": 4,
+      "zones": [
+        {
+          "zoneId": "asgard-shattered-spire",
+          "name": "The Shattered Spire",
+          "description": "Broken command tower fragments floating in temporal stasis. Entry-level zone with moderate CPS accumulation and structural navigation hazards.",
+          "overrideProperties": {
+            "temperatureCelsius": 15,
+            "aethericIntensity": 0.9,
+            "humidityPercent": 20,
+            "lightLevel": 0.7,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 6,
+          "conditionDcModifier": 0,
+          "factionPools": ["constructs", "temporal-echoes"]
+        },
+        {
+          "zoneId": "asgard-heimdallrs-platform",
+          "name": "Heimdallr's Platform",
+          "description": "Automated broadcast station transmitting temporal coordinates and navigation clues. The Signal provides valuable data but accelerates CPS progression.",
+          "overrideProperties": {
+            "temperatureCelsius": 15,
+            "aethericIntensity": 1.0,
+            "humidityPercent": 20,
+            "lightLevel": 0.8,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 6,
+          "conditionDcModifier": 2,
+          "factionPools": ["constructs", "temporal-echoes"]
+        },
+        {
+          "zoneId": "asgard-odins-archive",
+          "name": "Odin's Archive",
+          "description": "Vast repository of pre-Glitch knowledge preserved in temporal stasis. Reading tomes causes severe CPS accumulation but provides critical lore and navigation data.",
+          "overrideProperties": {
+            "temperatureCelsius": 12,
+            "aethericIntensity": 1.0,
+            "humidityPercent": 15,
+            "lightLevel": 0.5,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.1
+          },
+          "overrideCondition": 6,
+          "conditionDcModifier": 6,
+          "factionPools": ["temporal-echoes"]
+        },
+        {
+          "zoneId": "asgard-orbital-zone",
+          "name": "Orbital Zone",
+          "description": "Orbital ring segments where multiple timelines converge. Extreme CPS exposure with temporal loop manifestations. Gate-locked; requires completion of the Heimdallr Protocol.",
+          "overrideProperties": {
+            "temperatureCelsius": 10,
+            "aethericIntensity": 1.0,
+            "humidityPercent": 10,
+            "lightLevel": 0.3,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 6,
+          "conditionDcModifier": 6,
+          "factionPools": ["temporal-echoes", "constructs"]
+        }
+      ],
+      "flavorQuote": "You have been here before. You will be here again. The Spire remembers what you have not yet done.",
+      "colorPalette": "steel-blue-temporal-gold-void-black-lightning-white"
     }
   ],
   "environmentalConditions": [
