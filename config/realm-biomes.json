@@ -223,6 +223,154 @@
       ],
       "flavorQuote": "The Gut digests all. Even hope.",
       "colorPalette": "sickly-green-bile-yellow-rust-black"
+    },
+    {
+      "realmId": 8,
+      "name": "Muspelheim",
+      "subtitle": "The Eternal Meltdown",
+      "deckNumber": 8,
+      "preGlitchFunction": "Geothermal Power Generation",
+      "postGlitchState": "Volcanic nightmare realm of eternal flames; extreme heat degrades equipment and accumulates fatigue.",
+      "baseProperties": {
+        "temperatureCelsius": 85,
+        "aethericIntensity": 0.6,
+        "humidityPercent": 5,
+        "lightLevel": 0.9,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.3
+      },
+      "primaryCondition": 1,
+      "minVerticalZone": -1,
+      "maxVerticalZone": 2,
+      "zones": [
+        {
+          "zoneId": "muspelheim-hearth-perimeter",
+          "name": "The Hearth Perimeter",
+          "description": "Outer ring of Muspelheim where explorers first encounter the heat. Rocky terrain with occasional lava flows visible in the distance. Breathable but searing air stabilizes around 85°C.",
+          "overrideProperties": {
+            "temperatureCelsius": 85,
+            "aethericIntensity": 0.6,
+            "humidityPercent": 5,
+            "lightLevel": 0.9,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.3
+          },
+          "overrideCondition": 1,
+          "conditionDcModifier": -2,
+          "damageOverride": "2d4",
+          "factionPools": ["fire-elementals", "constructs", "blighted-beasts"]
+        },
+        {
+          "zoneId": "muspelheim-slag-fields",
+          "name": "The Slag Fields",
+          "description": "Intermediate zone of cooled and re-heating lava formations. Uneven terrain with dangerous lava pockets and unpredictable heat spikes. Temperature averages 130°C with eruption-driven fluctuations.",
+          "overrideProperties": {
+            "temperatureCelsius": 130,
+            "aethericIntensity": 0.6,
+            "humidityPercent": 3,
+            "lightLevel": 0.8,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.4
+          },
+          "overrideCondition": 1,
+          "conditionDcModifier": 2,
+          "damageOverride": "2d6",
+          "factionPools": ["fire-elementals", "constructs"]
+        },
+        {
+          "zoneId": "muspelheim-surtrs-furnace",
+          "name": "Surtr's Furnace",
+          "description": "The molten core of Muspelheim — a massive cavern with active lava flows, extreme thermal radiation, and constant convection currents. The air itself burns at 200°C. Only fire-attuned beings survive long here.",
+          "overrideProperties": {
+            "temperatureCelsius": 200,
+            "aethericIntensity": 0.7,
+            "humidityPercent": 1,
+            "lightLevel": 1.0,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.5
+          },
+          "overrideCondition": 1,
+          "conditionDcModifier": 6,
+          "damageOverride": "3d6",
+          "factionPools": ["fire-elementals"]
+        }
+      ],
+      "flavorQuote": "Everything burns. Even the stones weep fire.",
+      "colorPalette": "crimson-orange-charcoal-molten-gold"
+    },
+    {
+      "realmId": 5,
+      "name": "Niflheim",
+      "subtitle": "The Frozen Tomb",
+      "deckNumber": 5,
+      "preGlitchFunction": "Cryogenic Storage and Deep Archives",
+      "postGlitchState": "Flash-frozen wasteland of lethal cold; equipment becomes brittle and fragile under extreme cryogenic exposure.",
+      "baseProperties": {
+        "temperatureCelsius": -40,
+        "aethericIntensity": 0.3,
+        "humidityPercent": 15,
+        "lightLevel": 0.5,
+        "scaleFactor": 1.0,
+        "corrosionRate": 0.0
+      },
+      "primaryCondition": 2,
+      "minVerticalZone": -2,
+      "maxVerticalZone": 1,
+      "zones": [
+        {
+          "zoneId": "niflheim-frost-marches",
+          "name": "The Frost Marches",
+          "description": "The outer reaches of Niflheim where cold is extreme but survivable. Rolling plains of packed snow and ice with pristine formations useful for crafting. Temperature stabilizes around -40°C.",
+          "overrideProperties": {
+            "temperatureCelsius": -40,
+            "aethericIntensity": 0.3,
+            "humidityPercent": 15,
+            "lightLevel": 0.5,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 2,
+          "conditionDcModifier": -2,
+          "damageOverride": "2d4",
+          "factionPools": ["frost-creatures", "constructs", "blighted-beasts"]
+        },
+        {
+          "zoneId": "niflheim-living-glacier",
+          "name": "The Living Glacier",
+          "description": "Intermediate zone of active glacier formation with treacherous crevasses and shifting ice. Temperature averages -55°C with dangerous wind chill effects. Glacial cores contain ancient ice-attuned materials.",
+          "overrideProperties": {
+            "temperatureCelsius": -55,
+            "aethericIntensity": 0.3,
+            "humidityPercent": 10,
+            "lightLevel": 0.4,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 2,
+          "conditionDcModifier": 2,
+          "damageOverride": "2d6",
+          "factionPools": ["frost-creatures", "constructs"]
+        },
+        {
+          "zoneId": "niflheim-hvergelmirs-heart",
+          "name": "Hvergelmir's Heart",
+          "description": "The frozen core of Niflheim — an enormous ice cavern housing the heart-spring of all cold. Temperature plunges to -80°C. The very air crystallizes and breath freezes instantly. Only ice-attuned beings endure.",
+          "overrideProperties": {
+            "temperatureCelsius": -80,
+            "aethericIntensity": 0.2,
+            "humidityPercent": 5,
+            "lightLevel": 0.3,
+            "scaleFactor": 1.0,
+            "corrosionRate": 0.0
+          },
+          "overrideCondition": 2,
+          "conditionDcModifier": 6,
+          "damageOverride": "3d6",
+          "factionPools": ["frost-creatures"]
+        }
+      ],
+      "flavorQuote": "The cold does not kill. It preserves — forever.",
+      "colorPalette": "pale-blue-white-crystalline-silver"
     }
   ],
   "environmentalConditions": [
