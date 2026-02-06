@@ -77,6 +77,23 @@ public sealed class RealmBiomeZone : IEntity
     public string? DamageOverride { get; private set; }
 
     /// <summary>
+    /// Gets the faction spawn pool IDs active in this zone.
+    /// </summary>
+    /// <remarks>
+    /// Each string is a faction pool identifier (e.g., "blighted-beasts", "humanoid").
+    /// When null, the zone inherits the parent realm's default spawn configuration.
+    /// </remarks>
+    public IReadOnlyList<string>? FactionPools { get; private set; }
+
+    /// <summary>
+    /// Gets the narrative description of this zone.
+    /// </summary>
+    /// <remarks>
+    /// Sourced from canonical lore. Used for room generation and environmental descriptions.
+    /// </remarks>
+    public string? Description { get; private set; }
+
+    /// <summary>
     /// Gets optional minimum vertical zone override.
     /// </summary>
     public VerticalZone? MinVerticalZone { get; private set; }
@@ -107,7 +124,9 @@ public sealed class RealmBiomeZone : IEntity
         int conditionDcModifier = 0,
         string? damageOverride = null,
         VerticalZone? minVerticalZone = null,
-        VerticalZone? maxVerticalZone = null)
+        VerticalZone? maxVerticalZone = null,
+        IReadOnlyList<string>? factionPools = null,
+        string? description = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(zoneId);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -129,7 +148,9 @@ public sealed class RealmBiomeZone : IEntity
             ConditionDcModifier = conditionDcModifier,
             DamageOverride = damageOverride,
             MinVerticalZone = minVerticalZone,
-            MaxVerticalZone = maxVerticalZone
+            MaxVerticalZone = maxVerticalZone,
+            FactionPools = factionPools,
+            Description = description
         };
     }
 
@@ -147,6 +168,11 @@ public sealed class RealmBiomeZone : IEntity
     /// Gets whether this zone has a damage override.
     /// </summary>
     public bool HasDamageOverride => !string.IsNullOrEmpty(DamageOverride);
+
+    /// <summary>
+    /// Gets whether this zone has faction pools defined.
+    /// </summary>
+    public bool HasFactionPools => FactionPools is { Count: > 0 };
 
     /// <summary>
     /// Gets a human-readable description of the DC modifier.

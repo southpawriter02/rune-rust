@@ -70,7 +70,7 @@ public class RealmBiomeProviderTests
     }
 
     [Test]
-    public void GetZonesForRealm_ValidRealm_ReturnsZones()
+    public void GetZonesForRealm_Midgard_ReturnsFourZones()
     {
         // Arrange
         var biomes = CreateTestBiomes();
@@ -80,9 +80,11 @@ public class RealmBiomeProviderTests
         var result = provider.GetZonesForRealm(RealmId.Midgard);
 
         // Assert
-        result.Should().HaveCount(2);
+        result.Should().HaveCount(4);
         result.Should().Contain(z => z.Name == "The Greatwood");
-        result.Should().Contain(z => z.Name == "The Scar");
+        result.Should().Contain(z => z.Name == "The Asgardian Scar");
+        result.Should().Contain(z => z.Name == "The Souring Mires");
+        result.Should().Contain(z => z.Name == "The Serpent Fjords");
     }
 
     [Test]
@@ -97,6 +99,62 @@ public class RealmBiomeProviderTests
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    [Test]
+    public void GetZone_MidgardGreatwood_ReturnsCorrectZone()
+    {
+        // Arrange
+        var biomes = CreateTestBiomes();
+        var provider = CreateProvider(biomes, []);
+
+        // Act
+        var result = provider.GetZone(RealmId.Midgard, "midgard-greatwood");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("The Greatwood");
+        result.ConditionDcModifier.Should().Be(-4);
+        result.HasFactionPools.Should().BeTrue();
+        result.FactionPools.Should().Contain("blighted-beasts");
+    }
+
+    [Test]
+    public void GetZone_MidgardScar_HasCorrectConditionOverride()
+    {
+        // Arrange
+        var biomes = CreateTestBiomes();
+        var provider = CreateProvider(biomes, []);
+
+        // Act
+        var result = provider.GetZone(RealmId.Midgard, "midgard-scar");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("The Asgardian Scar");
+        result.OverrideCondition.Should().Be(EnvironmentalConditionType.RealityFlux);
+        result.ConditionDcModifier.Should().Be(2);
+        result.OverrideProperties.Should().NotBeNull();
+        result.OverrideProperties!.AethericIntensity.Should().Be(0.8f);
+    }
+
+    [Test]
+    public void GetZone_MidgardMires_HasCorrectProperties()
+    {
+        // Arrange
+        var biomes = CreateTestBiomes();
+        var provider = CreateProvider(biomes, []);
+
+        // Act
+        var result = provider.GetZone(RealmId.Midgard, "midgard-mires");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("The Souring Mires");
+        result.OverrideCondition.Should().Be(EnvironmentalConditionType.ToxicAtmosphere);
+        result.OverrideProperties.Should().NotBeNull();
+        result.OverrideProperties!.HumidityPercent.Should().Be(90);
+        result.OverrideProperties.CorrosionRate.Should().Be(0.4f);
     }
 
     [Test]
@@ -137,12 +195,80 @@ public class RealmBiomeProviderTests
         return new RealmBiomeProvider(biomes, conditions, _loggerMock.Object);
     }
 
+    /// <summary>
+    /// Creates test biome data with canonical Midgard zones.
+    /// </summary>
     private static List<RealmBiomeDefinition> CreateTestBiomes()
     {
         var midgardZones = new List<RealmBiomeZone>
         {
-            RealmBiomeZone.Create("the-greatwood", "The Greatwood", RealmId.Midgard, conditionDcModifier: 2),
-            RealmBiomeZone.Create("the-scar", "The Scar", RealmId.Midgard, conditionDcModifier: 0)
+            RealmBiomeZone.Create(
+                "midgard-greatwood",
+                "The Greatwood",
+                RealmId.Midgard,
+                overrideProperties: new RealmBiomeProperties
+                {
+                    TemperatureCelsius = 18,
+                    AethericIntensity = 0.3f,
+                    HumidityPercent = 75,
+                    LightLevel = 0.4f,
+                    ScaleFactor = 1.0f,
+                    CorrosionRate = 0.2f
+                },
+                overrideCondition: EnvironmentalConditionType.MutagenicSpores,
+                conditionDcModifier: -4,
+                factionPools: ["blighted-beasts", "constructs", "humanoid"]),
+
+            RealmBiomeZone.Create(
+                "midgard-scar",
+                "The Asgardian Scar",
+                RealmId.Midgard,
+                overrideProperties: new RealmBiomeProperties
+                {
+                    TemperatureCelsius = 18,
+                    AethericIntensity = 0.8f,
+                    HumidityPercent = 60,
+                    LightLevel = 0.5f,
+                    ScaleFactor = 1.0f,
+                    CorrosionRate = 0.5f
+                },
+                overrideCondition: EnvironmentalConditionType.RealityFlux,
+                conditionDcModifier: 2,
+                factionPools: ["forlorn", "constructs", "blighted-beasts"]),
+
+            RealmBiomeZone.Create(
+                "midgard-mires",
+                "The Souring Mires",
+                RealmId.Midgard,
+                overrideProperties: new RealmBiomeProperties
+                {
+                    TemperatureCelsius = 18,
+                    AethericIntensity = 0.3f,
+                    HumidityPercent = 90,
+                    LightLevel = 0.6f,
+                    ScaleFactor = 1.0f,
+                    CorrosionRate = 0.4f
+                },
+                overrideCondition: EnvironmentalConditionType.ToxicAtmosphere,
+                conditionDcModifier: -4,
+                factionPools: ["humanoid", "blighted-beasts"]),
+
+            RealmBiomeZone.Create(
+                "midgard-fjords",
+                "The Serpent Fjords",
+                RealmId.Midgard,
+                overrideProperties: new RealmBiomeProperties
+                {
+                    TemperatureCelsius = 12,
+                    AethericIntensity = 0.3f,
+                    HumidityPercent = 80,
+                    LightLevel = 0.8f,
+                    ScaleFactor = 1.0f,
+                    CorrosionRate = 0.2f
+                },
+                overrideCondition: EnvironmentalConditionType.None,
+                conditionDcModifier: 0,
+                factionPools: ["blighted-beasts", "humanoid"])
         };
 
         return

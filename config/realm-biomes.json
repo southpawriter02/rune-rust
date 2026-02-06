@@ -1,6 +1,6 @@
 {
   "$schema": "./schemas/realm-biomes.schema.json",
-  "version": "1.0",
+  "version": "1.1",
   "biomes": [
     {
       "realmId": 4,
@@ -22,26 +22,62 @@
       "maxVerticalZone": 1,
       "zones": [
         {
-          "zoneId": "the-greatwood",
+          "zoneId": "midgard-greatwood",
           "name": "The Greatwood",
+          "description": "Feral forest descended from curated pre-Glitch parks. Designer trees have gone wild—no longer pruned by automated systems, grown into dense, unpredictable wilderness.",
+          "overrideProperties": {
+            "lightLevel": 0.4,
+            "humidityPercent": 75
+          },
+          "overrideCondition": 4,
+          "conditionDcModifier": -4,
+          "damageOverride": "1d4",
+          "factionPools": ["blighted-beasts", "constructs", "humanoid"]
+        },
+        {
+          "zoneId": "midgard-scar",
+          "name": "The Asgardian Scar",
+          "description": "Colossal impact crater where portions of the Asgard orbital arcology crashed during the Glitch. Epicenter of Runic Blight contamination in the realm.",
+          "overrideProperties": {
+            "aethericIntensity": 0.8,
+            "corrosionRate": 0.5,
+            "lightLevel": 0.5
+          },
+          "overrideCondition": 5,
           "conditionDcModifier": 2,
-          "description": "Dense forest that has reclaimed the urban ruins."
+          "damageOverride": "2d6",
+          "factionPools": ["forlorn", "constructs", "blighted-beasts"]
         },
         {
-          "zoneId": "the-scar",
-          "name": "The Scar",
+          "zoneId": "midgard-mires",
+          "name": "The Souring Mires",
+          "description": "Toxic wetlands draining industrial runoff from Jötunheim and Helheim through collapsed infrastructure channels. The water is poison. The soil is worse.",
+          "overrideProperties": {
+            "humidityPercent": 90,
+            "corrosionRate": 0.4,
+            "lightLevel": 0.6
+          },
+          "overrideCondition": 3,
+          "conditionDcModifier": -4,
+          "damageOverride": "1d6",
+          "factionPools": ["humanoid", "blighted-beasts"]
+        },
+        {
+          "zoneId": "midgard-fjords",
+          "name": "The Serpent Fjords",
+          "description": "Poisoned coastlines where Hafgufa's Brood—leviathan descendants of pre-Glitch aquaculture experiments—patrol the shallows.",
+          "overrideProperties": {
+            "humidityPercent": 80,
+            "temperatureCelsius": 12,
+            "lightLevel": 0.8
+          },
+          "overrideCondition": 0,
           "conditionDcModifier": 0,
-          "description": "Crater from the initial impact; relatively safe trading hub."
-        },
-        {
-          "zoneId": "the-mires",
-          "name": "The Mires",
-          "conditionDcModifier": 4,
-          "description": "Flooded lowlands with mutated wildlife."
+          "factionPools": ["blighted-beasts", "humanoid"]
         }
       ],
-      "flavorQuote": "In Midgard, we don't just survive—we endure.",
-      "colorPalette": "earth-greens-browns"
+      "flavorQuote": "The Wall is the soul of the Hold.",
+      "colorPalette": "green-brown-gray-rust"
     }
   ],
   "environmentalConditions": [

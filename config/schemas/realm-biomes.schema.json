@@ -145,6 +145,20 @@
           "type": "string",
           "description": "Display name"
         },
+        "description": {
+          "type": "string",
+          "description": "Narrative description of the zone"
+        },
+        "overrideProperties": {
+          "$ref": "#/$defs/biomePropertiesOverride",
+          "description": "Property overrides for this zone (fields not specified use base properties)"
+        },
+        "overrideCondition": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8,
+          "description": "Environmental condition type override for this zone"
+        },
         "conditionDcModifier": {
           "type": "integer",
           "minimum": -6,
@@ -155,8 +169,46 @@
           "type": "string",
           "description": "Override damage dice (e.g., '4d6')"
         },
-        "description": {
-          "type": "string"
+        "factionPools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Faction spawn pool IDs active in this zone"
+        }
+      }
+    },
+    "biomePropertiesOverride": {
+      "type": "object",
+      "description": "Partial biome property overrides — only specified fields override base values",
+      "properties": {
+        "temperatureCelsius": {
+          "type": "integer"
+        },
+        "aethericIntensity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "humidityPercent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "lightLevel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "scaleFactor": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "corrosionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
         }
       }
     },
