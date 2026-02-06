@@ -1,0 +1,637 @@
+# v0.19.x Lore Reconciliation & Implementation Guide
+
+**Version:** 1.0
+**Status:** Authoritative Reference
+**Last Updated:** 2026-02-04
+**Purpose:** Master document reconciling lore specifications with implementation scope
+
+---
+
+## 1. Document Purpose
+
+This document serves as the **authoritative bridge** between the Aethelgard lore documents and the v0.19.x implementation scope breakdowns. All implementation work should reference this document to ensure fidelity to established lore.
+
+### 1.1 Lore Source Documents
+
+| Realm              | Lore Document Path                                                       | Status    |
+| ------------------ | ------------------------------------------------------------------------ | --------- |
+| **Midgard**        | `docs/design/aethelgard/design/07-environment/biomes/midgard.md`         | Canonical |
+| **Muspelheim**     | `docs/design/aethelgard/design/07-environment/biomes/muspelheim.md`      | Canonical |
+| **Niflheim**       | `docs/design/aethelgard/design/07-environment/biomes/niflheim.md`        | Canonical |
+| **Alfheim**        | `docs/design/aethelgard/design/07-environment/biomes/alfheim.md`         | Canonical |
+| **Asgard**         | `docs/design/aethelgard/design/07-environment/biomes/asgard.md`          | Canonical |
+| **Vanaheim**       | `docs/design/aethelgard/design/07-environment/biomes/vanaheim.md`        | Canonical |
+| **Svartalfheim**   | `docs/design/aethelgard/design/07-environment/biomes/svartalfheim.md`    | Canonical |
+| **Jötunheim**      | `docs/design/aethelgard/design/07-environment/biomes/jotunheim.md`       | Canonical |
+| **Helheim**        | `docs/design/aethelgard/design/resources/01-geography/07-helheim.md`     | Canonical |
+| **Biome Overview** | `docs/design/aethelgard/design/07-environment/biomes/biomes-overview.md` | Canonical |
+
+### 1.2 Implementation Scope Documents
+
+| Version     | Scope Document Path                              | Design Spec Path                   |
+| ----------- | ------------------------------------------------ | ---------------------------------- |
+| **v0.19.0** | `docs/design/v0.19.x/v0.19.0-scope-breakdown.md` | `v0.19.0a-design-specification.md` |
+| **v0.19.1** | `docs/design/v0.19.x/v0.19.1-scope-breakdown.md` | `v0.19.1a-design-specification.md` |
+| **v0.19.2** | `docs/design/v0.19.x/v0.19.2-scope-breakdown.md` | `v0.19.2a-design-specification.md` |
+| **v0.19.3** | `docs/design/v0.19.x/v0.19.3-scope-breakdown.md` | `v0.19.3a-design-specification.md` |
+| **v0.19.4** | `docs/design/v0.19.x/v0.19.4-scope-breakdown.md` | `v0.19.4a-design-specification.md` |
+| **v0.19.5** | `docs/design/v0.19.x/v0.19.5-scope-breakdown.md` | `v0.19.5a-design-specification.md` |
+| **v0.19.6** | `docs/design/v0.19.x/v0.19.6-scope-breakdown.md` | `v0.19.6a-design-specification.md` |
+
+---
+
+## 2. Canonical Zone Definitions
+
+### 2.1 Midgard (v0.19.1) — The Tamed Ruin
+
+**Lore Source:** `midgard.md` Section 5
+
+| Zone ID             | Canonical Name     | Lore Section | Environmental Condition   | Base DC |
+| ------------------- | ------------------ | ------------ | ------------------------- | ------- |
+| `midgard-greatwood` | The Greatwood      | §5.1         | MutagenicSpores (light)   | 8       |
+| `midgard-scar`      | The Asgardian Scar | §5.2         | BlightStorm + RealityFlux | 14      |
+| `midgard-mires`     | The Souring Mires  | §5.3         | ToxicAtmosphere (light)   | 10      |
+| `midgard-fjords`    | The Serpent Fjords | §5.4         | None (Leviathan hazard)   | —       |
+
+**Property Overrides (from lore):**
+
+```json
+{
+    "greatwood": {
+        "lightLevel": 0.4,
+        "humidityPercent": 75,
+        "note": "Canopy coverage from feral designer trees"
+    },
+    "scar": {
+        "aethericIntensity": 0.8,
+        "corrosionRate": 0.5,
+        "note": "Blight contamination from Asgard debris"
+    },
+    "mires": {
+        "humidityPercent": 90,
+        "corrosionRate": 0.4,
+        "note": "Toxic wetland draining Jötunheim/Helheim runoff"
+    },
+    "fjords": {
+        "humidityPercent": 80,
+        "temperatureCelsius": 12,
+        "note": "Coastal zone, Hafgufa territory"
+    }
+}
+```
+
+### 2.2 Muspelheim (v0.19.3) — The Eternal Meltdown
+
+**Lore Source:** `muspelheim.md` Section 5
+
+| Zone ID                | Canonical Name       | Lore Section | Environmental Condition   | Base DC |
+| ---------------------- | -------------------- | ------------ | ------------------------- | ------- |
+| `muspelheim-slag`      | The Slag Wastes      | §5.1         | IntenseHeat               | 14      |
+| `muspelheim-gjollflow` | The Gjöllflow Rivers | §5.2         | IntenseHeat (lethal)      | 16      |
+| `muspelheim-ashfall`   | The Ashfall Drifts   | §5.3         | IntenseHeat + Respiratory | 12      |
+| `muspelheim-hearths`   | The Hearths          | §5.4         | IntenseHeat (mitigated)   | 6       |
+
+**Property Overrides (from lore):**
+
+```json
+{
+    "slag": {
+        "temperatureCelsius": 120,
+        "lightLevel": 0.8,
+        "note": "Shattered obsidian plains, +60°C surface"
+    },
+    "gjollflow": {
+        "temperatureCelsius": 200,
+        "lightLevel": 0.9,
+        "note": "Molten slag rivers, instant death on contact"
+    },
+    "ashfall": {
+        "temperatureCelsius": 80,
+        "lightLevel": 0.4,
+        "humidityPercent": 5,
+        "note": "Ash drifts reduce visibility, respiratory hazard"
+    },
+    "hearths": {
+        "temperatureCelsius": 30,
+        "lightLevel": 0.6,
+        "note": "Stable vents, Hearth-Clan settlements"
+    }
+}
+```
+
+### 2.3 Niflheim (v0.19.3) — The Frozen Tomb
+
+**Lore Source:** `niflheim.md` Section 5
+
+| Zone ID               | Canonical Name       | Lore Section | Environmental Condition   | Base DC |
+| --------------------- | -------------------- | ------------ | ------------------------- | ------- |
+| `niflheim-permafrost` | The Permafrost Halls | §5.1         | ExtremeCold               | 10      |
+| `niflheim-hvergelmir` | Hvergelmir's Maw     | §5.2         | ExtremeCold (severe)      | 18      |
+| `niflheim-archive`    | The Ice Archives     | §5.3         | ExtremeCold + CpsExposure | 14      |
+
+**Property Overrides (from lore):**
+
+```json
+{
+    "permafrost": {
+        "temperatureCelsius": -30,
+        "lightLevel": 0.5,
+        "note": "Outer cold, survivable with gear"
+    },
+    "hvergelmir": {
+        "temperatureCelsius": -80,
+        "lightLevel": 0.3,
+        "aethericIntensity": 0.5,
+        "note": "Thermal drain source, Ice-Debt hazard"
+    },
+    "archive": {
+        "temperatureCelsius": -50,
+        "lightLevel": 0.4,
+        "aethericIntensity": 0.6,
+        "note": "Einherjar frozen soldiers, cognitive hazard"
+    }
+}
+```
+
+### 2.4 Svartalfheim (v0.19.2) — The Dvergr Forges
+
+**Lore Source:** `svartalfheim.md` Section 5
+
+| Zone ID                   | Canonical Name         | Lore Section | Environmental Condition     | Base DC |
+| ------------------------- | ---------------------- | ------------ | --------------------------- | ------- |
+| `svartalfheim-guildlands` | The Guild-Lands        | §5.1         | None (patrolled)            | —       |
+| `svartalfheim-blackveins` | The Black Veins        | §5.2         | TotalDarkness               | 16      |
+| `svartalfheim-grottos`    | The Glimmering Grottos | §5.3         | TotalDarkness + RealityFlux | 14      |
+
+### 2.5 Helheim (v0.19.2) — The Gangrenous Gut
+
+**Lore Source:** `helheim.md` Section 5
+
+| Zone ID             | Canonical Name        | Lore Section | Environmental Condition      | Base DC |
+| ------------------- | --------------------- | ------------ | ---------------------------- | ------- |
+| `helheim-labyrinth` | The Rusting Labyrinth | §5.1         | ToxicAtmosphere              | 14      |
+| `helheim-sump`      | The Chemical Sump     | §5.2         | ToxicAtmosphere (severe)     | 20      |
+| `helheim-sunken`    | The Sunken Sectors    | §5.3         | ToxicAtmosphere + Structural | 16      |
+
+### 2.6 Jötunheim (v0.19.4) — The Industrial Graveyard
+
+**Lore Source:** `jotunheim.md` Section 5
+
+| Zone ID               | Canonical Name    | Lore Section | Environmental Condition | Base DC |
+| --------------------- | ----------------- | ------------ | ----------------------- | ------- |
+| `jotunheim-boneyards` | The Bone Yards    | §5.1         | GiantScale              | 10      |
+| `jotunheim-utgard`    | Utgard's Shadow   | §5.2         | GiantScale              | 12      |
+| `jotunheim-grinding`  | The Grinding Hall | §5.3         | GiantScale (severe)     | 16      |
+
+### 2.7 Vanaheim (v0.19.4) — The Overgrown Laboratory
+
+**Lore Source:** `vanaheim.md` Section 5
+
+| Zone ID                | Canonical Name   | Lore Section | Environmental Condition    | Base DC | Vertical   |
+| ---------------------- | ---------------- | ------------ | -------------------------- | ------- | ---------- |
+| `vanaheim-canopy`      | The Canopy Sea   | §5.1         | MutagenicSpores            | 10      | Z=+2 to +3 |
+| `vanaheim-gloom`       | The Gloom-Veil   | §5.2         | MutagenicSpores (moderate) | 14      | Z=0 to +1  |
+| `vanaheim-undergrowth` | The Under-growth | §5.3         | MutagenicSpores (severe)   | 18      | Z=-1 to 0  |
+
+**Vertical Stratification Properties:**
+
+```json
+{
+    "canopy": {
+        "temperatureCelsius": 20,
+        "lightLevel": 0.6,
+        "humidityPercent": 60,
+        "aethericIntensity": 0.4,
+        "corruptionMultiplier": 1.0
+    },
+    "gloom": {
+        "temperatureCelsius": 25,
+        "lightLevel": 0.3,
+        "humidityPercent": 80,
+        "aethericIntensity": 0.6,
+        "corruptionMultiplier": 1.5
+    },
+    "undergrowth": {
+        "temperatureCelsius": 32,
+        "lightLevel": 0.0,
+        "humidityPercent": 95,
+        "aethericIntensity": 0.8,
+        "corruptionMultiplier": 2.0
+    }
+}
+```
+
+### 2.8 Alfheim (v0.19.5) — The Glimmering Wound
+
+**Lore Source:** `alfheim.md` Section 5
+
+| Zone ID             | Canonical Name     | Lore Section | Environmental Condition   | Base DC |
+| ------------------- | ------------------ | ------------ | ------------------------- | ------- |
+| `alfheim-luminous`  | The Luminous Waste | §5.1         | RealityFlux               | 10      |
+| `alfheim-prismatic` | The Prismatic Maze | §5.2         | RealityFlux (severe)      | 16      |
+| `alfheim-dreaming`  | The Dreaming Core  | §5.3         | RealityFlux + CpsExposure | 14      |
+
+### 2.9 Asgard (v0.19.5) — The Shattered Spire
+
+**Lore Source:** `asgard.md` Section 5
+
+| Zone ID            | Canonical Name       | Lore Section | Environmental Condition | Base DC |
+| ------------------ | -------------------- | ------------ | ----------------------- | ------- |
+| `asgard-spire`     | The Shattered Spire  | §5.1         | CpsExposure             | 12      |
+| `asgard-heimdallr` | Heimdallr's Platform | §5.2         | CpsExposure (moderate)  | 14      |
+| `asgard-archive`   | Odin's Archive       | §5.3         | CpsExposure (severe)    | 18      |
+
+---
+
+## 3. Enemy Translation Matrix
+
+### 3.1 Translation Methodology
+
+Lore enemy types are grouped into **Faction Pools** for spawn generation. Each faction pool contains specific monster IDs that map to lore-defined enemies.
+
+### 3.2 Midgard Enemy Matrix
+
+**Lore Source:** `midgard.md` Section 7
+
+| Lore Enemy                | Monster ID             | Faction Pool      | Tier | Sub-Zone         |
+| ------------------------- | ---------------------- | ----------------- | ---- | ---------------- |
+| Ash-Vargr                 | `ash-vargr`            | `blighted-beasts` | 2    | Greatwood        |
+| Ash-Vargr Pack Leader     | `ash-vargr-alpha`      | `blighted-beasts` | 3    | Greatwood        |
+| Ash-Vargr (Rabid)         | `ash-vargr-rabid`      | `blighted-beasts` | 2    | Greatwood        |
+| Rune-Bear                 | `rune-bear`            | `blighted-beasts` | 3    | Greatwood        |
+| Rune-Bear (Scarred Elder) | `rune-bear-elder`      | `blighted-beasts` | 4    | Greatwood (Boss) |
+| Járn-hjortr               | `jarn-hjortr`          | `blighted-beasts` | 2    | Greatwood        |
+| Grit-Golem                | `grit-golem`           | `constructs`      | 2    | Greatwood        |
+| Ruin-Mimic                | `ruin-mimic`           | `constructs`      | 2    | Scar             |
+| Forlorn Echo              | `forlorn-echo`         | `forlorn`         | 2    | Scar             |
+| Genius Loci Fragment      | `genius-loci-fragment` | `forlorn`         | 4    | Scar (Boss)      |
+| Hafgufa Spawn             | `hafgufa-spawn`        | `blighted-beasts` | 3    | Fjords           |
+| Rust-Clan Ambusher        | `rust-clan-ambusher`   | `humanoid`        | 2    | Any              |
+| Skar-Horde Raider         | `skar-horde-raider`    | `humanoid`        | 2    | Mires/Fjords     |
+| Skar-Horde Butcher        | `skar-horde-butcher`   | `humanoid`        | 3    | Mires/Fjords     |
+
+**Faction Pool Assignments:**
+
+```json
+{
+    "greatwood": {
+        "primary": "blighted-beasts",
+        "secondary": "constructs",
+        "rare": "humanoid",
+        "weights": [60, 30, 10]
+    },
+    "scar": {
+        "primary": "forlorn",
+        "secondary": "constructs",
+        "rare": "blighted-beasts",
+        "weights": [60, 30, 10]
+    },
+    "mires": {
+        "primary": "humanoid",
+        "secondary": "blighted-beasts",
+        "rare": null,
+        "weights": [70, 30, 0]
+    },
+    "fjords": {
+        "primary": "blighted-beasts",
+        "secondary": "humanoid",
+        "rare": null,
+        "weights": [60, 40, 0]
+    }
+}
+```
+
+### 3.3 Muspelheim Enemy Matrix
+
+**Lore Source:** `muspelheim.md` Section 7
+
+| Lore Enemy           | Monster ID       | Faction Pool          | Tier | Sub-Zone          |
+| -------------------- | ---------------- | --------------------- | ---- | ----------------- |
+| Surtr's Scion        | `surtr-scion`    | `fire-forged`         | 3    | Gjöllflow         |
+| Fire-Adapted Undying | `fire-undying`   | `corrupted-machinery` | 2    | All               |
+| Slag Elemental       | `slag-elemental` | `fire-forged`         | 3    | Slag Wastes       |
+| Crag-Goat (Hostile)  | `crag-goat`      | `blighted-beasts`     | 2    | Perimeter         |
+| Pilot-Light          | `pilot-light`    | `fire-forged`         | 2    | Reactor           |
+| Slag-Swimmer         | `slag-swimmer`   | `fire-forged`         | 2    | Ashfall           |
+| Forge Guardian       | `forge-guardian` | `fire-forged`         | 4    | Forge Core (Boss) |
+| Surtur's Herald      | `surtr-herald`   | `fire-forged`         | 5    | Arena (Boss)      |
+
+### 3.4 Complete Faction Pool Registry
+
+| Faction Pool ID       | Display Name        | Primary Realms                  |
+| --------------------- | ------------------- | ------------------------------- |
+| `blighted-beasts`     | Blighted Beasts     | Midgard, Vanaheim               |
+| `humanoid`            | Humanoid Factions   | Midgard, Svartalfheim           |
+| `forlorn`             | The Forlorn         | Midgard (Scar), Alfheim, Asgard |
+| `constructs`          | Constructs          | Midgard, Jötunheim              |
+| `fire-forged`         | Fire-Forged         | Muspelheim                      |
+| `frost-touched`       | Frost-Touched       | Niflheim                        |
+| `corrupted-machinery` | Corrupted Machinery | Muspelheim, Niflheim, Helheim   |
+| `acid-adapted`        | Acid-Adapted        | Helheim                         |
+| `weaponized-flora`    | Weaponized Flora    | Vanaheim                        |
+| `aetheric-anomalies`  | Aetheric Anomalies  | Alfheim                         |
+| `undying`             | The Undying         | Asgard                          |
+| `corrupted-automata`  | Corrupted Automata  | Svartalfheim                    |
+| `ancient-constructs`  | Ancient Constructs  | Jötunheim                       |
+
+---
+
+## 4. Zone-Specific Hazards Registry
+
+### 4.1 Hazard Categories
+
+| Category       | Trigger Type       | Examples                         |
+| -------------- | ------------------ | -------------------------------- |
+| **Ambient**    | Per-turn automatic | IntenseHeat, ExtremeCold         |
+| **Contact**    | Touch/collision    | Rust-Rot Moss, Aether-Thistle    |
+| **Zone Entry** | Entering area      | Blight-Storm, Temporal Pocket    |
+| **Proximity**  | Distance-based     | Gravitational Anomaly, Leviathan |
+| **Time-Based** | Scheduled/periodic | Seasonal Flood, Elding-Storm     |
+
+### 4.2 Midgard Zone Hazards
+
+**Lore Source:** `midgard.md` Section 9.2
+
+| Hazard ID              | Name                       | Zone      | Trigger           | Effect                   | DC         | Damage         |
+| ---------------------- | -------------------------- | --------- | ----------------- | ------------------------ | ---------- | -------------- |
+| `haz-rust-rot`         | Rust-Rot Moss              | All       | Contact           | Equipment degradation    | —          | 1d4 (metal)    |
+| `haz-aether-thistle`   | Aether-Thistle             | Greatwood | Contact           | Psychic static           | —          | +5 Stress      |
+| `haz-blight-storm`     | Blight-Storm               | Scar      | Zone entry        | Corruption + Disoriented | 12         | 2d6 Corruption |
+| `haz-grav-anomaly`     | Gravitational Anomaly (S2) | Scar      | Proximity         | Forced movement          | 14         | Fall damage    |
+| `haz-temporal-pocket`  | Temporal Pocket (T1)       | Scar      | Zone entry        | Turn disruption          | 12         | Memory frag    |
+| `haz-toxic-runoff`     | Toxic Runoff               | Mires     | Immersion         | Poison damage            | 14         | 2d8 Poison     |
+| `haz-seasonal-flood`   | Seasonal Flood             | Mires     | Time-based        | Route closure            | —          | Drowning       |
+| `haz-leviathan-strike` | Leviathan Strike           | Fjords    | Proximity (water) | Massive damage           | 14 AGILITY | 4d8 Physical   |
+
+### 4.3 Muspelheim Zone Hazards
+
+**Lore Source:** `muspelheim.md` Section 10.2
+
+| Hazard ID              | Name                   | Zone      | Trigger         | Effect             | DC       | Damage                   |
+| ---------------------- | ---------------------- | --------- | --------------- | ------------------ | -------- | ------------------------ |
+| `haz-steam-vent`       | Steam Vent             | All       | Proximity/Timer | Fire + Disoriented | 12       | 2d8 Fire                 |
+| `haz-volatile-gas`     | Volatile Gas Pocket    | All       | Ignition        | AoE explosion      | —        | 4d6 Fire                 |
+| `haz-unstable-grating` | Unstable Grating       | All       | Weight          | Fall hazard        | 12 MIGHT | —                        |
+| `haz-pressure-valve`   | Pressure Valve Rupture | Forge     | Destruction     | Steam burst 3×3    | —        | 2d6 Fire                 |
+| `haz-elding-storm`     | Elding-Storm Cell      | Any       | Weather         | Fire + Lightning   | —        | 3d6 Fire + 2d6 Lightning |
+| `haz-slag-collapse`    | Slag Crust Collapse    | Gjöllflow | Failed probe    | Fall into lava     | —        | Instant death            |
+| `haz-ashfall-collapse` | Ashfall Drift Collapse | Ashfall   | Weight/movement | Buried             | 14 MIGHT | Suffocation              |
+
+### 4.4 Complete Hazard Registry
+
+See supplementary document: `hazard-registry.md`
+
+---
+
+## 5. Terrain Type Registry
+
+### 5.1 Midgard Terrain
+
+**Lore Source:** `midgard.md` Section 9.1
+
+| Terrain ID                   | Name                 | Effect                         | Sub-Zone  |
+| ---------------------------- | -------------------- | ------------------------------ | --------- |
+| `terrain-ferrocrete-wall`    | Ferrocrete Wall      | Full cover, destructible       | Holds     |
+| `terrain-petrified-ironwood` | Petrified Ironwood   | Heavy cover                    | Greatwood |
+| `terrain-ashfall-earth`      | Ash-Fall Earth       | Difficult terrain              | All       |
+| `terrain-designer-canopy`    | Designer Tree Canopy | Obscured, vertical             | Greatwood |
+| `terrain-orbital-debris`     | Orbital Debris       | Full cover, collapse hazard    | Scar      |
+| `terrain-toxic-mud`          | Toxic Mud            | Difficult + [Poisoned] on fall | Mires     |
+| `terrain-tidal-shallows`     | Tidal Shallows       | Difficult, depth hazard        | Fjords    |
+| `terrain-grit-corn`          | Grit-Corn Field      | Concealment, Golem spawn       | Greatwood |
+
+### 5.2 Muspelheim Terrain
+
+**Lore Source:** `muspelheim.md` Section 10.1
+
+| Terrain ID                 | Name                   | Effect                          | Sub-Zone  |
+| -------------------------- | ---------------------- | ------------------------------- | --------- |
+| `terrain-scorched-plating` | Scorched Metal Plating | Difficult, 1d4 Fire on fall     | Forge     |
+| `terrain-molten-slag-pool` | Molten Slag Pool       | 2d6 Fire/turn, [Chasm] if deep  | Gjöllflow |
+| `terrain-burning-ground`   | Burning Ground         | 1d8 Fire/turn                   | All       |
+| `terrain-lava-river`       | Lava River             | [Chasm] — fatal fall            | Gjöllflow |
+| `terrain-volcanic-glass`   | Volcanic Glass         | Difficult, 1d4 Slashing on fall | Slag      |
+| `terrain-ash-drift`        | Ash Drift              | Difficult, concealment          | Ashfall   |
+| `terrain-cooled-lava-tube` | Cooled Lava Tube       | Normal terrain                  | Hearths   |
+| `terrain-slag-crust`       | Slag Crust             | Normal, collapse risk           | Gjöllflow |
+
+---
+
+## 6. Room Template Assignment
+
+### 6.1 Midgard Room Templates
+
+**Lore Source:** `midgard.md` Section 6
+
+| Template ID               | Name               | Size   | Sub-Zone   | Description                             |
+| ------------------------- | ------------------ | ------ | ---------- | --------------------------------------- |
+| `room-mid-hold-interior`  | Hold Interior      | Medium | Greatwood  | Fortified settlement common area        |
+| `room-mid-gatehouse`      | Gatehouse          | Small  | Greatwood  | Defensive checkpoint with murder-holes  |
+| `room-mid-clearing`       | Greatwood Clearing | Large  | Greatwood  | Feral forest glade                      |
+| `room-mid-grit-field`     | Grit-Corn Field    | Medium | Greatwood  | Agricultural zone, Grit-Golem territory |
+| `room-mid-scar-perimeter` | Scar Perimeter     | Medium | Scar       | Blight-contaminated debris field        |
+| `room-mid-crash-site`     | Crash Site         | XLarge | Scar       | Asgard orbital wreckage, boss           |
+| `room-mid-anomaly-zone`   | Anomaly Zone       | Large  | Scar       | Gravitational/temporal distortion       |
+| `room-mid-mire-crossing`  | Mire Crossing      | Medium | Mires      | Toxic wetland with ferry                |
+| `room-mid-corduroy-span`  | Corduroy Span      | Small  | Mires      | Log road over poison                    |
+| `room-mid-fjord-dock`     | Fjord Dock         | Medium | Fjords     | Coastal fishing outpost                 |
+| `room-mid-tidal-cave`     | Tidal Cave         | Large  | Fjords     | Hafgufa Spawn lair                      |
+| `room-mid-watch-tower`    | Watch-Tower        | Small  | Any        | Ridge Hold relay station                |
+| `room-mid-market-square`  | Market Square      | Large  | Crossroads | Regional trade hub                      |
+
+### 6.2 Muspelheim Room Templates
+
+**Lore Source:** `muspelheim.md` Section 6
+
+| Template ID                   | Name                | Size   | Sub-Zone  | Description                 |
+| ----------------------------- | ------------------- | ------ | --------- | --------------------------- |
+| `room-mus-forge-hall`         | Forge Hall          | Large  | Core      | Massive industrial forges   |
+| `room-mus-magma-tap`          | Magma Tap Station   | Large  | Core      | Geothermal extraction       |
+| `room-mus-slag-processing`    | Slag Processing     | Medium | Slag      | Molten refinery ruins       |
+| `room-mus-thermal-corridor`   | Thermal Corridor    | Small  | Any       | Heat-distorted passage      |
+| `room-mus-coolant-hub`        | Coolant Hub         | Medium | Perimeter | Failed cooling junction     |
+| `room-mus-observation-gantry` | Observation Gantry  | Medium | Gjöllflow | Platform over lava          |
+| `room-mus-pressure-chamber`   | Pressure Chamber    | Medium | Core      | Industrial pressure vessel  |
+| `room-mus-forge-lord-arena`   | Forge-Lord's Arena  | XLarge | Core      | Boss encounter space        |
+| `room-mus-hearth-common`      | Hearth Common       | Large  | Hearths   | Clan gathering space        |
+| `room-mus-dew-chamber`        | Dew-Chamber         | Medium | Hearths   | Water condensation facility |
+| `room-mus-slag-crossing`      | Slag Crust Crossing | Medium | Gjöllflow | River traverse point        |
+| `room-mus-ashfall-drift`      | Ashfall Drift       | Large  | Ashfall   | Open ash sea terrain        |
+| `room-mus-lava-tube`          | Lava Tube           | Medium | Hearths   | Cooled magma channel        |
+| `room-mus-vent-station`       | Vent Station        | Small  | Any       | Atmospheric node            |
+
+---
+
+## 7. Descriptor Integration
+
+### 7.1 Biome Thematic Modifiers
+
+**Lore Sources:** Individual biome files, Section 11/12
+
+| Realm            | Modifier Name | Adjective    | Color Palette               | Ambient Sounds                                            |
+| ---------------- | ------------- | ------------ | --------------------------- | --------------------------------------------------------- |
+| **Midgard**      | Tamed         | "tamed"      | green-brown-gray-rust       | distant livestock, watch-fire crackle, wind, wolf howl    |
+| **Muspelheim**   | Scorched      | "scorched"   | red-orange-black-rust       | crackling flames, hissing steam, metal groaning, rumbling |
+| **Niflheim**     | Frozen        | "frozen"     | white-blue-gray-black       | wind howling, ice cracking, distant echoes, silence       |
+| **Vanaheim**     | Overgrown     | "overgrown"  | green-gold-purple-black     | rustling leaves, insect chorus, dripping water, creaking  |
+| **Alfheim**      | Glimmering    | "glimmering" | prismatic-white-gold-violet | crystalline chimes, static hum, whispers, reality tear    |
+| **Asgard**       | Shattered     | "shattered"  | gold-black-red-void         | silence, distant signal, metal stress, void echo          |
+| **Svartalfheim** | Forged        | "forged"     | orange-black-steel-copper   | hammer strikes, bellows, machinery, darkness              |
+| **Jötunheim**    | Titanic       | "titanic"    | rust-gray-brown-shadow      | groaning metal, distant crashes, wind through giants      |
+| **Helheim**      | Gangrenous    | "gangrenous" | green-brown-gray-bile       | bubbling, dripping, hissing gas, structural collapse      |
+
+### 7.2 Sample Description Templates
+
+**Per lore document Section 11.2 / 12.2**
+
+```json
+{
+    "midgard-greatwood": [
+        "A {modifier} clearing opens before the ferrocrete walls of a Ridge Hold. The watch-fire burns steady on the tower above. Beyond the gate, Grit-Corn fields stretch toward the treeline where feral designer trees have grown into dense, unpredictable wilderness.",
+        "The Greatwood canopy closes overhead, filtering {light_descriptor} through mutated leaves. The air tastes of spores and rot. Something large moves in the undergrowth."
+    ],
+    "midgard-scar": [
+        "The Scar perimeter stretches before you. Orbital debris juts from poisoned earth at impossible angles. The air tastes of ozone and ash. In the distance, Blight-Storm lightning illuminates the shattered silhouette of fallen Asgard infrastructure.",
+        "Reality bleeds at the crater's edge. Colors shift. Gravity feels wrong. A Forlorn Echo drifts through the wreckage, its form flickering between states."
+    ],
+    "muspelheim-slag": [
+        "A {modifier} forge hall dominates this space. Rivers of molten slag cut through blackened infrastructure. The air shimmers with superheated mirage-distortions. Somewhere in the gloom, metal groans under thermal stress.",
+        "The Slag Wastes extend to the horizon—a sea of shattered obsidian under a rust-colored sky. Heat rises in visible waves. Nothing moves. Nothing grows. Nothing survives here that doesn't have to."
+    ]
+}
+```
+
+---
+
+## 8. Navigation Mechanics
+
+### 8.1 Route Classification System
+
+**Lore Source:** `midgard.md` Section 13, `biomes-overview.md` Section 3
+
+| Class          | Route Type         | Speed (km/day) | Requirements                          |
+| -------------- | ------------------ | -------------- | ------------------------------------- |
+| **A**          | Combine Toll Roads | 25-35          | Maintained, patrolled, courier seals  |
+| **B**          | Long Roads         | 15-25          | Waystone navigation, watch-fire relay |
+| **C**          | Local Tracks       | 10-18          | Ferry crossings, seasonal             |
+| **D**          | Expedition Paths   | 5-12           | Extreme hazard, quiet-window only     |
+| **Prohibited** | Death Zones        | —              | Lethal, no transit                    |
+
+### 8.2 Inter-Realm Travel Times
+
+| Route                 | From       | To               | Time      | Class |
+| --------------------- | ---------- | ---------------- | --------- | ----- |
+| Scar Rim Lifts        | Midgard    | Asgard (orbital) | 3-5 days  | B     |
+| Utgard Gates          | Midgard    | Jötunheim        | 5-8 days  | B/C   |
+| Up-River Ferries      | Midgard    | Vanaheim         | 6-9 days  | B/C   |
+| Ridge Routes          | Midgard    | Niflheim         | 7-12 days | B/D   |
+| Svartalfheim Conduits | Muspelheim | Svartalfheim     | 4-6 days  | C     |
+| Helheim Deep Routes   | Muspelheim | Helheim          | 8-12 days | D     |
+
+### 8.3 Condition Modifiers
+
+| Condition           | Effect                      |
+| ------------------- | --------------------------- |
+| Watch-fire gap      | Night travel impossible     |
+| Seasonal flood      | Routes closed or ×0.3 speed |
+| Blight-Storm active | ×0.5 speed, +Corruption     |
+| Skar-Horde activity | Escort required or ×0.7     |
+| Elding-Storm active | Route closed                |
+
+---
+
+## 9. Resource Drop Tables
+
+### 9.1 Midgard Resources
+
+**Lore Source:** `midgard.md` Section 10
+
+| Resource ID         | Name                      | Tier | Drop Rate | Source              |
+| ------------------- | ------------------------- | ---- | --------- | ------------------- |
+| `res-grit-corn`     | Grit-Corn                 | 1    | 40%       | Farming settlements |
+| `res-scrab-root`    | Scrab-Root                | 1    | 35%       | Farming settlements |
+| `res-ferrocrete`    | Salvaged Ferrocrete       | 1    | 25%       | Ruins, Holds        |
+| `res-ironwood`      | Petrified Ironwood        | 2    | 15%       | Greatwood           |
+| `res-vargr-pelt`    | Ash-Vargr Pelt            | 2    | 20%       | Beast drop          |
+| `res-hjortr-antler` | Járn-hjortr Antler        | 3    | 10%       | Beast drop          |
+| `res-bear-heart`    | Rune-Bear Heart           | 3    | 8%        | Elite drop          |
+| `res-hafgufa-scale` | Hafgufa Scale             | 3    | 5%        | Fjords beast drop   |
+| `res-asgard-debris` | Asgardian Debris          | 3    | 15%       | Scar salvage        |
+| `res-jotun-plating` | Uncorrupted Jötun Plating | 4    | 3%        | Scar deep salvage   |
+| `res-data-crystal`  | Coherent Data-Crystal     | 4    | 2%        | Scar cache          |
+| `res-odin-fragment` | Odin-Protocol Fragment    | 5    | Boss      | Genius Loci         |
+| `res-elder-heart`   | Scarred Elder Heart       | 5    | Boss      | Rune-Bear Elder     |
+
+### 9.2 Muspelheim Resources
+
+**Lore Source:** `muspelheim.md` Section 11
+
+| Resource ID           | Name                 | Tier | Drop Rate | Source             |
+| --------------------- | -------------------- | ---- | --------- | ------------------ |
+| `res-volcanic-glass`  | Volcanic Glass       | 1    | 30%       | Slag terrain       |
+| `res-cooled-slag`     | Cooled Slag          | 1    | 25%       | Gjöllflow banks    |
+| `res-obsidian-shards` | Obsidian Shards      | 2    | 20%       | Slag pools         |
+| `res-heat-alloy`      | Heat-Resistant Alloy | 2    | 15%       | Salvage, enemy     |
+| `res-star-metal`      | Star-Metal Ore       | 3    | 12%       | Deep ore veins     |
+| `res-servomotors`     | Hardened Servomotors | 3    | 10%       | Automata drops     |
+| `res-molten-core`     | Molten Core Fragment | 3    | 8%        | Hazard cores       |
+| `res-crag-horn`       | Crag-Goat Horn       | 3    | 10%       | Beast drop         |
+| `res-pilot-essence`   | Pilot-Light Essence  | 4    | 5%        | Careful extraction |
+| `res-inferno-heart`   | Heart of the Inferno | 4    | 5%        | Elite drops        |
+| `res-surtr-core`      | Surtr Engine Core    | 5    | Boss      | Forge Guardian     |
+| `res-eternal-ember`   | Eternal Ember        | 5    | Secret    | Hidden locations   |
+
+---
+
+## 10. Implementation Checklist
+
+### 10.1 v0.19.1 (Midgard) Updates Required
+
+- [ ] Replace 4 zones with canonical lore zones (Greatwood, Scar, Mires, Fjords)
+- [ ] Add zone-specific hazards (Blight-Storm, Leviathan Strike, etc.)
+- [ ] Update faction pools per zone from lore Section 7
+- [ ] Add room template mappings from lore Section 6
+- [ ] Add terrain types from lore Section 9.1
+- [ ] Add resource drop tables from lore Section 10
+- [ ] Add descriptor templates from lore Section 11
+
+### 10.2 v0.19.3 (Muspelheim/Niflheim) Updates Required
+
+- [ ] Replace zones with canonical lore zones (Slag, Gjöllflow, Ashfall, Hearths)
+- [ ] Add zone-specific hazards (Elding-Storm, Slag Collapse, etc.)
+- [ ] Add Hearth-Clan settlement mechanics
+- [ ] Add room template mappings
+- [ ] Add terrain types
+- [ ] Add resource drop tables
+- [ ] Add descriptor templates
+
+### 10.3 All Realms Common Updates
+
+- [ ] Implement enemy translation matrix
+- [ ] Implement zone hazard registry
+- [ ] Implement terrain type registry
+- [ ] Implement room template biome filtering
+- [ ] Implement descriptor system integration
+- [ ] Implement navigation mechanics
+- [ ] Implement resource drop tables
+
+---
+
+## 11. Cross-Reference Index
+
+| Topic               | Lore Location           | Implementation Location      |
+| ------------------- | ----------------------- | ---------------------------- |
+| Midgard zones       | `midgard.md` §5         | `v0.19.1-scope-breakdown.md` |
+| Midgard enemies     | `midgard.md` §7         | `enemy-translation.md`       |
+| Midgard hazards     | `midgard.md` §9.2       | `hazard-registry.md`         |
+| Midgard terrain     | `midgard.md` §9.1       | `terrain-registry.md` (TBD)  |
+| Midgard rooms       | `midgard.md` §6         | `room-templates.md`          |
+| Midgard resources   | `midgard.md` §10        | `resource-tables.md` (TBD)   |
+| Midgard descriptors | `midgard.md` §11        | `descriptor-system.md`       |
+| Muspelheim zones    | `muspelheim.md` §5      | `v0.19.3-scope-breakdown.md` |
+| Biome adjacency     | `biomes-overview.md` §3 | `v0.19.0-scope-breakdown.md` |
+| Navigation routes   | `midgard.md` §13        | `v0.19.6-scope-breakdown.md` |
+
+---
+
+_This reconciliation document is the authoritative source for aligning lore with implementation. All scope breakdowns and design specifications should reference this document for canonical definitions._
