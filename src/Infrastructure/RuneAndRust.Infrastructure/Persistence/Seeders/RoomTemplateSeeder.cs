@@ -204,10 +204,10 @@ public static class RoomTemplateSeeder
             "Machine Graveyard",
             RoomArchetype.Chamber,
             Biome.TheRoots,
-            "Broken machines litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' devices, making them part of the living earth.",
+            "Broken husks of the Iron-Gods litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' steel bodies, making them part of the living earth.",
             minExits: 2, maxExits: 3, weight: 2);
         chamber2.AddTags(["Salvage", "Organic", "Machine"]);
-        chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "rusted_terminal", 0.4));
+        chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "rusted_spirit_slate", 0.4));
         chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "salvage_pile", 0.7));
         yield return chamber2;
 
