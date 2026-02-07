@@ -1,243 +1,431 @@
 {
-    "$schema": "schemas/room-templates.schema.json",
-    "version": "1.1",
-    "templates": [
-        {
-            "templateId": "dungeon-corridor-narrow",
-            "namePattern": "{adjective} Corridor",
-            "descriptionPattern": "A {width} {material} corridor stretches {direction}. {atmosphere}",
-            "validBiomes": [
-                "dungeon",
-                "ruins",
-                "cave"
-            ],
-            "roomType": "Standard",
-            "weight": 40,
-            "minDepth": 0,
-            "maxDepth": null,
-            "tags": [
-                "corridor",
-                "passage"
-            ],
-            "slots": [
-                {
-                    "slotId": "adjective",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.adjectives.corridor"
-                },
-                {
-                    "slotId": "width",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.dimensions.width"
-                },
-                {
-                    "slotId": "material",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.materials.wall"
-                },
-                {
-                    "slotId": "direction",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.directions"
-                },
-                {
-                    "slotId": "atmosphere",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.7,
-                    "descriptorPool": "environmental.atmosphere"
-                },
-                {
-                    "slotId": "monster_01",
-                    "type": "Monster",
-                    "isRequired": false,
-                    "fillProbability": 0.35,
-                    "minQuantity": 1,
-                    "maxQuantity": 2,
-                    "constraints": {
-                        "maxTier": "standard"
-                    }
-                }
-            ]
-        },
-        {
-            "templateId": "dungeon-treasure-vault",
-            "namePattern": "{guardian}'s {container_type}",
-            "descriptionPattern": "A {size} chamber filled with {treasure_description}. {guardian_hint}",
-            "validBiomes": [
-                "dungeon",
-                "ruins"
-            ],
-            "roomType": "Treasure",
-            "weight": 8,
-            "minDepth": 2,
-            "maxDepth": null,
-            "tags": [
-                "treasure",
-                "vault",
-                "guarded"
-            ],
-            "slots": [
-                {
-                    "slotId": "guardian",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "npcs.guardian_types"
-                },
-                {
-                    "slotId": "container_type",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.container_names"
-                },
-                {
-                    "slotId": "size",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.dimensions.size"
-                },
-                {
-                    "slotId": "treasure_description",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.treasure_descriptions"
-                },
-                {
-                    "slotId": "guardian_hint",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.8,
-                    "descriptorPool": "room.guardian_hints"
-                },
-                {
-                    "slotId": "guardian_monster",
-                    "type": "Monster",
-                    "isRequired": true,
-                    "fillProbability": 1.0,
-                    "minQuantity": 1,
-                    "maxQuantity": 1,
-                    "constraints": {
-                        "minTier": "elite"
-                    }
-                },
-                {
-                    "slotId": "main_container",
-                    "type": "Container",
-                    "isRequired": true,
-                    "fillProbability": 1.0,
-                    "constraints": {
-                        "containerType": "chest",
-                        "lootQuality": "high"
-                    }
-                }
-            ]
-        },
-        {
-            "templateId": "cave-crystal-chamber",
-            "namePattern": "Crystal {chamber_type}",
-            "descriptionPattern": "{crystal_description} {lighting_effect} {sound_description}",
-            "validBiomes": [
-                "cave"
-            ],
-            "roomType": "Standard",
-            "weight": 25,
-            "minDepth": 1,
-            "maxDepth": 5,
-            "tags": [
-                "crystal",
-                "natural"
-            ],
-            "slots": [
-                {
-                    "slotId": "chamber_type",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.cave_chamber_types"
-                },
-                {
-                    "slotId": "crystal_description",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.crystal_descriptions"
-                },
-                {
-                    "slotId": "lighting_effect",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "environmental.lighting.crystal"
-                },
-                {
-                    "slotId": "sound_description",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.6,
-                    "descriptorPool": "environmental.sounds.cave"
-                }
-            ]
-        },
-        {
-            "templateId": "volcanic-lava-bridge",
-            "namePattern": "{condition} Bridge",
-            "descriptionPattern": "A {material} bridge spans a {chasm_type}. {heat_description} {danger_warning}",
-            "validBiomes": [
-                "volcanic"
-            ],
-            "roomType": "Standard",
-            "weight": 20,
-            "minDepth": 4,
-            "maxDepth": null,
-            "tags": [
-                "bridge",
-                "dangerous",
-                "lava"
-            ],
-            "slots": [
-                {
-                    "slotId": "condition",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.conditions.structure"
-                },
-                {
-                    "slotId": "material",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.materials.volcanic"
-                },
-                {
-                    "slotId": "chasm_type",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.chasms.volcanic"
-                },
-                {
-                    "slotId": "heat_description",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "environmental.temperature.volcanic"
-                },
-                {
-                    "slotId": "danger_warning",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.7,
-                    "descriptorPool": "room.danger_warnings"
-                },
-                {
-                    "slotId": "hazard_01",
-                    "type": "Hazard",
-                    "isRequired": false,
-                    "fillProbability": 0.4,
-                    "constraints": {
-                        "hazardType": "environmental",
-                        "element": "fire"
-                    }
-                }
-            ]
-        }
-    ]
+  "$schema": "schemas/room-templates.schema.json",
+  "version": "1.2",
+  "templates": [
+    {
+      "templateId": "mid-ridge-hold-clearing",
+      "namePattern": "Ridge Hold Clearing",
+      "descriptionPattern": "A {size} clearing surrounded by the remains of a walled settlement. {atmosphere}",
+      "validBiomes": ["midgard-greatwood"],
+      "roomType": "Settlement",
+      "weight": 30,
+      "tags": ["settlement", "outdoor", "midgard"],
+      "slots": [
+        { "slotId": "size", "type": "Description", "descriptorPool": "room.dimensions.size", "isRequired": true },
+        { "slotId": "atmosphere", "type": "Description", "descriptorPool": "environmental.atmosphere", "isRequired": true }
+      ],
+      "encounters": ["humanoid-friendly"]
+    },
+    {
+      "templateId": "mid-forest-trail",
+      "namePattern": "Forest Trail",
+      "descriptionPattern": "A narrow trail winds through the dense {vegetation}. {lighting}",
+      "validBiomes": ["midgard-greatwood"],
+      "roomType": "Standard",
+      "weight": 50,
+      "tags": ["path", "nature", "midgard"],
+      "slots": [
+        { "slotId": "vegetation", "type": "Description", "descriptorPool": "room.vegetation", "isRequired": true },
+        { "slotId": "lighting", "type": "Description", "descriptorPool": "environmental.lighting", "isRequired": true }
+      ],
+      "encounters": ["blighted-beasts"]
+    },
+    {
+      "templateId": "mid-petrified-grove",
+      "namePattern": "Petrified Grove",
+      "descriptionPattern": "Ancient ironwood trees stand like silent sentinels in this grove. {smell}",
+      "validBiomes": ["midgard-greatwood"],
+      "roomType": "Standard",
+      "weight": 30,
+      "hazards": ["toxic-spores"],
+      "tags": ["nature", "ruin", "midgard"],
+      "slots": [
+        { "slotId": "smell", "type": "Description", "descriptorPool": "environmental.smells", "isRequired": true }
+      ],
+      "encounters": ["forlorn", "flora"]
+    },
+    {
+      "templateId": "mid-aether-thistle-patch",
+      "namePattern": "Aether-Thistle Patch",
+      "descriptionPattern": "A clearing filled with glowing purple thistles that hum with energy. {atmosphere}",
+      "validBiomes": ["midgard-greatwood"],
+      "roomType": "Standard",
+      "weight": 20,
+      "hazards": ["blight-exposure"],
+      "tags": ["nature", "hazard", "midgard"],
+      "slots": [
+        { "slotId": "atmosphere", "type": "Description", "descriptorPool": "environmental.atmosphere", "isRequired": true }
+      ],
+      "encounters": ["blighted-beasts"]
+    },
+    {
+      "templateId": "mid-abandoned-farmstead",
+      "namePattern": "Abandoned Farmstead",
+      "descriptionPattern": "The collapsing ruins of a pre-Glitch farmstead. {details}",
+      "validBiomes": ["midgard-greatwood"],
+      "roomType": "Standard",
+      "weight": 25,
+      "hazards": ["structural-weakness"],
+      "tags": ["ruin", "building", "midgard"],
+      "slots": [
+        { "slotId": "details", "type": "Description", "descriptorPool": "room.ruin_details", "isRequired": true }
+      ],
+      "encounters": ["scavengers"]
+    },
+    {
+      "templateId": "mid-crater-edge",
+      "namePattern": "Crater Edge",
+      "descriptionPattern": "The jagged edge of a massive impact crater. {view}",
+      "validBiomes": ["midgard-scar"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["reality-flux"],
+      "tags": ["landscape", "danger", "midgard"],
+      "slots": [
+        { "slotId": "view", "type": "Description", "descriptorPool": "room.views", "isRequired": true }
+      ],
+      "encounters": ["forlorn"]
+    },
+    {
+      "templateId": "mid-debris-field",
+      "namePattern": "Debris Field",
+      "descriptionPattern": "A chaotic field of scattered Asgardian wreckage. {lighting}",
+      "validBiomes": ["midgard-scar"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["radiation", "unstable-ground"],
+      "tags": ["wreckage", "midgard"],
+      "slots": [
+        { "slotId": "lighting", "type": "Description", "descriptorPool": "environmental.lighting", "isRequired": true }
+      ],
+      "encounters": ["forlorn", "constructs"]
+    },
+    {
+      "templateId": "mid-fallen-spire",
+      "namePattern": "Fallen Spire",
+      "descriptionPattern": "The toppled remains of a massive orbital spire. {atmosphere}",
+      "validBiomes": ["midgard-scar"],
+      "roomType": "Boss",
+      "weight": 10,
+      "hazards": ["structural-collapse"],
+      "tags": ["ruin", "boss", "midgard"],
+      "slots": [
+        { "slotId": "atmosphere", "type": "Description", "descriptorPool": "environmental.atmosphere", "isRequired": true }
+      ],
+      "encounters": ["forlorn", "boss"],
+      "isBossRoom": true
+    },
+    {
+      "templateId": "mid-blight-storm-pocket",
+      "namePattern": "Blight-Storm Pocket",
+      "descriptionPattern": "A concentrated zone of corruption where the Blight-Storm rages eternally. {sound}",
+      "validBiomes": ["midgard-scar"],
+      "roomType": "Standard",
+      "weight": 20,
+      "hazards": ["haz-blight-storm"],
+      "tags": ["weather", "danger", "midgard"],
+      "slots": [
+        { "slotId": "sound", "type": "Description", "descriptorPool": "environmental.sounds", "isRequired": true }
+      ],
+      "encounters": ["forlorn"]
+    },
+    {
+      "templateId": "mid-toxin-pool",
+      "namePattern": "Toxin Pool",
+      "descriptionPattern": "A bubbling pool of industrial runoff. {smell}",
+      "validBiomes": ["midgard-mires"],
+      "roomType": "Standard",
+      "weight": 35,
+      "hazards": ["chemical-burn", "haz-toxic-runoff"],
+      "tags": ["swamp", "hazard", "midgard"],
+      "slots": [
+        { "slotId": "smell", "type": "Description", "descriptorPool": "environmental.smells", "isRequired": true }
+      ],
+      "encounters": ["blighted-beasts"]
+    },
+    {
+      "templateId": "mid-ferry-landing",
+      "namePattern": "Ferry Landing",
+      "descriptionPattern": "A sturdy wooden dock maintained by the Ferry Guild. {activity}",
+      "validBiomes": ["midgard-mires"],
+      "roomType": "Settlement",
+      "weight": 15,
+      "tags": ["settlement", "water", "midgard"],
+      "slots": [
+        { "slotId": "activity", "type": "Description", "descriptorPool": "room.npc_activities", "isRequired": true }
+      ],
+      "encounters": ["humanoid-ferry-guild"],
+      "isSettlement": true
+    },
+    {
+      "templateId": "mid-flooded-ruins",
+      "namePattern": "Flooded Ruins",
+      "descriptionPattern": "The upper levels of a submerged building poke above the murky water. {lighting}",
+      "validBiomes": ["midgard-mires"],
+      "roomType": "Standard",
+      "weight": 30,
+      "hazards": ["drowning-risk"],
+      "tags": ["ruin", "water", "midgard"],
+      "slots": [
+        { "slotId": "lighting", "type": "Description", "descriptorPool": "environmental.lighting", "isRequired": true }
+      ],
+      "encounters": ["blighted-beasts"]
+    },
+    {
+      "templateId": "mid-rocky-shore",
+      "namePattern": "Rocky Shore",
+      "descriptionPattern": "A desolate shoreline battered by grey waves. {sound}",
+      "validBiomes": ["midgard-fjords"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["wave-surge"],
+      "tags": ["coast", "midgard"],
+      "slots": [
+        { "slotId": "sound", "type": "Description", "descriptorPool": "environmental.sounds.ocean", "isRequired": true }
+      ],
+      "encounters": ["blighted-beasts"]
+    },
+    {
+      "templateId": "mid-tidal-cave",
+      "namePattern": "Tidal Cave",
+      "descriptionPattern": "A sea-cave that floods with the tide. {smell}",
+      "validBiomes": ["midgard-fjords"],
+      "roomType": "Standard",
+      "weight": 30,
+      "hazards": ["flooding", "haz-leviathan-strike"],
+      "tags": ["cave", "water", "midgard"],
+      "slots": [
+        { "slotId": "smell", "type": "Description", "descriptorPool": "environmental.smells.ocean", "isRequired": true }
+      ],
+      "encounters": ["hafgufa-brood"]
+    },
+    {
+      "templateId": "mus-obsidian-field",
+      "namePattern": "Obsidian Field",
+      "descriptionPattern": "A landscape of sharp, shattered volcanic glass. {lighting}",
+      "validBiomes": ["muspelheim-slag-wastes"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["intense-heat", "sharp-terrain"],
+      "tags": ["volcanic", "muspelheim"],
+      "slots": [
+        { "slotId": "lighting", "type": "Description", "descriptorPool": "environmental.lighting.volcanic", "isRequired": true }
+      ],
+      "encounters": ["surtr-scions"]
+    },
+    {
+      "templateId": "mus-slag-flow-edge",
+      "namePattern": "Slag Flow Edge",
+      "descriptionPattern": "The dangerous bank of a flowing river of molten slag. {heat}",
+      "validBiomes": ["muspelheim-slag-wastes"],
+      "roomType": "Standard",
+      "weight": 35,
+      "hazards": ["intense-heat", "haz-slag-collapse"],
+      "tags": ["volcanic", "lava", "muspelheim"],
+      "slots": [
+        { "slotId": "heat", "type": "Description", "descriptorPool": "environmental.temperature.volcanic", "isRequired": true }
+      ],
+      "encounters": ["surtr-scions"]
+    },
+    {
+      "templateId": "mus-collapsed-forge",
+      "namePattern": "Collapsed Forge",
+      "descriptionPattern": "The ruins of a massive ancient forge. {sound}",
+      "validBiomes": ["muspelheim-slag-wastes"],
+      "roomType": "Standard",
+      "weight": 25,
+      "hazards": ["structural-instability", "haz-steam-vent"],
+      "tags": ["ruin", "industrial", "muspelheim"],
+      "slots": [
+        { "slotId": "sound", "type": "Description", "descriptorPool": "environmental.sounds.industrial", "isRequired": true }
+      ],
+      "encounters": ["iron-bane"]
+    },
+    {
+      "templateId": "mus-slag-crust-crossing",
+      "namePattern": "Slag Crust Crossing",
+      "descriptionPattern": "A path across cooling lava crust. {warning}",
+      "validBiomes": ["muspelheim-gjollflow"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["crust-failure", "haz-slag-collapse"],
+      "tags": ["path", "dangerous", "muspelheim"],
+      "slots": [
+        { "slotId": "warning", "type": "Description", "descriptorPool": "room.danger_warnings", "isRequired": true }
+      ],
+      "encounters": ["surtr-scions"]
+    },
+    {
+      "templateId": "mus-lava-tube",
+      "namePattern": "Lava Tube",
+      "descriptionPattern": "A smooth tunnel formed by flowing lava. {atmosphere}",
+      "validBiomes": ["muspelheim-gjollflow"],
+      "roomType": "Standard",
+      "weight": 30,
+      "hazards": ["intense-heat", "collapse"],
+      "tags": ["cave", "volcanic", "muspelheim"],
+      "slots": [
+        { "slotId": "atmosphere", "type": "Description", "descriptorPool": "environmental.atmosphere", "isRequired": true }
+      ],
+      "encounters": ["surtr-scions"]
+    },
+    {
+      "templateId": "mus-ash-sea",
+      "namePattern": "Ash Sea",
+      "descriptionPattern": "Endless dunes of grey ash stretching to the horizon. {wind}",
+      "validBiomes": ["muspelheim-ashfall"],
+      "roomType": "Standard",
+      "weight": 45,
+      "hazards": ["haz-ashfall-collapse", "respiratory-hazard"],
+      "tags": ["wasteland", "ash", "muspelheim"],
+      "slots": [
+        { "slotId": "wind", "type": "Description", "descriptorPool": "environmental.sounds.wind", "isRequired": true }
+      ],
+      "encounters": ["slag-swimmers"]
+    },
+    {
+      "templateId": "mus-hearth-plaza",
+      "namePattern": "Hearth Plaza",
+      "descriptionPattern": "A central gathering place for the Hearth-Clan, warmed by a central fire. {activity}",
+      "validBiomes": ["muspelheim-hearths"],
+      "roomType": "Settlement",
+      "weight": 20,
+      "tags": ["settlement", "muspelheim"],
+      "slots": [
+        { "slotId": "activity", "type": "Description", "descriptorPool": "room.npc_activities", "isRequired": true }
+      ],
+      "encounters": ["humanoid-hearth-clan"],
+      "isSettlement": true
+    },
+    {
+      "templateId": "nif-frozen-corridor",
+      "namePattern": "Frozen Corridor",
+      "descriptionPattern": "A hallway thick with rime ice. {temp}",
+      "validBiomes": ["niflheim-permafrost"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["extreme-cold", "slip-hazard"],
+      "tags": ["corridor", "ice", "niflheim"],
+      "slots": [
+        { "slotId": "temp", "type": "Description", "descriptorPool": "environmental.temperature.cold", "isRequired": true }
+      ],
+      "encounters": ["frost-revenants"]
+    },
+    {
+      "templateId": "nif-cryo-chamber-array",
+      "namePattern": "Cryo-Chamber Array",
+      "descriptionPattern": "Rows of frosted stasis pods line the walls. {lighting}",
+      "validBiomes": ["niflheim-permafrost"],
+      "roomType": "Standard",
+      "weight": 30,
+      "hazards": ["extreme-cold"],
+      "tags": ["tech", "ice", "niflheim"],
+      "slots": [
+        { "slotId": "lighting", "type": "Description", "descriptorPool": "environmental.lighting.tech", "isRequired": true }
+      ],
+      "encounters": ["einherjar-dormant"]
+    },
+    {
+      "templateId": "nif-machinery-graveyard",
+      "namePattern": "Machinery Graveyard",
+      "descriptionPattern": "Frozen, rusted machinery lies silent in the cold. {sound}",
+      "validBiomes": ["niflheim-permafrost"],
+      "roomType": "Standard",
+      "weight": 25,
+      "hazards": ["extreme-cold", "unstable-machinery"],
+      "tags": ["tech", "ruin", "niflheim"],
+      "slots": [
+        { "slotId": "sound", "type": "Description", "descriptorPool": "environmental.sounds.mechanical", "isRequired": true }
+      ],
+      "encounters": ["frost-revenants"]
+    },
+    {
+      "templateId": "nif-hvergelmir-maw",
+      "namePattern": "Hvergelmir's Maw",
+      "descriptionPattern": "The epicenter of the cold, a swirling vortex of frost and death. {atmosphere}",
+      "validBiomes": ["niflheim-hvergelmir"],
+      "roomType": "Boss",
+      "weight": 10,
+      "hazards": ["haz-ice-debt", "extreme-cold"],
+      "tags": ["boss", "ice", "niflheim"],
+      "slots": [
+        { "slotId": "atmosphere", "type": "Description", "descriptorPool": "environmental.atmosphere.ominous", "isRequired": true }
+      ],
+      "encounters": ["hvergelmir-warden", "boss"],
+      "isBossRoom": true
+    },
+    {
+      "templateId": "nif-einherjar-gallery",
+      "namePattern": "Einherjar Gallery",
+      "descriptionPattern": "Frozen warriors stand in formation, preserved for eternity. {feeling}",
+      "validBiomes": ["niflheim-archive"],
+      "roomType": "Standard",
+      "weight": 35,
+      "hazards": ["extreme-cold", "haz-cognitive-echo"],
+      "tags": ["memorial", "ice", "niflheim"],
+      "slots": [
+        { "slotId": "feeling", "type": "Description", "descriptorPool": "room.feelings.eerie", "isRequired": true }
+      ],
+      "encounters": ["einherjar"]
+    },
+    {
+      "templateId": "van-canopy-platform",
+      "namePattern": "Canopy Platform",
+      "descriptionPattern": "A stable platform of woven branches high above the ground. {view}",
+      "validBiomes": ["vanaheim-canopy"],
+      "roomType": "Standard",
+      "weight": 40,
+      "tags": ["platform", "height", "vanaheim"],
+      "slots": [
+        { "slotId": "view", "type": "Description", "descriptorPool": "room.views.forest", "isRequired": true }
+      ],
+      "encounters": ["blighted-beasts"],
+      "verticalLevel": 2
+    },
+    {
+      "templateId": "van-grove-clan-settlement",
+      "namePattern": "Grove-Clan Settlement",
+      "descriptionPattern": "A village built into the living wood of the trees. {activity}",
+      "validBiomes": ["vanaheim-canopy"],
+      "roomType": "Settlement",
+      "weight": 15,
+      "tags": ["settlement", "vanaheim"],
+      "slots": [
+        { "slotId": "activity", "type": "Description", "descriptorPool": "room.npc_activities", "isRequired": true }
+      ],
+      "encounters": ["humanoid-grove-clan"],
+      "isSettlement": true,
+      "verticalLevel": 2
+    },
+    {
+      "templateId": "van-vine-curtain-passage",
+      "namePattern": "Vine Curtain Passage",
+      "descriptionPattern": "A path obscured by thick, hanging vines. {lighting}",
+      "validBiomes": ["vanaheim-gloom"],
+      "roomType": "Standard",
+      "weight": 40,
+      "hazards": ["ambush-risk"],
+      "tags": ["jungle", "vanaheim"],
+      "slots": [
+        { "slotId": "lighting", "type": "Description", "descriptorPool": "environmental.lighting.dim", "isRequired": true }
+      ],
+      "encounters": ["weaponized-flora"],
+      "verticalLevel": 1
+    },
+    {
+      "templateId": "van-biomass-shallows",
+      "namePattern": "Biomass Shallows",
+      "descriptionPattern": "A swampy area where the ground feels soft and flesh-like. {smell}",
+      "validBiomes": ["vanaheim-undergrowth"],
+      "roomType": "Standard",
+      "weight": 35,
+      "hazards": ["contamination"],
+      "tags": ["swamp", "biomass", "vanaheim"],
+      "slots": [
+        { "slotId": "smell", "type": "Description", "descriptorPool": "environmental.smells.rot", "isRequired": true }
+      ],
+      "encounters": ["the-unraveled"],
+      "verticalLevel": 0
+    }
+  ]
 }

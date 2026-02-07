@@ -48,94 +48,67 @@ public record EnvironmentalHazardDefinition
     public string? Description { get; init; }
 
     /// <summary>
-    /// Gets the dice notation for hazard damage.
+    /// Gets the optional primary damage definition.
     /// </summary>
     /// <remarks>
-    /// Standard dice notation (e.g., "2d6", "3d6", "2d4").
-    /// Rolled when damage is applied on entry or per turn.
+    /// Used for backward compatibility or simple hazards.
     /// </remarks>
+    public DamageDefinition? Damage { get; init; }
+
+    /// <summary>
+    /// Gets the damage dealt on entry.
+    /// </summary>
+    public DamageDefinition? EntryDamage { get; init; }
+
+    /// <summary>
+    /// Gets the damage dealt per turn.
+    /// </summary>
+    public DamageDefinition? TurnDamage { get; init; }
+
+    /// <summary>
+    /// Gets the dice notation for hazard damage.
+    /// </summary>
+    [Obsolete("Use EntryDamage or TurnDamage instead.")]
     public string DamageDice { get; init; } = "1d6";
 
     /// <summary>
     /// Gets the type of damage dealt by the hazard.
     /// </summary>
-    /// <remarks>
-    /// Standard damage type string (e.g., "fire", "piercing", "bludgeoning", "acid").
-    /// Used for resistance/vulnerability calculations.
-    /// </remarks>
+    [Obsolete("Use EntryDamage or TurnDamage instead.")]
     public string DamageType { get; init; } = "fire";
 
     /// <summary>
     /// Gets the identifier of the status effect applied by this hazard.
     /// </summary>
-    /// <remarks>
-    /// <para>Optional. References a status effect definition (e.g., "burning", "bleeding", "prone").</para>
-    /// <para>When set, the status effect is applied when damage is dealt.</para>
-    /// <para>Null if the hazard does not apply a status effect.</para>
-    /// </remarks>
     public string? StatusEffectId { get; init; }
 
     /// <summary>
     /// Gets whether the hazard deals damage when a combatant enters the cell.
     /// </summary>
-    /// <remarks>
-    /// <para>When true, damage is applied immediately when a combatant is pushed/knocked into the hazard
-    /// or moves into it voluntarily.</para>
-    /// <para>Most hazards have this set to true.</para>
-    /// </remarks>
     public bool DamageOnEnter { get; init; } = true;
 
     /// <summary>
     /// Gets whether the hazard deals damage each turn the combatant remains in the cell.
     /// </summary>
-    /// <remarks>
-    /// <para>When true, damage is applied at the start of each turn while the combatant remains in the hazard.</para>
-    /// <para>Examples: Lava and acid pools deal per-turn damage; spikes and pits typically do not.</para>
-    /// </remarks>
     public bool DamagePerTurn { get; init; }
 
     /// <summary>
     /// Gets whether this hazard requires a climb action to escape.
     /// </summary>
-    /// <remarks>
-    /// <para>When true, combatants who fall into this hazard cannot simply walk out
-    /// and must use a climb action or receive help to escape.</para>
-    /// <para>Primarily used for pits and chasms.</para>
-    /// </remarks>
     public bool RequiresClimbOut { get; init; }
 
     /// <summary>
     /// Gets whether this hazard degrades armor over time.
     /// </summary>
-    /// <remarks>
-    /// <para>When true, each turn in the hazard may reduce the effectiveness of equipped armor.</para>
-    /// <para>Primarily used for acid pools.</para>
-    /// </remarks>
     public bool DegradesArmor { get; init; }
 
     /// <summary>
     /// Gets the optional icon path for UI display.
     /// </summary>
-    /// <remarks>
-    /// Relative path to the hazard icon image, if available.
-    /// </remarks>
     public string? IconPath { get; init; }
 
     // ===== Factory Methods =====
 
-    /// <summary>
-    /// Creates a new environmental hazard definition with the specified properties.
-    /// </summary>
-    /// <param name="type">The hazard type.</param>
-    /// <param name="name">The display name.</param>
-    /// <param name="damageDice">The damage dice notation.</param>
-    /// <param name="damageType">The damage type.</param>
-    /// <param name="damageOnEnter">Whether damage is dealt on entry.</param>
-    /// <param name="damagePerTurn">Whether damage is dealt per turn.</param>
-    /// <param name="statusEffectId">Optional status effect ID.</param>
-    /// <param name="requiresClimbOut">Whether climbing is required to escape.</param>
-    /// <param name="degradesArmor">Whether the hazard degrades armor.</param>
-    /// <returns>A new EnvironmentalHazardDefinition.</returns>
     public static EnvironmentalHazardDefinition Create(
         HazardType type,
         string name,
@@ -147,12 +120,17 @@ public record EnvironmentalHazardDefinition
         bool requiresClimbOut = false,
         bool degradesArmor = false)
     {
+        var damageDef = new DamageDefinition { Dice = damageDice, DamageType = damageType };
+#pragma warning disable CS0618 // Type or member is obsolete
         return new EnvironmentalHazardDefinition
         {
             Type = type,
             Name = name,
             DamageDice = damageDice,
             DamageType = damageType,
+            EntryDamage = damageOnEnter ? damageDef : null,
+            TurnDamage = damagePerTurn ? damageDef : null,
+#pragma warning restore CS0618 // Type or member is obsolete
             DamageOnEnter = damageOnEnter,
             DamagePerTurn = damagePerTurn,
             StatusEffectId = statusEffectId,
@@ -161,24 +139,19 @@ public record EnvironmentalHazardDefinition
         };
     }
 
-    /// <summary>
-    /// Gets the source tag for modifier tracking (e.g., "hazard:lava").
-    /// </summary>
-    /// <returns>A source identifier string for this hazard.</returns>
-    /// <remarks>
-    /// Used when applying status effects or modifiers to track their source.
-    /// </remarks>
     public string GetModifierSource() => $"hazard:{Type.ToString().ToLowerInvariant()}";
 
-    /// <summary>
-    /// Checks whether this hazard has any damage dealing capability.
-    /// </summary>
-    /// <returns>True if the hazard can deal damage on entry or per turn.</returns>
     public bool DealsDamage() => DamageOnEnter || DamagePerTurn;
 
-    /// <summary>
-    /// Checks whether this hazard applies a status effect.
-    /// </summary>
-    /// <returns>True if the hazard has an associated status effect.</returns>
     public bool AppliesStatusEffect() => !string.IsNullOrEmpty(StatusEffectId);
+}
+
+/// <summary>
+/// Defines a damage profile for a hazard.
+/// </summary>
+public record DamageDefinition
+{
+    public string Dice { get; init; } = "1d6";
+    public string DamageType { get; init; } = "physical";
+    public int Bonus { get; init; }
 }

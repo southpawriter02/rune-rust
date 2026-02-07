@@ -314,41 +314,51 @@ public class EnvironmentalCombatService : IEnvironmentalCombatService
                 target.CurrentHealth);
         }
 
-        // Check if this damage type applies
-        if (isEntryDamage && !hazardDef.DamageOnEnter)
+        // Check if this damage type applies and select the correct damage definition
+        DamageDefinition? activeDamageDef = null;
+        if (isEntryDamage)
         {
-            _logger.LogDebug(
-                "Hazard {HazardName} does not deal entry damage",
-                hazardDef.Name);
-            return HazardDamageResult.NoDamage(
-                hazardType.Value,
-                hazardDef.Name,
-                position,
-                target.CurrentHealth);
+            if (!hazardDef.DamageOnEnter || hazardDef.EntryDamage == null)
+            {
+                _logger.LogDebug(
+                    "Hazard {HazardName} does not deal entry damage",
+                    hazardDef.Name);
+                return HazardDamageResult.NoDamage(
+                    hazardType.Value,
+                    hazardDef.Name,
+                    position,
+                    target.CurrentHealth);
+            }
+            activeDamageDef = hazardDef.EntryDamage;
         }
-
-        if (!isEntryDamage && !hazardDef.DamagePerTurn)
+        else
         {
-            _logger.LogDebug(
-                "Hazard {HazardName} does not deal per-turn damage",
-                hazardDef.Name);
-            return HazardDamageResult.NoDamage(
-                hazardType.Value,
-                hazardDef.Name,
-                position,
-                target.CurrentHealth);
+            if (!hazardDef.DamagePerTurn || hazardDef.TurnDamage == null)
+            {
+                _logger.LogDebug(
+                    "Hazard {HazardName} does not deal per-turn damage",
+                    hazardDef.Name);
+                return HazardDamageResult.NoDamage(
+                    hazardType.Value,
+                    hazardDef.Name,
+                    position,
+                    target.CurrentHealth);
+            }
+            activeDamageDef = hazardDef.TurnDamage;
         }
 
         // Roll damage
-        var damageRoll = _diceService.RollTotal(hazardDef.DamageDice);
+        var damageRoll = _diceService.RollTotal(activeDamageDef.Dice) + activeDamageDef.Bonus;
 
         _logger.LogDebug(
-            "Hazard damage roll: {Dice} = {Damage} {DamageType}",
-            hazardDef.DamageDice,
+            "Hazard damage roll: {Dice}+{Bonus} = {Damage} {DamageType}",
+            activeDamageDef.Dice,
+            activeDamageDef.Bonus,
             damageRoll,
-            hazardDef.DamageType);
+            activeDamageDef.DamageType);
 
         // Apply damage to the target's underlying entity (Player or Monster)
+        // Note: We might want to pass damage type to ApplyDamageToCombatant for resistances in the future
         var actualDamage = ApplyDamageToCombatant(target, damageRoll);
         var remainingHealth = target.CurrentHealth;
 
@@ -359,7 +369,7 @@ public class EnvironmentalCombatService : IEnvironmentalCombatService
             "{Target} took {Damage} {DamageType} damage from {HazardName} at {Position} ({EntryType}). HP: {Remaining}",
             target.DisplayName,
             actualDamage,
-            hazardDef.DamageType,
+            activeDamageDef.DamageType,
             hazardDef.Name,
             position,
             isEntryDamage ? "entry" : "tick",
@@ -368,7 +378,7 @@ public class EnvironmentalCombatService : IEnvironmentalCombatService
         // Log combat event
         _eventLogger.LogCombat(
             "HazardDamage",
-            $"{target.DisplayName} took {actualDamage} {hazardDef.DamageType} damage from {hazardDef.Name}",
+            $"{target.DisplayName} took {actualDamage} {activeDamageDef.DamageType} damage from {hazardDef.Name}",
             data: new Dictionary<string, object>
             {
                 ["targetId"] = target.Id,
@@ -376,8 +386,8 @@ public class EnvironmentalCombatService : IEnvironmentalCombatService
                 ["hazardType"] = hazardType.Value.ToString(),
                 ["hazardName"] = hazardDef.Name,
                 ["damage"] = actualDamage,
-                ["damageType"] = hazardDef.DamageType,
-                ["damageDice"] = hazardDef.DamageDice,
+                ["damageType"] = activeDamageDef.DamageType,
+                ["damageDice"] = activeDamageDef.Dice,
                 ["position"] = position.ToString(),
                 ["isEntryDamage"] = isEntryDamage,
                 ["remainingHealth"] = remainingHealth
@@ -444,8 +454,8 @@ public class EnvironmentalCombatService : IEnvironmentalCombatService
                 hazardDef.Name,
                 position,
                 actualDamage,
-                hazardDef.DamageType,
-                hazardDef.DamageDice,
+                activeDamageDef.DamageType,
+                activeDamageDef.Dice,
                 remainingHealth,
                 appliedStatusEffect,
                 isTrapped)
@@ -454,8 +464,8 @@ public class EnvironmentalCombatService : IEnvironmentalCombatService
                 hazardDef.Name,
                 position,
                 actualDamage,
-                hazardDef.DamageType,
-                hazardDef.DamageDice,
+                activeDamageDef.DamageType,
+                activeDamageDef.Dice,
                 remainingHealth,
                 hazardDef.DegradesArmor);
     }

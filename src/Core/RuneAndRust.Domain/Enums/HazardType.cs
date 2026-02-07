@@ -94,5 +94,37 @@ public enum HazardType
     /// <remarks>
     /// Added in v0.10.1c for environmental combat push/knockback mechanics.
     /// </remarks>
-    Lava = 10
+    Lava = 10,
+
+    /// <summary>
+    /// Hazardous terrain or objects that trigger on contact.
+    /// Includes sharp thorns, corrosive moss, or electrified surfaces.
+    /// </summary>
+    Contact = 11,
+
+    /// <summary>
+    /// General environmental effects like storms or extreme weather.
+    /// </summary>
+    Environmental = 12,
+
+    /// <summary>
+    /// Mechanical or magical traps triggered by movement or interaction.
+    /// </summary>
+    Trap = 13,
+
+    /// <summary>
+    /// A dangerous gap or fissure in the terrain.
+    /// Similar to pits but may have different effects like steam vents.
+    /// </summary>
+    Gap = 14,
+
+    /// <summary>
+    /// A localized curse or magical affliction.
+    /// </summary>
+    Curse = 15,
+
+    /// <summary>
+    /// Psychic hazards that attack the mind.
+    /// </summary>
+    Psychic = 16
 }

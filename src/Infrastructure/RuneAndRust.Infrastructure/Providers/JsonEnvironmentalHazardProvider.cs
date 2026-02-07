@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Interfaces;
@@ -221,8 +222,8 @@ public class JsonEnvironmentalHazardProvider : IEnvironmentalHazardProvider
                     "OnEnter: {OnEnter}, PerTurn: {PerTurn}, StatusEffect: {StatusEffect}",
                     definition.Type,
                     definition.Name,
-                    definition.DamageDice,
-                    definition.DamageType,
+                    definition.EntryDamage?.Dice ?? definition.TurnDamage?.Dice ?? "None",
+                    definition.EntryDamage?.DamageType ?? definition.TurnDamage?.DamageType ?? "None",
                     definition.DamageOnEnter,
                     definition.DamagePerTurn,
                     definition.StatusEffectId ?? "none");
@@ -258,20 +259,56 @@ public class JsonEnvironmentalHazardProvider : IEnvironmentalHazardProvider
                 $"Invalid hazard type: {dto.Type}. Valid types are: {string.Join(", ", Enum.GetNames<HazardType>())}");
         }
 
+        // Map damage DTOs to Definitions
+        DamageDefinition? entryDamage = null;
+        if (dto.EntryDamage != null)
+        {
+            entryDamage = new DamageDefinition
+            {
+                Dice = dto.EntryDamage.Dice,
+                DamageType = dto.EntryDamage.DamageType,
+                Bonus = dto.EntryDamage.Bonus
+            };
+        }
+        else if (dto.DamageOnEnter && !string.IsNullOrEmpty(dto.DamageDice)) // Legacy fallback
+        {
+            entryDamage = new DamageDefinition
+            {
+                Dice = dto.DamageDice,
+                DamageType = dto.DamageType ?? "physical"
+            };
+        }
+
+        DamageDefinition? turnDamage = null;
+        if (dto.DamagePerTurn != null)
+        {
+            turnDamage = new DamageDefinition
+            {
+                Dice = dto.DamagePerTurn.Dice,
+                DamageType = dto.DamagePerTurn.DamageType,
+                Bonus = dto.DamagePerTurn.Bonus
+            };
+        }
+        // No legacy fallback for TurnDamage as boolean doesn't carry dice info (unless we reuse main dice)
+
+#pragma warning disable CS0618 // Type or member is obsolete
         return new EnvironmentalHazardDefinition
         {
             Type = hazardType,
             Name = dto.Name ?? hazardType.ToString(),
             Description = dto.Description,
-            DamageDice = dto.DamageDice ?? "1d6",
-            DamageType = dto.DamageType ?? "fire",
+            DamageDice = dto.DamageDice ?? "1d6", // Legacy/Default
+            DamageType = dto.DamageType ?? "fire", // Legacy/Default
+            EntryDamage = entryDamage,
+            TurnDamage = turnDamage,
             StatusEffectId = dto.StatusEffectId,
-            DamageOnEnter = dto.DamageOnEnter,
-            DamagePerTurn = dto.DamagePerTurn,
+            DamageOnEnter = entryDamage != null,
+            DamagePerTurn = turnDamage != null,
             RequiresClimbOut = dto.RequiresClimbOut,
             DegradesArmor = dto.DegradesArmor,
             IconPath = dto.IconPath
         };
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -291,16 +328,33 @@ public class JsonEnvironmentalHazardProvider : IEnvironmentalHazardProvider
     /// </summary>
     private sealed class HazardDto
     {
+        [JsonPropertyName("hazardType")]
         public string Type { get; set; } = string.Empty;
         public string? Name { get; set; }
         public string? Description { get; set; }
+        
+        // Legacy fields
         public string? DamageDice { get; set; }
         public string? DamageType { get; set; }
+        
         public string? StatusEffectId { get; set; }
+        
+        // New structured damage fields
+        public HazardDamageDto? EntryDamage { get; set; }
+        public HazardDamageDto? DamagePerTurn { get; set; } // Can be object in new format
+        
+        // These might still be used as flags or overrides, but primarily derived from existence of damage objects
         public bool DamageOnEnter { get; set; } = true;
-        public bool DamagePerTurn { get; set; }
+        
         public bool RequiresClimbOut { get; set; }
         public bool DegradesArmor { get; set; }
         public string? IconPath { get; set; }
+    }
+
+    private sealed class HazardDamageDto
+    {
+        public string Dice { get; set; } = "1d6";
+        public string DamageType { get; set; } = "physical";
+        public int Bonus { get; set; }
     }
 }

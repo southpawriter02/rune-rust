@@ -10,357 +10,385 @@
       "baseDefense": 2,
       "experienceValue": 25,
       "behavior": "Cowardly",
-      "tags": [
-        "humanoid"
-      ],
-      "canHeal": false,
+      "tags": ["humanoid"],
       "spawnWeight": 100,
       "initiativeModifier": 1,
-      "baseResistances": {},
-      "possibleTiers": [
-        "common",
-        "named",
-        "elite"
-      ],
-      "possibleTraits": [
-        "venomous",
-        "berserker"
-      ],
-      "nameGenerator": {
-        "prefixes": [
-          "Gn",
-          "Sn",
-          "Gr",
-          "Kr",
-          "Zn"
-        ],
-        "suffixes": [
-          "ik",
-          "ob",
-          "ax",
-          "ek",
-          "uk"
-        ],
-        "titleFormat": "{0} the {1}"
-      },
-      "lootTable": {
-        "entries": [
-          {
-            "itemId": "health_potion",
-            "weight": 100,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.15
-          },
-          {
-            "itemId": "rusty_dagger",
-            "weight": 50,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.05
-          }
-        ],
-        "currencyDrops": [
-          {
-            "currencyId": "gold",
-            "minAmount": 5,
-            "maxAmount": 15,
-            "dropChance": 0.80
-          }
-        ]
-      }
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["venomous", "berserker"]
     },
     {
-      "id": "skeleton",
-      "name": "Skeleton",
-      "description": "An animated pile of bones held together by dark magic.",
-      "baseHealth": 25,
-      "baseAttack": 6,
+      "id": "ash-vargr",
+      "name": "Ash-Vargr",
+      "description": "A wolf-like beast with ash-grey fur and glowing red eyes, adapted to the scarred lands of Midgard.",
+      "baseHealth": 22,
+      "baseAttack": 10,
       "baseDefense": 3,
-      "experienceValue": 20,
+      "experienceValue": 50,
       "behavior": "Aggressive",
-      "tags": [
-        "undead"
-      ],
-      "canHeal": false,
-      "spawnWeight": 80,
-      "initiativeModifier": 0,
-      "baseResistances": {
-        "physical": 25,
-        "fire": -50,
-        "poison": 100,
-        "holy": -50,
-        "dark": 50
-      },
-      "possibleTiers": [
-        "common",
-        "named",
-        "elite",
-        "boss"
-      ],
-      "possibleTraits": [
-        "armored",
-        "berserker"
-      ],
-      "nameGenerator": {
-        "prefixes": [
-          "Sk",
-          "Bl",
-          "Dr",
-          "Vr",
-          "Th"
-        ],
-        "suffixes": [
-          "ull",
-          "ax",
-          "or",
-          "im",
-          "us"
-        ],
-        "titleFormat": "{0} the Bone {1}"
-      },
-      "lootTable": {
-        "entries": [
-          {
-            "itemId": "bone_dust",
-            "weight": 100,
-            "minQuantity": 1,
-            "maxQuantity": 3,
-            "dropChance": 0.30
-          },
-          {
-            "itemId": "ancient_coin",
-            "weight": 50,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.10
-          }
-        ],
-        "currencyDrops": [
-          {
-            "currencyId": "gold",
-            "minAmount": 8,
-            "maxAmount": 20,
-            "dropChance": 0.90
-          }
-        ]
-      }
+      "tags": ["beast", "blighted-beasts"],
+      "initiativeModifier": 2,
+      "baseResistances": { "cold": 25, "fire": -25 },
+      "possibleTraits": ["pack-tactics"],
+      "possibleTiers": ["common", "elite"]
     },
     {
-      "id": "orc",
-      "name": "Orc",
-      "description": "A large, brutish creature with green skin and tusks. It wields a crude axe.",
-      "baseHealth": 45,
+      "id": "ash-vargr-alpha",
+      "name": "Ash-Vargr Pack Leader",
+      "description": "A massive Ash-Vargr with scarred hide and a commanding howl.",
+      "baseHealth": 38,
       "baseAttack": 12,
       "baseDefense": 4,
+      "experienceValue": 100,
+      "behavior": "Aggressive",
+      "tags": ["beast", "blighted-beasts", "leader"],
+      "initiativeModifier": 3,
+      "baseResistances": { "cold": 25, "fire": -25 },
+      "possibleTraits": ["pack-tactics", "alpha-howl"],
+      "possibleTiers": ["elite", "named"]
+    },
+    {
+      "id": "ash-vargr-rabid",
+      "name": "Rabid Ash-Vargr",
+      "description": "Foaming at the mouth, this beast attacks with reckless abandon.",
+      "baseHealth": 18,
+      "baseAttack": 12,
+      "baseDefense": 2,
       "experienceValue": 40,
       "behavior": "Aggressive",
-      "tags": [
-        "humanoid"
-      ],
-      "canHeal": false,
-      "spawnWeight": 50,
-      "initiativeModifier": -1,
-      "baseResistances": {},
-      "possibleTiers": [
-        "common",
-        "named",
-        "elite",
-        "boss"
-      ],
-      "possibleTraits": [
-        "armored",
-        "berserker",
-        "regenerating"
-      ],
-      "nameGenerator": {
-        "prefixes": [
-          "Gr",
-          "Kr",
-          "Th",
-          "Br",
-          "Dr"
-        ],
-        "suffixes": [
-          "ok",
-          "ag",
-          "ul",
-          "ax",
-          "or"
-        ],
-        "titleFormat": "{0} the {1}"
-      },
-      "lootTable": {
-        "entries": [
-          {
-            "itemId": "health_potion",
-            "weight": 100,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.25
-          },
-          {
-            "itemId": "iron_sword",
-            "weight": 50,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.10
-          },
-          {
-            "itemId": "orcish_helm",
-            "weight": 30,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.05
-          }
-        ],
-        "currencyDrops": [
-          {
-            "currencyId": "gold",
-            "minAmount": 15,
-            "maxAmount": 35,
-            "dropChance": 1.0
-          }
-        ]
-      }
+      "tags": ["beast", "blighted-beasts"],
+      "initiativeModifier": 1,
+      "possibleTraits": ["frenzy", "no-morale"],
+      "possibleTiers": ["common"]
     },
     {
-      "id": "goblin_shaman",
-      "name": "Goblin Shaman",
-      "description": "A goblin adorned with crude fetishes and glowing runes.",
-      "baseHealth": 25,
-      "baseAttack": 6,
-      "baseDefense": 1,
-      "experienceValue": 30,
-      "behavior": "Support",
-      "tags": [
-        "humanoid",
-        "magic"
-      ],
-      "canHeal": true,
-      "healAmount": 10,
-      "spawnWeight": 30,
-      "initiativeModifier": 2,
-      "baseResistances": {},
-      "possibleTiers": [
-        "common",
-        "named",
-        "elite"
-      ],
-      "possibleTraits": [
-        "regenerating"
-      ],
-      "nameGenerator": {
-        "prefixes": [
-          "Zn",
-          "Xr",
-          "Wr",
-          "Qz",
-          "Vx"
-        ],
-        "suffixes": [
-          "ik",
-          "ax",
-          "um",
-          "ek",
-          "oz"
-        ],
-        "titleFormat": "{0} the Shaman"
-      },
-      "lootTable": {
-        "entries": [
-          {
-            "itemId": "mana_potion",
-            "weight": 100,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.20
-          },
-          {
-            "itemId": "fetish_charm",
-            "weight": 50,
-            "minQuantity": 1,
-            "maxQuantity": 1,
-            "dropChance": 0.10
-          }
-        ],
-        "currencyDrops": [
-          {
-            "currencyId": "gold",
-            "minAmount": 10,
-            "maxAmount": 25,
-            "dropChance": 0.85
-          }
-        ]
-      }
+      "id": "rune-bear",
+      "name": "Rune-Bear",
+      "description": "A hulking bear with glowing runes etched into its fur.",
+      "baseHealth": 52,
+      "baseAttack": 14,
+      "baseDefense": 4,
+      "experienceValue": 150,
+      "behavior": "Aggressive",
+      "tags": ["beast", "blighted-beasts"],
+      "initiativeModifier": 0,
+      "baseResistances": { "physical": 25, "psychic": -25 },
+      "possibleTraits": ["aetheric-discharge"],
+      "possibleTiers": ["elite", "named"]
     },
     {
-      "id": "slime",
-      "name": "Slime",
-      "description": "A gelatinous blob that oozes across the floor.",
-      "baseHealth": 40,
-      "baseAttack": 5,
+      "id": "rune-bear-elder",
+      "name": "Rune-Bear Elder",
+      "description": "An ancient, scarred bear pulsing with raw aetheric energy.",
+      "baseHealth": 85,
+      "baseAttack": 16,
       "baseDefense": 5,
-      "experienceValue": 15,
-      "behavior": "Chaotic",
-      "tags": [
-        "ooze"
-      ],
-      "canHeal": false,
-      "spawnWeight": 90,
-      "initiativeModifier": -2,
-      "baseResistances": {
-        "physical": 50,
-        "fire": -25,
-        "ice": -25,
-        "lightning": -50,
-        "poison": 100
-      },
-      "possibleTiers": [
-        "common",
-        "named",
-        "elite"
-      ],
-      "possibleTraits": [
-        "regenerating",
-        "venomous"
-      ],
-      "nameGenerator": {
-        "prefixes": [
-          "Bl",
-          "Gl",
-          "Sl",
-          "Sp",
-          "Sq"
-        ],
-        "suffixes": [
-          "ob",
-          "ub",
-          "op",
-          "ip",
-          "oop"
-        ],
-        "titleFormat": "{0} the {1}"
-      },
-      "lootTable": {
-        "entries": [
-          {
-            "itemId": "slime_residue",
-            "weight": 100,
-            "minQuantity": 1,
-            "maxQuantity": 3,
-            "dropChance": 0.50
-          }
-        ],
-        "currencyDrops": [
-          {
-            "currencyId": "gold",
-            "minAmount": 1,
-            "maxAmount": 5,
-            "dropChance": 0.30
-          }
-        ]
-      }
+      "experienceValue": 300,
+      "behavior": "Aggressive",
+      "tags": ["beast", "blighted-beasts", "boss"],
+      "initiativeModifier": 1,
+      "baseResistances": { "physical": 25, "psychic": -25 },
+      "possibleTraits": ["shockwave-roar", "boss-flag"],
+      "possibleTiers": ["boss"]
+    },
+    {
+      "id": "jarn-hjortr",
+      "name": "Járn-hjortr",
+      "description": "A stag with metallic skin and razor-sharp antlers.",
+      "baseHealth": 28,
+      "baseAttack": 10,
+      "baseDefense": 4,
+      "experienceValue": 60,
+      "behavior": "Aggressive",
+      "tags": ["beast", "blighted-beasts"],
+      "initiativeModifier": 3,
+      "baseResistances": { "physical": 50, "acid": -25, "fire": -25 },
+      "possibleTraits": ["charge"],
+      "possibleTiers": ["common", "elite"]
+    },
+    {
+      "id": "hafgufa-spawn",
+      "name": "Hafgufa Spawn",
+      "description": "A writhing aquatic horror with grasping tentacles.",
+      "baseHealth": 45,
+      "baseAttack": 12,
+      "baseDefense": 5,
+      "experienceValue": 120,
+      "behavior": "Aggressive",
+      "tags": ["beast", "blighted-beasts", "aquatic"],
+      "initiativeModifier": 1,
+      "baseResistances": { "cold": 50, "fire": -25, "poison": -25 },
+      "possibleTraits": ["aquatic-ambush", "grapple"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "grit-golem",
+      "name": "Grit-Golem",
+      "description": "A construct of stone and debris, guarding its territory.",
+      "baseHealth": 35,
+      "baseAttack": 12,
+      "baseDefense": 6,
+      "experienceValue": 80,
+      "behavior": "Guardian",
+      "tags": ["construct", "constructs"],
+      "initiativeModifier": -1,
+      "baseResistances": { "physical": 50, "fire": -25, "acid": -25, "poison": 100, "psychic": 100 },
+      "possibleTraits": ["corrupted-directive", "harvest-guard"],
+      "possibleTiers": ["common", "elite"]
+    },
+    {
+      "id": "ruin-mimic",
+      "name": "Ruin-Mimic",
+      "description": "A shapeshifting predator disguised as dungeon debris.",
+      "baseHealth": 28,
+      "baseAttack": 10,
+      "baseDefense": 5,
+      "experienceValue": 70,
+      "behavior": "Aggressive",
+      "tags": ["construct", "constructs"],
+      "initiativeModifier": 2,
+      "baseResistances": { "physical": 50, "fire": -25 },
+      "possibleTraits": ["camouflage", "adhesive"],
+      "possibleTiers": ["common"]
+    },
+    {
+      "id": "forlorn-echo",
+      "name": "Forlorn Echo",
+      "description": "A ghostly remnant of a past traveler, moaning in despair.",
+      "baseHealth": 24,
+      "baseAttack": 10,
+      "baseDefense": 2,
+      "experienceValue": 60,
+      "behavior": "Aggressive",
+      "tags": ["undead", "forlorn"],
+      "initiativeModifier": 2,
+      "baseResistances": { "physical": 75, "psychic": -50 },
+      "possibleTraits": ["incorporeal", "psychic-wail"],
+      "possibleTiers": ["common", "elite"]
+    },
+    {
+      "id": "genius-loci-fragment",
+      "name": "Genius Loci Fragment",
+      "description": "A shimmering tear in reality, pulsating with erratic energy.",
+      "baseHealth": 95,
+      "baseAttack": 16,
+      "baseDefense": 6,
+      "experienceValue": 400,
+      "behavior": "Aggressive",
+      "tags": ["aberration", "forlorn", "boss"],
+      "initiativeModifier": 4,
+      "baseResistances": { "energy": 50, "psychic": -25, "poison": 100, "disease": 100 },
+      "possibleTraits": ["odin-protocol", "reality-warp", "phase-shift", "boss-flag"],
+      "possibleTiers": ["boss"]
+    },
+    {
+      "id": "surtr-scion",
+      "name": "Surtr's Scion",
+      "description": "A soldier of living flame, forging weapons from its own body.",
+      "baseHealth": 45,
+      "baseAttack": 12,
+      "baseDefense": 5,
+      "experienceValue": 120,
+      "behavior": "Aggressive",
+      "tags": ["elemental", "fire-forged"],
+      "initiativeModifier": 1,
+      "baseResistances": { "fire": 100, "ice": -50 },
+      "possibleTraits": ["mobile-extension", "assimilation-directive", "brittle-on-ice"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "slag-elemental",
+      "name": "Slag Elemental",
+      "description": "A hulking mass of molten rock and metal.",
+      "baseHealth": 55,
+      "baseAttack": 14,
+      "baseDefense": 4,
+      "experienceValue": 140,
+      "behavior": "Aggressive",
+      "tags": ["elemental", "fire-forged"],
+      "initiativeModifier": -1,
+      "baseResistances": { "fire": 100, "ice": -50, "physical": 50 },
+      "possibleTraits": ["molten-form", "reforming"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "pilot-light",
+      "name": "Pilot-Light",
+      "description": "A small, inquisitive orb of flame.",
+      "baseHealth": 18,
+      "baseAttack": 0,
+      "baseDefense": 3,
+      "experienceValue": 30,
+      "behavior": "Passive",
+      "tags": ["elemental", "fire-forged"],
+      "initiativeModifier": 4,
+      "baseResistances": { "fire": 100, "physical": 100, "ice": -50 },
+      "possibleTraits": ["sentient-plasma", "physical-immune"],
+      "possibleTiers": ["common"]
+    },
+    {
+      "id": "forge-guardian",
+      "name": "Forge Guardian",
+      "description": "A massive automated sentinel guarding the heart of Muspelheim.",
+      "baseHealth": 110,
+      "baseAttack": 18,
+      "baseDefense": 7,
+      "experienceValue": 500,
+      "behavior": "Guardian",
+      "tags": ["construct", "fire-forged", "boss"],
+      "initiativeModifier": 0,
+      "baseResistances": { "fire": 75, "physical": 50, "ice": -25 },
+      "possibleTraits": ["surtr-control", "forge-smash", "boss-flag"],
+      "possibleTiers": ["boss"]
+    },
+    {
+      "id": "frost-revenant",
+      "name": "Frost Revenant",
+      "description": "A frozen corpse reanimated by bitter cold magic.",
+      "baseHealth": 28,
+      "baseAttack": 10,
+      "baseDefense": 3,
+      "experienceValue": 60,
+      "behavior": "Aggressive",
+      "tags": ["undead", "frost-touched"],
+      "initiativeModifier": 1,
+      "baseResistances": { "cold": 100, "fire": -50 },
+      "possibleTraits": ["cold-aura"],
+      "possibleTiers": ["common"]
+    },
+    {
+      "id": "ice-elemental",
+      "name": "Ice Elemental",
+      "description": "A jagged construct of living ice.",
+      "baseHealth": 50,
+      "baseAttack": 12,
+      "baseDefense": 5,
+      "experienceValue": 120,
+      "behavior": "Aggressive",
+      "tags": ["elemental", "frost-touched"],
+      "initiativeModifier": 0,
+      "baseResistances": { "cold": 100, "fire": -50, "physical": 25 },
+      "possibleTraits": ["shatter-form"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "hvergelmir-warden",
+      "name": "Hvergelmir Warden",
+      "description": "An ancient guardian of the primal well, encased in permafrost.",
+      "baseHealth": 95,
+      "baseAttack": 16,
+      "baseDefense": 6,
+      "experienceValue": 400,
+      "behavior": "Guardian",
+      "tags": ["elemental", "frost-touched", "boss"],
+      "initiativeModifier": 2,
+      "baseResistances": { "cold": 100, "fire": -50 },
+      "possibleTraits": ["ice-debt-aura", "glacial-prison", "boss-flag"],
+      "possibleTiers": ["boss"]
+    },
+    {
+      "id": "frozen-einherjar",
+      "name": "Frozen Einherjar",
+      "description": "A legendary warrior of Valhalla, perfectly preserved in ice and duty.",
+      "baseHealth": 45,
+      "baseAttack": 12,
+      "baseDefense": 6,
+      "experienceValue": 100,
+      "behavior": "Aggressive",
+      "tags": ["undead", "undying"],
+      "initiativeModifier": 2,
+      "baseResistances": { "cold": 50, "physical": 25, "fire": -25 },
+      "possibleTraits": ["preserved-consciousness", "frozen-duty"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "spore-shambler",
+      "name": "Spore Shambler",
+      "description": "A walking mound of rotting vegetation and fungal spores.",
+      "baseHealth": 32,
+      "baseAttack": 10,
+      "baseDefense": 2,
+      "experienceValue": 70,
+      "behavior": "Aggressive",
+      "tags": ["plant", "weaponized-flora"],
+      "initiativeModifier": 0,
+      "baseResistances": { },
+      "possibleTraits": [],
+      "possibleTiers": ["common"]
+    },
+    {
+      "id": "golden-bloom",
+      "name": "Golden Bloom",
+      "description": "A beautiful but deadly flower that releases toxic golden pollen.",
+      "baseHealth": 40,
+      "baseAttack": 0,
+      "baseDefense": 4,
+      "experienceValue": 100,
+      "behavior": "Passive",
+      "tags": ["plant", "weaponized-flora"],
+      "initiativeModifier": -5,
+      "baseResistances": { },
+      "possibleTraits": ["spore-cloud"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "canopy-stalker",
+      "name": "Canopy Stalker",
+      "description": "A predatory vine-creature that hunts from above.",
+      "baseHealth": 38,
+      "baseAttack": 12,
+      "baseDefense": 5,
+      "experienceValue": 110,
+      "behavior": "Aggressive",
+      "tags": ["plant", "weaponized-flora"],
+      "initiativeModifier": 4,
+      "baseResistances": { },
+      "possibleTraits": ["vine-lash"],
+      "possibleTiers": ["elite"]
+    },
+    {
+      "id": "root-titan",
+      "name": "Root-Titan",
+      "description": "A colossal entity woven from the roots of Yggdrasil itself.",
+      "baseHealth": 120,
+      "baseAttack": 18,
+      "baseDefense": 6,
+      "experienceValue": 500,
+      "behavior": "Aggressive",
+      "tags": ["plant", "weaponized-flora", "boss"],
+      "initiativeModifier": -1,
+      "baseResistances": { },
+      "possibleTraits": ["crushing-root", "boss-flag"],
+      "possibleTiers": ["boss"]
+    },
+    {
+      "id": "frost-draugr",
+      "name": "Frost Draugr",
+      "description": "An undead warrior incased in magical ice.",
+      "baseHealth": 65,
+      "baseAttack": 14,
+      "baseDefense": 6,
+      "experienceValue": 85,
+      "behavior": "Aggressive",
+      "tags": ["undead", "frost"],
+      "initiativeModifier": -1,
+      "baseResistances": { "fire": -25, "frost": 50 },
+      "possibleTraits": ["chilling-aura"],
+      "possibleTiers": ["common", "elite"]
+    },
+    {
+      "id": "rot-stalker",
+      "name": "Rot Stalker",
+      "description": "A twisted corpse dripping with necrotic slime.",
+      "baseHealth": 55,
+      "baseAttack": 12,
+      "baseDefense": 3,
+      "experienceValue": 75,
+      "behavior": "Aggressive",
+      "tags": ["undead", "blight"],
+      "initiativeModifier": 2,
+      "baseResistances": { "poison": 50, "necrotic": 25 },
+      "possibleTraits": ["poison-cloud"],
+      "possibleTiers": ["common", "elite"]
     }
   ]
 }

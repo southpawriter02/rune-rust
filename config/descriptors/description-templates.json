@@ -1,0 +1,63 @@
+{
+  "midgard": {
+    "greatwood": [
+      "A {modifier} clearing opens before the ferrocrete walls of a Ridge Hold.",
+      "The Greatwood canopy closes overhead, filtering {light} through mutated leaves.",
+      "Petrified ironwood trunks support a {modifier} forest floor."
+    ],
+    "scar": [
+      "The Scar perimeter stretches before you. Orbital debris juts from poisoned earth.",
+      "Reality bleeds at the crater's edge. {enviroment_observation}",
+      "The {modifier} impact zone shows the violence of Asgard's fall."
+    ],
+    "mires": [
+      "The corduroy span crosses the Mire in uneven planks. {smell}",
+      "A {modifier} wetland spreads before you, choked with rust-colored reeds.",
+      "The seasonal flood has retreated, leaving behind pools of concentrated toxin."
+    ],
+    "fjords": [
+      "Rocky coast gives way to tidal pools. {sound}",
+      "The {modifier} fjord opens before you, salt air mixing with the chemical tang.",
+      "A tidal cave opens in the cliff face. {smell}"
+    ]
+  },
+  "muspelheim": {
+    "slag": [
+      "A {modifier} forge hall dominates this space. Rivers of molten slag cut through.",
+      "The Slag Wastes extend to the horizon—a sea of shattered obsidian.",
+      "Volcanic glass crunches underfoot. The {modifier} terrain offers no shade."
+    ],
+    "gjollflow": [
+      "The Gjöllflow cuts across your path, a slow river of molten slag.",
+      "An observation gantry extends over the {modifier} lava river.",
+      "The crossing protocol is clear: probe the crust. {heat}"
+    ],
+    "ashfall": [
+      "The Ashfall Drifts swallow the world in rust-colored silence. {sound}",
+      "A {modifier} sea of soot stretches in every direction.",
+      "The ash tastes of fire and chemicals. {smell}"
+    ],
+    "hearths": [
+      "The Hearth opens before you—an island of survivable warmth.",
+      "Glimmerheim's main plaza is carved from basalt. {activity}",
+      "A {modifier} settlement clings to this stable vent."
+    ]
+  },
+  "niflheim": {
+    "permafrost": [
+      "The Permafrost Halls stretch into blue-white darkness. {cold}",
+      "A {modifier} corridor extends before you, lined with frozen machinery.",
+      "Cryo-chambers line the walls, their occupants preserved in perfect stasis."
+    ],
+    "hvergelmir": [
+      "Hvergelmir's Maw opens before you—the heart of cold.",
+      "The temperature drops to impossible depths. {cold}",
+      "Ice formations grow in real-time. {sound}"
+    ],
+    "archive": [
+      "The Ice Archives preserve the Einherjar—soldiers of the old Aesir.",
+      "Rows of {modifier} soldiers stand in eternal attention.",
+      "Data crystals grow from the walls like frozen flowers."
+    ]
+  }
+}

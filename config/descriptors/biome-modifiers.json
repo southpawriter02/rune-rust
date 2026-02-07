@@ -1,0 +1,86 @@
+{
+  "$schema": "../schemas/biome-modifiers.schema.json",
+  "modifiers": [
+    {
+      "id": "midgard",
+      "name": "Tamed",
+      "adjective": "tamed",
+      "detailFragment": "carved from catastrophe by stubborn survivors",
+      "colorPalette": ["#5A7D46", "#8B4513", "#708090", "#A0522D"],
+      "ambientSounds": ["wind through ruins", "distant livestock", "wolf howl"],
+      "loreReference": "midgard.md §12.1"
+    },
+    {
+      "id": "muspelheim",
+      "name": "Scorched",
+      "adjective": "scorched",
+      "detailFragment": "radiates intense heat and shows signs of fire damage",
+      "colorPalette": ["#FF4500", "#FF8C00", "#000000", "#B22222"],
+      "ambientSounds": ["crackling flames", "hissing steam", "metal groaning", "distant rumbling"],
+      "loreReference": "muspelheim.md §12.1"
+    },
+    {
+      "id": "niflheim",
+      "name": "Frozen",
+      "adjective": "frozen",
+      "detailFragment": "encased in layers of ice, preserved in eternal cold",
+      "colorPalette": ["#FFFFFF", "#ADD8E6", "#778899", "#000000"],
+      "ambientSounds": ["wind howling", "ice cracking", "distant echoes"],
+      "loreReference": "niflheim.md §12.1"
+    },
+    {
+      "id": "vanaheim",
+      "name": "Overgrown",
+      "adjective": "overgrown",
+      "detailFragment": "consumed by aggressive bio-engineered vegetation",
+      "colorPalette": ["#006400", "#FFD700", "#800080", "#000000"],
+      "ambientSounds": ["rustling leaves", "insect chorus", "dripping water", "creaking"],
+      "loreReference": "vanaheim.md §12.1"
+    },
+    {
+      "id": "alfheim",
+      "name": "Glimmering",
+      "adjective": "glimmering",
+      "detailFragment": "warped by intense Aetheric saturation",
+      "colorPalette": ["#E0FFFF", "#FFFFFF", "#FFD700", "#EE82EE"],
+      "ambientSounds": ["crystalline chimes", "static hum", "whispers"],
+      "loreReference": "alfheim.md §12.1"
+    },
+    {
+      "id": "asgard",
+      "name": "Shattered",
+      "adjective": "shattered",
+      "detailFragment": "broken by orbital descent and temporal decay",
+      "colorPalette": ["#FFD700", "#000000", "#8B0000", "#4B0082"],
+      "ambientSounds": ["silence", "distant signal", "metal stress"],
+      "loreReference": "asgard.md §12.1"
+    },
+    {
+      "id": "svartalfheim",
+      "name": "Forged",
+      "adjective": "forged",
+      "detailFragment": "precision-crafted by Dvergr engineering",
+      "colorPalette": ["#FF8C00", "#000000", "#708090", "#B87333"],
+      "ambientSounds": ["hammer strikes", "bellows", "machinery"],
+      "loreReference": "svartalfheim.md §12.1"
+    },
+    {
+      "id": "jotunheim",
+      "name": "Titanic",
+      "adjective": "titanic",
+      "detailFragment": "built to a scale that dwarfs human comprehension",
+      "colorPalette": ["#A0522D", "#808080", "#3F281E", "#000000"],
+      "ambientSounds": ["groaning metal", "distant crashes", "wind through giants"],
+      "loreReference": "jotunheim.md §12.1"
+    },
+    {
+      "id": "helheim",
+      "name": "Gangrenous",
+      "adjective": "gangrenous",
+      "detailFragment": "corroded by industrial waste and biological decay",
+      "colorPalette": ["#556B2F", "#A0522D", "#696969", "#808000"],
+      "ambientSounds": ["bubbling", "dripping", "hissing gas"],
+      "loreReference": "helheim.md §12.1"
+    }
+  ]
+}
