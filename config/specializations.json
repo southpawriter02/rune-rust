@@ -507,6 +507,93 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 2,
+                    "displayName": "Shadow Combat",
+                    "unlockCost": 4,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 2,
+                    "abilities": [
+                        {
+                            "abilityId": "umbral-strike",
+                            "displayName": "Umbral Strike",
+                            "description": "Shadow-infused melee attack. Costs 2 AP + 15 Shadow Essence. Deals weapon damage + 2d6 shadow damage. Must be in DimLight or darker. Consuming a clone grants advantage + 1d4 bonus shadow damage.",
+                            "isPassive": false,
+                            "resourceCost": 15,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 1
+                        },
+                        {
+                            "abilityId": "shadow-clone",
+                            "displayName": "Shadow Clone",
+                            "description": "Create an illusory shadow duplicate. Costs 3 AP + 20 Shadow Essence. 1 HP, DC 14 detection, 1-minute duration. Maximum 2 active clones.",
+                            "isPassive": false,
+                            "resourceCost": 20,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "void-touched",
+                            "displayName": "Void Touched",
+                            "description": "Passive. Halves incoming Aetheric damage (floor). Grants advantage on saves vs. Aetheric effects.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                },
+                {
+                    "tier": 3,
+                    "displayName": "Shadow Dominion",
+                    "unlockCost": 5,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 3,
+                    "abilities": [
+                        {
+                            "abilityId": "merge-with-darkness",
+                            "displayName": "Merge with Darkness",
+                            "description": "Active transformation. Costs 3 AP + 25 Shadow Essence. Become incorporeal for 1 turn — immune to physical attacks, can phase through objects. Vulnerable to magical light (2d6 damage). Extendable with additional Essence and Corruption.",
+                            "isPassive": false,
+                            "resourceCost": 25,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 1
+                        },
+                        {
+                            "abilityId": "shadow-snare",
+                            "displayName": "Shadow Snare",
+                            "description": "Active control. Costs 2 AP + 20 Shadow Essence. Root target in shadow tendrils for 2 turns (DC 14 save to escape). Corruption risk against Coherent or innocent targets.",
+                            "isPassive": false,
+                            "resourceCost": 20,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 1
+                        }
+                    ]
+                },
+                {
+                    "tier": 4,
+                    "displayName": "Shadow Mastery",
+                    "unlockCost": 6,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 4,
+                    "abilities": [
+                        {
+                            "abilityId": "eclipse",
+                            "displayName": "Eclipse",
+                            "description": "Capstone ultimate. Costs 5 AP + 40 Shadow Essence. Create an 8-space radius zone of impenetrable darkness for 3 turns. Extinguishes lights (magical lights DC 16 save). Grants 50% concealment and +10 Essence/turn. Enemies blinded, -4 Perception, half movement. Always +2 Corruption. Once per combat.",
+                            "isPassive": false,
+                            "resourceCost": 40,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 2
+                        }
+                    ]
                 }
             ]
         },

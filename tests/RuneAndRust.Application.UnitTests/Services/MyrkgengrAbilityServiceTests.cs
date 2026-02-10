@@ -307,15 +307,15 @@ public class MyrkgengrAbilityServiceTests
     public void GetAbilityPPCost_Tier3_ReturnsFive()
     {
         // Act & Assert
-        _service.GetAbilityPPCost(MyrkgengrAbilityId.ShadowMeld).Should().Be(5);
-        _service.GetAbilityPPCost(MyrkgengrAbilityId.CorruptingStrike).Should().Be(5);
+        _service.GetAbilityPPCost(MyrkgengrAbilityId.MergeWithDarkness).Should().Be(5);
+        _service.GetAbilityPPCost(MyrkgengrAbilityId.ShadowSnare).Should().Be(5);
     }
 
     [Test]
     public void GetAbilityPPCost_Capstone_ReturnsSix()
     {
         // Act & Assert
-        _service.GetAbilityPPCost(MyrkgengrAbilityId.VoidWalker).Should().Be(6);
+        _service.GetAbilityPPCost(MyrkgengrAbilityId.Eclipse).Should().Be(6);
     }
 
     [Test]

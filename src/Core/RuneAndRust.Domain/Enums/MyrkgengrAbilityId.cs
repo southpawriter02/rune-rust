@@ -2,7 +2,7 @@
 // MyrkgengrAbilityId.cs
 // Strongly-typed identifiers for all Myrk-gengr (Shadow-Walker) specialization
 // abilities, organized by tier.
-// Version: 0.20.4a
+// Version: 0.20.4c
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Domain.Enums;
@@ -86,22 +86,32 @@ public enum MyrkgengrAbilityId
     // ═══════ Tier 3: Shadow Dominion (5 PP each, Rank 3) ═══════
 
     /// <summary>
-    /// Active: merge with shadows to become incorporeal.
-    /// Planned for v0.20.4c.
+    /// Active transformation: merge with shadows to become incorporeal.
+    /// Costs 3 AP and 25 Shadow Essence. Duration: 1 turn (extendable).
+    /// Grants phasing through objects and immunity to physical attacks.
+    /// Vulnerable to magical light (2d6 damage). Corruption risk on extension.
+    /// Implemented in v0.20.4c.
     /// </summary>
-    ShadowMeld = 7,
+    MergeWithDarkness = 7,
 
     /// <summary>
-    /// Active: infuse attacks with corrupting shadow energy.
-    /// Planned for v0.20.4c.
+    /// Active control: ensnare a target in shadow tendrils.
+    /// Costs 2 AP and 20 Shadow Essence. Duration: 2 turns.
+    /// Roots target in place with DC 14 save to escape.
+    /// Corruption risk if used on Coherent-aligned or innocent targets.
+    /// Implemented in v0.20.4c.
     /// </summary>
-    CorruptingStrike = 8,
+    ShadowSnare = 8,
 
     // ═══════ Capstone: Ultimate (6 PP, Rank 4) ═══════
 
     /// <summary>
-    /// Ultimate ability that grants complete mastery over shadow.
-    /// Planned for v0.20.4c.
+    /// Ultimate: create a massive zone of shadow that extinguishes all light.
+    /// Costs 5 AP and 40 Shadow Essence. Duration: 3 turns.
+    /// 8-space radius darkness zone. Caster gains 50% concealment and
+    /// regenerates 10 Essence per turn. Enemies are blinded and suffer penalties.
+    /// Always applies +2 Corruption. Usable once per combat.
+    /// Implemented in v0.20.4c.
     /// </summary>
-    VoidWalker = 9
+    Eclipse = 9
 }

@@ -84,11 +84,11 @@ public class MyrkgengrAbilityService : IMyrkgengrAbilityService
         { MyrkgengrAbilityId.VoidTouched, 4 },
 
         // Tier 3: 5 PP each
-        { MyrkgengrAbilityId.ShadowMeld, 5 },
-        { MyrkgengrAbilityId.CorruptingStrike, 5 },
+        { MyrkgengrAbilityId.MergeWithDarkness, 5 },
+        { MyrkgengrAbilityId.ShadowSnare, 5 },
 
         // Capstone: 6 PP
-        { MyrkgengrAbilityId.VoidWalker, 6 }
+        { MyrkgengrAbilityId.Eclipse, 6 }
     };
 
     // ─────────────────────────────────────────────────────────────────────────

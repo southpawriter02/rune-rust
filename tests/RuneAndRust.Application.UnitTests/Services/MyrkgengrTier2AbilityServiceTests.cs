@@ -328,10 +328,10 @@ public class MyrkgengrTier2AbilityServiceTests
         MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.VoidTouched).Should().Be(4);
 
         // Tier 3: 5 PP each
-        MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.ShadowMeld).Should().Be(5);
-        MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.CorruptingStrike).Should().Be(5);
+        MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.MergeWithDarkness).Should().Be(5);
+        MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.ShadowSnare).Should().Be(5);
 
         // Capstone: 6 PP
-        MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.VoidWalker).Should().Be(6);
+        MyrkgengrTier2AbilityService.GetAbilityPPCost(MyrkgengrAbilityId.Eclipse).Should().Be(6);
     }
 }

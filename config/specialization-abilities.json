@@ -437,6 +437,97 @@
                         "The void within you absorbs the Aetheric energy, dissipating it harmlessly.",
                         "Your bond with the dark between-spaces shields you from the raw power of the Aether."
                     ]
+                },
+                {
+                    "id": "merge-with-darkness",
+                    "name": "[Merge with Darkness]",
+                    "type": "active",
+                    "tier": 3,
+                    "description": "Become incorporeal by merging with the shadows. Immune to physical attacks, can phase through objects. Vulnerable to magical light.",
+                    "requirements": [
+                        "Cannot be in BrightLight or Sunlight",
+                        "Costs 3 AP + 25 Shadow Essence"
+                    ],
+                    "cost": {
+                        "actions": 3,
+                        "shadowEssence": 25
+                    },
+                    "effect": {
+                        "type": "incorporeal-transformation",
+                        "baseDuration": 1,
+                        "maxExtensions": 2,
+                        "extensionCost": 15,
+                        "extensionCorruption": 1,
+                        "physicalImmunity": true,
+                        "phasing": true,
+                        "lightVulnerability": "2d6"
+                    },
+                    "narrativeTemplates": [
+                        "Your form dissolves into shadow, becoming one with the darkness around you.",
+                        "You feel yourself unravel, your body becoming nothing more than a whisper of darkness.",
+                        "The boundary between you and shadow blurs until there is no distinction."
+                    ]
+                },
+                {
+                    "id": "shadow-snare",
+                    "name": "[Shadow Snare]",
+                    "type": "active",
+                    "tier": 3,
+                    "description": "Root a target in tendrils of living shadow, preventing movement and penalizing actions",
+                    "requirements": [
+                        "Costs 2 AP + 20 Shadow Essence",
+                        "Target must be within 8 spaces"
+                    ],
+                    "cost": {
+                        "actions": 2,
+                        "shadowEssence": 20
+                    },
+                    "effect": {
+                        "type": "root-control",
+                        "baseDuration": 2,
+                        "saveDC": 14,
+                        "saveType": "agility",
+                        "breakConditions": ["save-succeeded", "caster-movement", "caster-incapacitated", "dispelled", "duration-expired"]
+                    },
+                    "narrativeTemplates": [
+                        "Tendrils of shadow erupt from the ground, coiling around your target like dark serpents.",
+                        "The shadows beneath your foe surge upward, binding them in a web of living darkness.",
+                        "You reach into the darkness and command it to hold — shadow tendrils snap tight around your target."
+                    ]
+                },
+                {
+                    "id": "eclipse",
+                    "name": "[Eclipse]",
+                    "type": "active",
+                    "tier": 4,
+                    "description": "Capstone ultimate. Create a zone of impenetrable darkness that empowers you and devastates enemies",
+                    "requirements": [
+                        "Costs 5 AP + 40 Shadow Essence",
+                        "Once per combat",
+                        "Always applies +2 Corruption"
+                    ],
+                    "cost": {
+                        "actions": 5,
+                        "shadowEssence": 40
+                    },
+                    "effect": {
+                        "type": "darkness-zone",
+                        "radius": 8,
+                        "baseDuration": 3,
+                        "lightSaveDC": 16,
+                        "casterConcealment": 50,
+                        "casterEssenceRegen": 10,
+                        "enemyBlinded": true,
+                        "enemyPerceptionPenalty": -4,
+                        "enemyMovementHalved": true,
+                        "mandatoryCorruption": 2,
+                        "usesPerCombat": 1
+                    },
+                    "narrativeTemplates": [
+                        "You raise your arms and the world goes dark. An all-consuming void radiates outward, swallowing every source of light.",
+                        "Darkness erupts from your core like a shockwave, drowning everything in impenetrable shadow.",
+                        "The sun itself seems to dim as your will imposes total darkness across the battlefield."
+                    ]
                 }
             ]
         }
