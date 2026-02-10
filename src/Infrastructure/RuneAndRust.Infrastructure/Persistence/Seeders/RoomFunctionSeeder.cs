@@ -13,26 +13,26 @@ public static class RoomFunctionSeeder
     {
         // Utility/Infrastructure functions
         yield return new RoomFunction(
-            "Pumping Station",
-            "Massive geothermal pumps once circulated superheated fluids through the facility. Now they groan with neglect, leaking scalding steam from corroded seals.",
+            "Breath-Engine",
+            "Massive earth-lungs once breathed fire-water through the veins of the world. Now they groan with the sickness of age, weeping scalding steam from rusted wounds.",
             [Biome.TheRoots, Biome.Muspelheim],
             weight: 2);
 
         yield return new RoomFunction(
-            "Power Station",
-            "Banks of capacitors and generators line the walls, some still humming with residual charge. Cables snake across the floor like mechanical tendrils.",
+            "Thunder-Mill",
+            "Banks of lightning-jars and spark-mills line the walls, some still humming with the memory of the storm. Copper-vines snake across the floor.",
             [Biome.TheRoots, Biome.Citadel],
             weight: 2);
 
         yield return new RoomFunction(
-            "Water Treatment",
-            "Massive filtration tanks dominate the space, filled with murky liquid. The air is thick with chemical odors and the sound of dripping.",
+            "Purification Sanctum",
+            "Great cisterns dominate the space, filled with dead water. The air is thick with the scent of poison and the sound of weeping stone.",
             [Biome.TheRoots],
             weight: 1);
 
         yield return new RoomFunction(
-            "Ventilation Hub",
-            "Giant fans hang motionless from the ceiling, their blades casting strange shadows. Air shafts lead off in multiple directions.",
+            "Wind-Hall",
+            "Great wind-blades hang motionless from the ceiling, their iron wings casting strange shadows. Breath-tunnels lead off in multiple directions.",
             [Biome.TheRoots, Biome.Citadel],
             weight: 2);
 
@@ -127,8 +127,8 @@ public static class RoomFunctionSeeder
 
         // Specialized biome functions
         yield return new RoomFunction(
-            "Reactor Core",
-            "The heart of the facility's power generation. Containment fields flicker weakly around an energy source that defies understanding.",
+            "Sun-Heart Chamber",
+            "The heart of the Sun-Mill. Ghost-walls flicker weakly around a burning star-shard that defies the eye.",
             [Biome.Muspelheim, Biome.Alfheim],
             weight: 1);
 
@@ -145,8 +145,8 @@ public static class RoomFunctionSeeder
             weight: 1);
 
         yield return new RoomFunction(
-            "Runic Chamber",
-            "Ancient runes cover every surface, pulsing with a power that predates recorded history. Their meaning is lost, but their power remains.",
+            "Glyph-Sanctum",
+            "Ancient glyphs scar every surface, pulsing with the old blood. Their meaning is lost, but their hunger remains.",
             [Biome.Jotunheim, Biome.Alfheim],
             weight: 1);
     }
