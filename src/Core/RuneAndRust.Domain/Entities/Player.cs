@@ -1265,4 +1265,115 @@ public class Player : IEntity
     {
         return GetAllocation(nodeId) != null;
     }
+
+    // ===== Specialization Properties (v0.20.1) =====
+
+    /// <summary>
+    /// Gets the player's chosen specialization identifier (e.g., "skjaldmaer").
+    /// Null if no specialization has been selected.
+    /// </summary>
+    public string? SpecializationId { get; private set; }
+
+    /// <summary>
+    /// Gets the Skjaldmær's Block Charge resource.
+    /// Null for non-Skjaldmær players.
+    /// </summary>
+    public BlockChargeResource? BlockCharges { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the state of The Wall Lives capstone ability.
+    /// Null when the ability has not been activated this combat.
+    /// </summary>
+    public TheWallLivesState? TheWallLivesState { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the capstone ability has been used this combat.
+    /// Reset to false at combat end.
+    /// </summary>
+    public bool HasUsedCapstoneThisCombat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current action points available this turn.
+    /// </summary>
+    public int CurrentAP { get; set; }
+
+    /// <summary>
+    /// Gets the set of unlocked Skjaldmær abilities.
+    /// </summary>
+    private readonly HashSet<SkjaldmaerAbilityId> _unlockedSkjaldmaerAbilities = [];
+
+    // ===== Specialization Methods (v0.20.1) =====
+
+    /// <summary>
+    /// Sets the player's specialization.
+    /// </summary>
+    /// <param name="specializationId">The specialization ID to set.</param>
+    public void SetSpecialization(string specializationId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(specializationId);
+        SpecializationId = specializationId.ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Initializes the Block Charge resource for this player.
+    /// </summary>
+    /// <param name="maxCharges">Maximum charges (default 3).</param>
+    public void InitializeBlockCharges(int maxCharges = BlockChargeResource.DefaultMaxCharges)
+    {
+        BlockCharges = BlockChargeResource.CreateFull(maxCharges);
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Skjaldmær ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasAbilityUnlocked(SkjaldmaerAbilityId abilityId)
+    {
+        return _unlockedSkjaldmaerAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Skjaldmær ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockAbility(SkjaldmaerAbilityId abilityId)
+    {
+        _unlockedSkjaldmaerAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Skjaldmær abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 0 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedSkjaldmaerAbilities)
+        {
+            total += ability switch
+            {
+                SkjaldmaerAbilityId.ShieldWall or
+                SkjaldmaerAbilityId.Intercept or
+                SkjaldmaerAbilityId.Bulwark => 0,    // Tier 1: free
+                SkjaldmaerAbilityId.HoldTheLine or
+                SkjaldmaerAbilityId.CounterShield or
+                SkjaldmaerAbilityId.Rally => 4,       // Tier 2: 4 PP each
+                SkjaldmaerAbilityId.Unbreakable or
+                SkjaldmaerAbilityId.GuardiansSacrifice => 5, // Tier 3: 5 PP each
+                SkjaldmaerAbilityId.TheWallLives => 6, // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
+
+    /// <summary>
+    /// Gets the collection of unlocked Skjaldmær abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<SkjaldmaerAbilityId> UnlockedSkjaldmaerAbilities
+        => _unlockedSkjaldmaerAbilities;
 }
