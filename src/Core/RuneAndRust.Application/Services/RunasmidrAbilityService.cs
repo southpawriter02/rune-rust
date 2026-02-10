@@ -8,14 +8,21 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Rúnasmiðr specialization ability operations.
-/// Implements Tier 1 ability logic for inscription, identification, and ward creation.
+/// Implements Tier 1 and Tier 2 ability logic for inscription, identification, ward creation,
+/// empowered inscriptions, and runic traps.
 /// </summary>
 /// <remarks>
-/// <para>Abilities managed by this service:</para>
+/// <para>Tier 1 abilities managed by this service:</para>
 /// <list type="bullet">
 /// <item>Inscribe Rune (Active): enhance weapon (+2 damage) or armor (+1 Defense) for 10 turns</item>
 /// <item>Read the Marks (Passive): auto-identify Jötun technology (integration point)</item>
 /// <item>Runestone Ward (Active): create ward absorbing up to 10 damage</item>
+/// </list>
+/// <para>Tier 2 abilities (v0.20.2b):</para>
+/// <list type="bullet">
+/// <item>Empowered Inscription (Active): add +1d6 elemental damage to weapon for 10 turns</item>
+/// <item>Runic Trap (Active): place invisible trap dealing 3d6 damage, max 3 active</item>
+/// <item>Dvergr Techniques (Passive): handled by <see cref="DvergrTechniquesService"/></item>
 /// </list>
 /// <para>Follows the same service pattern as <see cref="SkjaldmaerAbilityService"/>
 /// for consistency across specialization implementations.</para>
@@ -41,6 +48,28 @@ public class RunasmidrAbilityService : IRunasmidrAbilityService
     /// Rune Charge cost for the Runestone Ward ability.
     /// </summary>
     private const int RunestoneWardChargeCost = 1;
+
+    // ===== Tier 2 Constants (v0.20.2b) =====
+
+    /// <summary>
+    /// AP cost for the Empowered Inscription ability.
+    /// </summary>
+    private const int EmpoweredInscriptionApCost = 4;
+
+    /// <summary>
+    /// Rune Charge cost for the Empowered Inscription ability.
+    /// </summary>
+    private const int EmpoweredInscriptionChargeCost = 2;
+
+    /// <summary>
+    /// AP cost for the Runic Trap ability.
+    /// </summary>
+    private const int RunicTrapApCost = 3;
+
+    /// <summary>
+    /// Rune Charge cost for the Runic Trap ability.
+    /// </summary>
+    private const int RunicTrapChargeCost = 2;
 
     /// <summary>
     /// PP threshold for Tier 2 ability unlock.
@@ -221,6 +250,182 @@ public class RunasmidrAbilityService : IRunasmidrAbilityService
     {
         ArgumentNullException.ThrowIfNull(player);
         return player.ActiveWard;
+    }
+
+    // ===== Tier 2 Ability Execution (v0.20.2b) =====
+
+    /// <inheritdoc />
+    public EmpoweredRune? ExecuteEmpoweredInscription(Player player, Guid targetItemId, string elementalTypeId)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementalTypeId);
+
+        // Validate specialization
+        if (!IsRunasmidr(player))
+        {
+            _logger.LogWarning(
+                "Empowered Inscription failed: {Player} ({PlayerId}) is not a Rúnasmiðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasRunasmidrAbilityUnlocked(RunasmidrAbilityId.EmpoweredInscription))
+        {
+            _logger.LogWarning(
+                "Empowered Inscription failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate element choice
+        if (!EmpoweredRune.IsValidElement(elementalTypeId))
+        {
+            _logger.LogWarning(
+                "Empowered Inscription failed: {Player} ({PlayerId}) chose invalid element {Element}. " +
+                "Allowed: {AllowedElements}",
+                player.Name, player.Id, elementalTypeId,
+                string.Join(", ", EmpoweredRune.AllowedElements));
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < EmpoweredInscriptionApCost)
+        {
+            _logger.LogWarning(
+                "Empowered Inscription failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, EmpoweredInscriptionApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate Rune Charge cost
+        if (!_runeChargeService.CanSpend(player, EmpoweredInscriptionChargeCost))
+        {
+            _logger.LogWarning(
+                "Empowered Inscription failed: {Player} ({PlayerId}) has insufficient Rune Charges " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id,
+                EmpoweredInscriptionChargeCost,
+                _runeChargeService.GetCurrentValue(player));
+            return null;
+        }
+
+        // Deduct AP
+        player.CurrentAP -= EmpoweredInscriptionApCost;
+
+        // Spend Rune Charges (atomic)
+        _runeChargeService.SpendCharges(player, EmpoweredInscriptionChargeCost);
+
+        // Create empowered rune
+        var empoweredRune = EmpoweredRune.Create(targetItemId, elementalTypeId);
+
+        // Remove any existing empowered rune on the same weapon, then add the new one
+        player.RemoveEmpoweredRune(targetItemId);
+        player.AddEmpoweredRune(empoweredRune);
+
+        _logger.LogInformation(
+            "Empowered Inscription executed: {Player} ({PlayerId}) empowered weapon {ItemId} " +
+            "with {Element} element. Effect: +{BonusDice} {ElementDisplay} damage for {Duration} turns. " +
+            "AP remaining: {RemainingAP}, Charges remaining: {Charges}",
+            player.Name, player.Id, targetItemId,
+            empoweredRune.ElementalTypeId, empoweredRune.BonusDice,
+            empoweredRune.GetElementDisplay(), empoweredRune.Duration,
+            player.CurrentAP, _runeChargeService.GetCurrentValue(player));
+
+        return empoweredRune;
+    }
+
+    /// <inheritdoc />
+    public RunicTrap? ExecuteRunicTrap(Player player, int positionX, int positionY)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsRunasmidr(player))
+        {
+            _logger.LogWarning(
+                "Runic Trap failed: {Player} ({PlayerId}) is not a Rúnasmiðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasRunasmidrAbilityUnlocked(RunasmidrAbilityId.RunicTrap))
+        {
+            _logger.LogWarning(
+                "Runic Trap failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < RunicTrapApCost)
+        {
+            _logger.LogWarning(
+                "Runic Trap failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, RunicTrapApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate Rune Charge cost
+        if (!_runeChargeService.CanSpend(player, RunicTrapChargeCost))
+        {
+            _logger.LogWarning(
+                "Runic Trap failed: {Player} ({PlayerId}) has insufficient Rune Charges " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id,
+                RunicTrapChargeCost,
+                _runeChargeService.GetCurrentValue(player));
+            return null;
+        }
+
+        // Validate max active traps
+        var activeTraps = player.GetActiveTraps();
+        if (activeTraps.Count >= RunicTrap.MaxActiveTraps)
+        {
+            _logger.LogWarning(
+                "Runic Trap failed: {Player} ({PlayerId}) has maximum traps " +
+                "({MaxTraps}) active",
+                player.Name, player.Id, RunicTrap.MaxActiveTraps);
+            return null;
+        }
+
+        // Deduct AP
+        player.CurrentAP -= RunicTrapApCost;
+
+        // Spend Rune Charges (atomic)
+        _runeChargeService.SpendCharges(player, RunicTrapChargeCost);
+
+        // Create trap
+        var trap = RunicTrap.Create(player.Id, positionX, positionY);
+        player.AddRunicTrap(trap);
+
+        _logger.LogInformation(
+            "Runic Trap placed: {Player} ({PlayerId}) placed trap at ({PosX}, {PosY}). " +
+            "Active traps: {ActiveCount}/{MaxTraps}. Expires in {ExpirationHours} hour. " +
+            "AP remaining: {RemainingAP}, Charges remaining: {Charges}",
+            player.Name, player.Id, positionX, positionY,
+            activeTraps.Count + 1, RunicTrap.MaxActiveTraps,
+            RunicTrap.DefaultExpirationHours,
+            player.CurrentAP, _runeChargeService.GetCurrentValue(player));
+
+        return trap;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<EmpoweredRune> GetEmpoweredRunes(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        return player.EmpoweredRunes;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<RunicTrap> GetActiveTraps(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        return player.GetActiveTraps();
     }
 
     /// <inheritdoc />

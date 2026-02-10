@@ -1500,4 +1500,99 @@ public class Player : IEntity
         }
         return total;
     }
+
+    // ===== Rúnasmiðr Tier 2 Properties (v0.20.2b) =====
+
+    /// <summary>
+    /// Backing field for active empowered rune inscriptions.
+    /// </summary>
+    private readonly List<EmpoweredRune> _empoweredRunes = [];
+
+    /// <summary>
+    /// Gets the Rúnasmiðr's active empowered rune inscriptions as a read-only list.
+    /// </summary>
+    /// <remarks>
+    /// Empowered runes add +1d6 elemental damage to weapons.
+    /// Only one empowered rune per weapon at a time.
+    /// </remarks>
+    public IReadOnlyList<EmpoweredRune> EmpoweredRunes => _empoweredRunes;
+
+    /// <summary>
+    /// Backing field for active runic traps.
+    /// </summary>
+    private readonly List<RunicTrap> _activeTraps = [];
+
+    /// <summary>
+    /// Gets the Rúnasmiðr's active runic traps as a read-only list.
+    /// </summary>
+    /// <remarks>
+    /// Maximum 3 active traps per character. Traps expire after 1 hour.
+    /// </remarks>
+    public IReadOnlyList<RunicTrap> ActiveTraps => _activeTraps;
+
+    /// <summary>
+    /// Gets whether this player has the Dvergr Techniques passive ability unlocked.
+    /// </summary>
+    /// <remarks>
+    /// When true, all crafting material costs and time are reduced by 20%.
+    /// Does not affect Rune Charge costs.
+    /// </remarks>
+    public bool HasDvergrTechniques =>
+        HasRunasmidrAbilityUnlocked(RunasmidrAbilityId.DvergrTechniques);
+
+    // ===== Rúnasmiðr Tier 2 Methods (v0.20.2b) =====
+
+    /// <summary>
+    /// Adds an empowered rune to the player's active empowered runes collection.
+    /// </summary>
+    /// <param name="rune">The empowered rune to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when rune is null.</exception>
+    public void AddEmpoweredRune(EmpoweredRune rune)
+    {
+        ArgumentNullException.ThrowIfNull(rune);
+        _empoweredRunes.Add(rune);
+    }
+
+    /// <summary>
+    /// Removes all empowered runes targeting the specified weapon.
+    /// </summary>
+    /// <param name="targetItemId">The weapon item ID whose empowered runes should be removed.</param>
+    /// <returns>True if any empowered runes were removed.</returns>
+    public bool RemoveEmpoweredRune(Guid targetItemId)
+    {
+        return _empoweredRunes.RemoveAll(r => r.TargetItemId == targetItemId) > 0;
+    }
+
+    /// <summary>
+    /// Adds a runic trap to the player's active traps collection.
+    /// </summary>
+    /// <param name="trap">The trap to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when trap is null.</exception>
+    public void AddRunicTrap(RunicTrap trap)
+    {
+        ArgumentNullException.ThrowIfNull(trap);
+        _activeTraps.Add(trap);
+    }
+
+    /// <summary>
+    /// Removes a specific runic trap by its ID.
+    /// </summary>
+    /// <param name="trapId">The trap ID to remove.</param>
+    /// <returns>True if the trap was found and removed.</returns>
+    public bool RemoveRunicTrap(Guid trapId)
+    {
+        return _activeTraps.RemoveAll(t => t.TrapId == trapId) > 0;
+    }
+
+    /// <summary>
+    /// Gets only the active (not triggered, not expired) traps.
+    /// </summary>
+    /// <returns>Read-only list of active traps, filtering out triggered and expired ones.</returns>
+    public IReadOnlyList<RunicTrap> GetActiveTraps()
+    {
+        return _activeTraps
+            .Where(t => !t.IsTriggered && !t.IsExpired())
+            .ToList();
+    }
 }
+

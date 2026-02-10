@@ -495,6 +495,148 @@
           "description": "Absorbs up to 10 damage"
         }
       ]
+    },
+    {
+      "id": "empowered-inscription",
+      "name": "Empowered Inscription",
+      "description": "Inscribe a weapon with elemental power, adding +1d6 damage of chosen element (Fire, Cold, Lightning, or Aetheric). Stacks with base Inscribe Rune bonus.",
+      "classIds": [
+        "runasmidr"
+      ],
+      "costResource": "rune-charges",
+      "costAmount": 2,
+      "apCost": 4,
+      "cooldown": 0,
+      "targetType": "SingleAllyWeapon",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "duration": 10,
+      "durationUnit": "Turns",
+      "tags": [
+        "buff",
+        "enhancement",
+        "rune",
+        "elemental",
+        "inscription",
+        "tier2"
+      ],
+      "choices": [
+        {
+          "choiceId": "element",
+          "displayName": "Element Type",
+          "options": [
+            {
+              "id": "fire",
+              "label": "Fire",
+              "description": "Flames flicker along blade (+1d6 fire damage)"
+            },
+            {
+              "id": "cold",
+              "label": "Cold",
+              "description": "Frost rimes the edge (+1d6 cold damage)"
+            },
+            {
+              "id": "lightning",
+              "label": "Lightning",
+              "description": "Sparks crackle (+1d6 lightning damage)"
+            },
+            {
+              "id": "aetheric",
+              "label": "Aetheric",
+              "description": "Purple glow pulses (+1d6 aetheric damage)"
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "type": "ElementalDamageBonus",
+          "dice": "1d6",
+          "damageType": "$choice:element",
+          "duration": 10,
+          "stackable": false
+        }
+      ]
+    },
+    {
+      "id": "runic-trap",
+      "name": "Runic Trap",
+      "description": "Place a hidden runic trap in an adjacent space. When an enemy enters, it deals 3d6 damage. Maximum 3 traps active. Invisible to enemies (DC 14 Perception to detect).",
+      "classIds": [
+        "runasmidr"
+      ],
+      "costResource": "rune-charges",
+      "costAmount": 2,
+      "apCost": 3,
+      "cooldown": 0,
+      "targetType": "AdjacentSpace",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "duration": 60,
+      "durationUnit": "Minutes",
+      "tags": [
+        "trap",
+        "tactical",
+        "inscription",
+        "tier2"
+      ],
+      "effects": [
+        {
+          "type": "CreateTrap",
+          "trigger": "EnemyEnters",
+          "damage": "3d6",
+          "detectionDc": 14,
+          "visibleToAllies": true,
+          "visibleToEnemies": false,
+          "maxActive": 3,
+          "durationMinutes": 60
+        }
+      ]
+    },
+    {
+      "id": "dvergr-techniques",
+      "name": "Dvergr Techniques",
+      "description": "Your mastery of Dvergr methods reduces all crafting costs and time by 20%. Does not affect Rune Charge costs.",
+      "classIds": [
+        "runasmidr"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "tags": [
+        "passive",
+        "crafting",
+        "efficiency",
+        "tier2"
+      ],
+      "effects": [
+        {
+          "type": "CraftingCostModifier",
+          "percentage": -20,
+          "appliesTo": [
+            "Materials",
+            "Components"
+          ],
+          "excludes": [
+            "RuneCharges",
+            "SpecialResources"
+          ]
+        },
+        {
+          "type": "CraftingTimeModifier",
+          "percentage": -20,
+          "appliesTo": [
+            "All"
+          ]
+        }
+      ]
     }
   ]
 }

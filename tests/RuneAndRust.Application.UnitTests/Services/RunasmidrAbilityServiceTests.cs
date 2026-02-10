@@ -11,7 +11,7 @@ namespace RuneAndRust.Application.UnitTests.Services;
 
 /// <summary>
 /// Unit tests for <see cref="RunasmidrAbilityService"/>.
-/// Validates Tier 1 ability execution, prerequisite validation, PP tracking,
+/// Validates Tier 1 and Tier 2 ability execution, prerequisite validation, PP tracking,
 /// and tier unlock checks.
 /// </summary>
 [TestFixture]
@@ -236,6 +236,224 @@ public class RunasmidrAbilityServiceTests
         // Assert
         ward.Should().BeNull();
         player.CurrentAP.Should().Be(10); // Unchanged
+    }
+
+    // ===== ExecuteEmpoweredInscription Tests (v0.20.2b) =====
+
+    [Test]
+    public void ExecuteEmpoweredInscription_ValidElement_CreatesRune()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.EmpoweredInscription);
+        var itemId = Guid.NewGuid();
+
+        _mockRuneChargeService
+            .Setup(s => s.CanSpend(player, 2))
+            .Returns(true);
+        _mockRuneChargeService
+            .Setup(s => s.SpendCharges(player, 2))
+            .Returns(true);
+
+        // Act
+        var rune = _service.ExecuteEmpoweredInscription(player, itemId, "fire");
+
+        // Assert
+        rune.Should().NotBeNull();
+        rune!.TargetItemId.Should().Be(itemId);
+        rune.ElementalTypeId.Should().Be("fire");
+        rune.BonusDice.Should().Be("1d6");
+        rune.Duration.Should().Be(EmpoweredRune.DefaultDuration);
+        player.CurrentAP.Should().Be(6); // 10 - 4
+        player.EmpoweredRunes.Should().ContainSingle();
+        _mockRuneChargeService.Verify(s => s.SpendCharges(player, 2), Times.Once);
+    }
+
+    [Test]
+    public void ExecuteEmpoweredInscription_InsufficientCharges_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.EmpoweredInscription);
+        var itemId = Guid.NewGuid();
+
+        _mockRuneChargeService
+            .Setup(s => s.CanSpend(player, 2))
+            .Returns(false);
+        _mockRuneChargeService
+            .Setup(s => s.GetCurrentValue(player))
+            .Returns(1);
+
+        // Act
+        var rune = _service.ExecuteEmpoweredInscription(player, itemId, "fire");
+
+        // Assert
+        rune.Should().BeNull();
+        player.CurrentAP.Should().Be(10); // Unchanged
+        player.EmpoweredRunes.Should().BeEmpty();
+    }
+
+    [Test]
+    public void ExecuteEmpoweredInscription_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.EmpoweredInscription);
+        player.CurrentAP = 3; // Need 4
+        var itemId = Guid.NewGuid();
+
+        // Act
+        var rune = _service.ExecuteEmpoweredInscription(player, itemId, "fire");
+
+        // Assert
+        rune.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteEmpoweredInscription_InvalidElement_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.EmpoweredInscription);
+        var itemId = Guid.NewGuid();
+
+        // Act
+        var rune = _service.ExecuteEmpoweredInscription(player, itemId, "poison");
+
+        // Assert
+        rune.Should().BeNull();
+        player.CurrentAP.Should().Be(10); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteEmpoweredInscription_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange — Only Tier 1 unlocked, not EmpoweredInscription
+        var player = CreateRunasmidr(RunasmidrAbilityId.InscribeRune);
+        var itemId = Guid.NewGuid();
+
+        // Act
+        var rune = _service.ExecuteEmpoweredInscription(player, itemId, "fire");
+
+        // Assert
+        rune.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteEmpoweredInscription_ReplacesExistingOnSameWeapon()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.EmpoweredInscription);
+        var itemId = Guid.NewGuid();
+
+        _mockRuneChargeService
+            .Setup(s => s.CanSpend(player, 2))
+            .Returns(true);
+        _mockRuneChargeService
+            .Setup(s => s.SpendCharges(player, 2))
+            .Returns(true);
+
+        // First inscription
+        _service.ExecuteEmpoweredInscription(player, itemId, "fire");
+        player.CurrentAP = 10; // Reset AP for second test
+
+        // Act — second inscription on same weapon
+        var secondRune = _service.ExecuteEmpoweredInscription(player, itemId, "cold");
+
+        // Assert
+        secondRune.Should().NotBeNull();
+        secondRune!.ElementalTypeId.Should().Be("cold");
+        player.EmpoweredRunes.Should().ContainSingle(); // Only one on this weapon
+    }
+
+    // ===== ExecuteRunicTrap Tests (v0.20.2b) =====
+
+    [Test]
+    public void ExecuteRunicTrap_ValidPosition_CreatesTrap()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.RunicTrap);
+
+        _mockRuneChargeService
+            .Setup(s => s.CanSpend(player, 2))
+            .Returns(true);
+        _mockRuneChargeService
+            .Setup(s => s.SpendCharges(player, 2))
+            .Returns(true);
+
+        // Act
+        var trap = _service.ExecuteRunicTrap(player, 5, 10);
+
+        // Assert
+        trap.Should().NotBeNull();
+        trap!.OwnerId.Should().Be(player.Id);
+        trap.PositionX.Should().Be(5);
+        trap.PositionY.Should().Be(10);
+        trap.Damage.Should().Be("3d6");
+        trap.DetectionDc.Should().Be(14);
+        trap.IsTriggered.Should().BeFalse();
+        player.CurrentAP.Should().Be(7); // 10 - 3
+        player.GetActiveTraps().Should().ContainSingle();
+        _mockRuneChargeService.Verify(s => s.SpendCharges(player, 2), Times.Once);
+    }
+
+    [Test]
+    public void ExecuteRunicTrap_MaxTrapsReached_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.RunicTrap);
+
+        _mockRuneChargeService
+            .Setup(s => s.CanSpend(player, 2))
+            .Returns(true);
+        _mockRuneChargeService
+            .Setup(s => s.SpendCharges(player, 2))
+            .Returns(true);
+
+        // Place 3 traps
+        _service.ExecuteRunicTrap(player, 1, 1);
+        player.CurrentAP = 10; // Reset
+        _service.ExecuteRunicTrap(player, 2, 2);
+        player.CurrentAP = 10; // Reset
+        _service.ExecuteRunicTrap(player, 3, 3);
+        player.CurrentAP = 10; // Reset
+
+        // Act — attempt 4th trap
+        var trap = _service.ExecuteRunicTrap(player, 4, 4);
+
+        // Assert
+        trap.Should().BeNull();
+        player.GetActiveTraps().Should().HaveCount(3);
+    }
+
+    [Test]
+    public void ExecuteRunicTrap_InsufficientCharges_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.RunicTrap);
+
+        _mockRuneChargeService
+            .Setup(s => s.CanSpend(player, 2))
+            .Returns(false);
+        _mockRuneChargeService
+            .Setup(s => s.GetCurrentValue(player))
+            .Returns(1);
+
+        // Act
+        var trap = _service.ExecuteRunicTrap(player, 5, 10);
+
+        // Assert
+        trap.Should().BeNull();
+        player.CurrentAP.Should().Be(10); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteRunicTrap_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateRunasmidr(RunasmidrAbilityId.InscribeRune);
+
+        // Act
+        var trap = _service.ExecuteRunicTrap(player, 5, 10);
+
+        // Assert
+        trap.Should().BeNull();
     }
 
     // ===== PP Validation Tests =====
