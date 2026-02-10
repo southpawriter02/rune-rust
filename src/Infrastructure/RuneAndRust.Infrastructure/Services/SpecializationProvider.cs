@@ -92,7 +92,7 @@ public class SpecializationProvider : ISpecializationProvider
     /// 17 specializations across 4 archetypes:
     /// Warrior (6), Skirmisher (4), Mystic (2), Adept (5).
     /// </remarks>
-    private const int ExpectedSpecializationCount = 17;
+    private const int ExpectedSpecializationCount = 18;
 
     /// <summary>
     /// Default configuration file path relative to application root.

@@ -89,10 +89,10 @@ public class SpecializationProviderTests
     // ═══════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Verifies that GetAll returns exactly 17 specializations.
+    /// Verifies that GetAll returns exactly 18 specializations.
     /// </summary>
     [Test]
-    public void GetAll_ReturnsSeventeenSpecializations()
+    public void GetAll_ReturnsEighteenSpecializations()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -108,7 +108,7 @@ public class SpecializationProviderTests
         var all = provider.GetAll();
 
         // Assert
-        all.Should().HaveCount(17);
+        all.Should().HaveCount(18);
     }
 
     /// <summary>
@@ -315,10 +315,10 @@ public class SpecializationProviderTests
     }
 
     /// <summary>
-    /// Verifies that Adept archetype has exactly 5 specializations (all Coherent).
+    /// Verifies that Adept archetype has exactly 6 specializations (all Coherent).
     /// </summary>
     [Test]
-    public void GetByArchetype_Adept_ReturnsFiveCoherentSpecializations()
+    public void GetByArchetype_Adept_ReturnsSixCoherentSpecializations()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -334,7 +334,7 @@ public class SpecializationProviderTests
         var adepts = provider.GetByArchetype(Archetype.Adept);
 
         // Assert
-        adepts.Should().HaveCount(5);
+        adepts.Should().HaveCount(6);
         adepts.Should().OnlyContain(s => s.ParentArchetype == Archetype.Adept);
         adepts.Should().OnlyContain(s => !s.IsHeretical,
             "all Adept specializations are Coherent");
@@ -397,10 +397,10 @@ public class SpecializationProviderTests
     }
 
     /// <summary>
-    /// Verifies that GetCoherentSpecializations returns exactly 12 specializations.
+    /// Verifies that GetCoherentSpecializations returns exactly 13 specializations.
     /// </summary>
     [Test]
-    public void GetCoherentSpecializations_ReturnsTwelveSpecializations()
+    public void GetCoherentSpecializations_ReturnsThirteenSpecializations()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -416,7 +416,7 @@ public class SpecializationProviderTests
         var coherent = provider.GetCoherentSpecializations();
 
         // Assert
-        coherent.Should().HaveCount(12);
+        coherent.Should().HaveCount(13);
         coherent.Should().OnlyContain(s => !s.IsHeretical);
     }
 
@@ -425,10 +425,10 @@ public class SpecializationProviderTests
     // ═══════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Verifies that Count returns 17.
+    /// Verifies that Count returns 18.
     /// </summary>
     [Test]
-    public void Count_ReturnsSeventeen()
+    public void Count_ReturnsEighteen()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -444,7 +444,7 @@ public class SpecializationProviderTests
         var count = provider.Count;
 
         // Assert
-        count.Should().Be(17);
+        count.Should().Be(18);
     }
 
     /// <summary>
@@ -475,10 +475,10 @@ public class SpecializationProviderTests
     // ═══════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Verifies that GetWithSpecialResource returns exactly 5 specializations.
+    /// Verifies that GetWithSpecialResource returns exactly 7 specializations.
     /// </summary>
     [Test]
-    public void GetWithSpecialResource_ReturnsFiveSpecializations()
+    public void GetWithSpecialResource_ReturnsSevenSpecializations()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -494,12 +494,12 @@ public class SpecializationProviderTests
         var withResource = provider.GetWithSpecialResource();
 
         // Assert
-        withResource.Should().HaveCount(5);
+        withResource.Should().HaveCount(7);
         withResource.Should().OnlyContain(s => s.HasSpecialResource);
     }
 
     /// <summary>
-    /// Verifies that the correct 5 specializations have special resources.
+    /// Verifies that the correct 7 specializations have special resources.
     /// </summary>
     [Test]
     public void GetWithSpecialResource_ContainsExpectedSpecializations()
@@ -518,12 +518,14 @@ public class SpecializationProviderTests
         var withResource = provider.GetWithSpecialResource();
         var ids = withResource.Select(s => s.SpecializationId).ToList();
 
-        // Assert — the 5 specializations with special resources
+        // Assert — the 7 specializations with special resources
         ids.Should().Contain(SpecializationId.Berserkr);       // Rage
         ids.Should().Contain(SpecializationId.Skjaldmaer);     // Block Charges
         ids.Should().Contain(SpecializationId.IronBane);       // Righteous Fervor
         ids.Should().Contain(SpecializationId.Seidkona);       // Aether Resonance
         ids.Should().Contain(SpecializationId.EchoCaller);     // Echoes
+        ids.Should().Contain(SpecializationId.JotunReader);    // Lore Insight
+        ids.Should().Contain(SpecializationId.Runasmidr);      // Rune Charges
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -809,10 +811,10 @@ public class SpecializationProviderTests
     }
 
     /// <summary>
-    /// Verifies that the sum of all archetype specialization counts equals 17.
+    /// Verifies that the sum of all archetype specialization counts equals 18.
     /// </summary>
     [Test]
-    public void GetByArchetype_TotalAcrossAllArchetypes_EqualsSeventeen()
+    public void GetByArchetype_TotalAcrossAllArchetypes_EqualsEighteen()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -829,6 +831,6 @@ public class SpecializationProviderTests
             .Sum(a => provider.GetByArchetype(a).Count);
 
         // Assert
-        total.Should().Be(17);
+        total.Should().Be(18);
     }
 }

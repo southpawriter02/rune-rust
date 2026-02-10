@@ -548,8 +548,57 @@
             "parentArchetype": "Adept",
             "pathType": "Coherent",
             "unlockCost": 0,
-            "specialResource": null,
-            "abilityTiers": []
+            "specialResource": {
+                "resourceId": "lore-insight",
+                "displayName": "Lore Insight",
+                "minValue": 0,
+                "maxValue": 10,
+                "startsAt": 10,
+                "regenPerTurn": 0,
+                "decayPerTurn": 0,
+                "description": "Accumulated knowledge gained through examination and discovery of ancient Jötun and Dvergr artifacts"
+            },
+            "abilityTiers": [
+                {
+                    "tier": 1,
+                    "displayName": "Knowledge Foundation",
+                    "unlockCost": 0,
+                    "requiresPreviousTier": false,
+                    "requiredRank": 1,
+                    "abilities": [
+                        {
+                            "abilityId": "deep-scan",
+                            "displayName": "Deep Scan",
+                            "description": "Focus examination on machinery, terminals, and Jötun technology. Adds +2d10 to the examination check. Costs 2 AP.",
+                            "isPassive": false,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "pattern-recognition",
+                            "displayName": "Pattern Recognition",
+                            "description": "Automatically succeed at Layer 2 (functional understanding) when examining Jötun technology.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "ancient-tongues",
+                            "displayName": "Ancient Tongues",
+                            "description": "Comprehend Jötun Formal, Jötun Technical, Dvergr Standard, and Dvergr Runic scripts. Automatically translate inscriptions and terminals.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                }
+            ]
         },
         {
             "specializationId": "Skald",
