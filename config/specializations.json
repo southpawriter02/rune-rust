@@ -636,6 +636,54 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 3,
+                    "displayName": "Master Scholar",
+                    "unlockCost": 5,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 3,
+                    "abilities": [
+                        {
+                            "abilityId": "lore-keeper",
+                            "displayName": "Lore Keeper",
+                            "description": "Automatically succeed at Layer 3 examinations for historical objects. Generates 2 Lore Insight on first examination.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "ancient-knowledge",
+                            "displayName": "Ancient Knowledge",
+                            "description": "Reveals bonus lore entries upon successful examinations. Expert success reveals 1 entry, Master success reveals 2. Generates 1 Lore Insight per entry.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                },
+                {
+                    "tier": 4,
+                    "displayName": "Voice of the Giants",
+                    "unlockCost": 6,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 4,
+                    "abilities": [
+                        {
+                            "abilityId": "voice-of-the-giants",
+                            "displayName": "Voice of the Giants",
+                            "description": "Activate dormant Jötun technology. The activated technology produces powerful effects for 1 hour. Costs 5 AP and 8 Lore Insight. Usable once per long rest.",
+                            "isPassive": false,
+                            "resourceCost": 8,
+                            "resourceType": "lore-insight",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
                 }
             ]
         },
