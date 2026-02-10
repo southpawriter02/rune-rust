@@ -1,0 +1,51 @@
+{
+  "specializations": [
+    {
+      "id": "runasmidr",
+      "name": "Rúnasmiðr",
+      "displayName": "Runesmith",
+      "tagline": "Inscriber of Power",
+      "archetypeId": "adept",
+      "description": "Masters of runic inscription who enhance equipment, create protective wards, and channel ancient Dvergar crafting knowledge into combat applications.",
+      "specialResource": {
+        "id": "rune-charges",
+        "name": "Rune Charges",
+        "maxValue": 5,
+        "generationMethod": "crafting",
+        "standardCraftGain": 1,
+        "complexCraftGain": 2,
+        "restoreOnRest": true
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 0,
+          "abilities": ["inscribe-rune", "read-the-marks", "runestone-ward"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["empowered-inscription", "runic-trap", "dvergr-techniques"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["master-scrivener", "living-runes"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["word-of-unmaking"]
+        }
+      ]
+    }
+  ]
+}

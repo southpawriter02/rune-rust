@@ -1376,4 +1376,128 @@ public class Player : IEntity
     /// </summary>
     public IReadOnlyCollection<SkjaldmaerAbilityId> UnlockedSkjaldmaerAbilities
         => _unlockedSkjaldmaerAbilities;
+
+    // ===== Rúnasmiðr Specialization Properties (v0.20.2a) =====
+
+    /// <summary>
+    /// Gets the Rúnasmiðr's Rune Charge resource.
+    /// Null for non-Rúnasmiðr players.
+    /// </summary>
+    public RuneChargeResource? RuneCharges { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the Rúnasmiðr's active Runestone Ward.
+    /// Null when no ward is active.
+    /// </summary>
+    public RunestoneWard? ActiveWard { get; private set; }
+
+    /// <summary>
+    /// Backing field for the active inscribed runes.
+    /// </summary>
+    private readonly List<InscribedRune> _activeRunes = [];
+
+    /// <summary>
+    /// Gets the Rúnasmiðr's active inscribed runes as a read-only list.
+    /// </summary>
+    public IReadOnlyList<InscribedRune> ActiveRunes => _activeRunes;
+
+    /// <summary>
+    /// Gets the set of unlocked Rúnasmiðr abilities.
+    /// </summary>
+    private readonly HashSet<RunasmidrAbilityId> _unlockedRunasmidrAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Rúnasmiðr abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<RunasmidrAbilityId> UnlockedRunasmidrAbilities
+        => _unlockedRunasmidrAbilities;
+
+    // ===== Rúnasmiðr Specialization Methods (v0.20.2a) =====
+
+    /// <summary>
+    /// Initializes the Rune Charge resource for this player.
+    /// </summary>
+    /// <param name="maxCharges">Maximum charges (default 5).</param>
+    public void InitializeRuneCharges(int maxCharges = RuneChargeResource.DefaultMaxCharges)
+    {
+        RuneCharges = RuneChargeResource.CreateFull(maxCharges);
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Rúnasmiðr ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasRunasmidrAbilityUnlocked(RunasmidrAbilityId abilityId)
+    {
+        return _unlockedRunasmidrAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Rúnasmiðr ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockRunasmidrAbility(RunasmidrAbilityId abilityId)
+    {
+        _unlockedRunasmidrAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Adds an inscribed rune to the player's active runes collection.
+    /// </summary>
+    /// <param name="rune">The rune to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when rune is null.</exception>
+    public void AddInscribedRune(InscribedRune rune)
+    {
+        ArgumentNullException.ThrowIfNull(rune);
+        _activeRunes.Add(rune);
+    }
+
+    /// <summary>
+    /// Removes all inscribed runes targeting the specified item.
+    /// </summary>
+    /// <param name="targetItemId">The item ID whose runes should be removed.</param>
+    /// <returns>True if any runes were removed.</returns>
+    public bool RemoveInscribedRune(Guid targetItemId)
+    {
+        return _activeRunes.RemoveAll(r => r.TargetItemId == targetItemId) > 0;
+    }
+
+    /// <summary>
+    /// Sets the player's active Runestone Ward, replacing any existing ward.
+    /// </summary>
+    /// <param name="ward">The ward to set, or null to clear.</param>
+    public void SetActiveWard(RunestoneWard? ward)
+    {
+        ActiveWard = ward;
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Rúnasmiðr abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 0 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetRunasmidrPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedRunasmidrAbilities)
+        {
+            total += ability switch
+            {
+                RunasmidrAbilityId.InscribeRune or
+                RunasmidrAbilityId.ReadTheMarks or
+                RunasmidrAbilityId.RunestoneWard => 0,    // Tier 1: free
+                RunasmidrAbilityId.EmpoweredInscription or
+                RunasmidrAbilityId.RunicTrap or
+                RunasmidrAbilityId.DvergrTechniques => 4,  // Tier 2: 4 PP each
+                RunasmidrAbilityId.MasterScrivener or
+                RunasmidrAbilityId.LivingRunes => 5,       // Tier 3: 5 PP each
+                RunasmidrAbilityId.WordOfUnmaking => 6,    // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
 }

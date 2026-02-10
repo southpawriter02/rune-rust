@@ -5,13 +5,19 @@
       "id": "shield-bash",
       "name": "Shield Bash",
       "description": "Slam your shield into an enemy, dealing damage with a chance to stun.",
-      "classIds": ["shieldmaiden"],
+      "classIds": [
+        "shieldmaiden"
+      ],
       "costResource": "rage",
       "costAmount": 15,
       "cooldown": 2,
       "targetType": "SingleEnemy",
       "unlockLevel": 1,
-      "tags": ["damage", "melee", "stun"],
+      "tags": [
+        "damage",
+        "melee",
+        "stun"
+      ],
       "effects": [
         {
           "type": "Damage",
@@ -31,13 +37,18 @@
       "id": "taunt",
       "name": "Taunt",
       "description": "Force an enemy to attack you instead of your allies.",
-      "classIds": ["shieldmaiden"],
+      "classIds": [
+        "shieldmaiden"
+      ],
       "costResource": "rage",
       "costAmount": 10,
       "cooldown": 3,
       "targetType": "SingleEnemy",
       "unlockLevel": 1,
-      "tags": ["utility", "tank"],
+      "tags": [
+        "utility",
+        "tank"
+      ],
       "effects": [
         {
           "type": "Taunt",
@@ -50,13 +61,19 @@
       "id": "fortify",
       "name": "Fortify",
       "description": "Harden your defenses, increasing your defense for 3 turns.",
-      "classIds": ["shieldmaiden"],
+      "classIds": [
+        "shieldmaiden"
+      ],
       "costResource": "rage",
       "costAmount": 20,
       "cooldown": 5,
       "targetType": "Self",
       "unlockLevel": 3,
-      "tags": ["buff", "defense", "tank"],
+      "tags": [
+        "buff",
+        "defense",
+        "tank"
+      ],
       "effects": [
         {
           "type": "Buff",
@@ -70,13 +87,19 @@
       "id": "backstab",
       "name": "Backstab",
       "description": "Strike from the shadows for massive damage. More effective when undetected.",
-      "classIds": ["shadow-walker"],
+      "classIds": [
+        "shadow-walker"
+      ],
       "costResource": "energy",
       "costAmount": 25,
       "cooldown": 3,
       "targetType": "SingleEnemy",
       "unlockLevel": 1,
-      "tags": ["damage", "melee", "stealth"],
+      "tags": [
+        "damage",
+        "melee",
+        "stealth"
+      ],
       "effects": [
         {
           "type": "Damage",
@@ -90,13 +113,19 @@
       "id": "shadowstep",
       "name": "Shadowstep",
       "description": "Teleport behind your target, gaining an advantageous position.",
-      "classIds": ["shadow-walker"],
+      "classIds": [
+        "shadow-walker"
+      ],
       "costResource": "energy",
       "costAmount": 15,
       "cooldown": 2,
       "targetType": "SingleEnemy",
       "unlockLevel": 1,
-      "tags": ["utility", "movement", "stealth"],
+      "tags": [
+        "utility",
+        "movement",
+        "stealth"
+      ],
       "effects": [
         {
           "type": "Buff",
@@ -110,13 +139,19 @@
       "id": "poison-blade",
       "name": "Poison Blade",
       "description": "Coat your weapon in poison, causing damage over time.",
-      "classIds": ["shadow-walker"],
+      "classIds": [
+        "shadow-walker"
+      ],
       "costResource": "energy",
       "costAmount": 20,
       "cooldown": 4,
       "targetType": "SingleEnemy",
       "unlockLevel": 3,
-      "tags": ["damage", "dot", "poison"],
+      "tags": [
+        "damage",
+        "dot",
+        "poison"
+      ],
       "effects": [
         {
           "type": "Damage",
@@ -134,13 +169,20 @@
       "id": "flame-bolt",
       "name": "Flame Bolt",
       "description": "Hurl a bolt of fire at your enemy, dealing fire damage.",
-      "classIds": ["galdr-caster"],
+      "classIds": [
+        "galdr-caster"
+      ],
       "costResource": "mana",
       "costAmount": 15,
       "cooldown": 0,
       "targetType": "SingleEnemy",
       "unlockLevel": 1,
-      "tags": ["damage", "ranged", "fire", "magic"],
+      "tags": [
+        "damage",
+        "ranged",
+        "fire",
+        "magic"
+      ],
       "effects": [
         {
           "type": "Damage",
@@ -154,13 +196,21 @@
       "id": "frost-nova",
       "name": "Frost Nova",
       "description": "Unleash a wave of frost, damaging and slowing all enemies.",
-      "classIds": ["galdr-caster"],
+      "classIds": [
+        "galdr-caster"
+      ],
       "costResource": "mana",
       "costAmount": 25,
       "cooldown": 4,
       "targetType": "AllEnemies",
       "unlockLevel": 2,
-      "tags": ["damage", "aoe", "ice", "magic", "slow"],
+      "tags": [
+        "damage",
+        "aoe",
+        "ice",
+        "magic",
+        "slow"
+      ],
       "effects": [
         {
           "type": "Damage",
@@ -180,13 +230,20 @@
       "id": "arcane-shield",
       "name": "Arcane Shield",
       "description": "Create a magical barrier that absorbs incoming damage.",
-      "classIds": ["galdr-caster"],
+      "classIds": [
+        "galdr-caster"
+      ],
       "costResource": "mana",
       "costAmount": 20,
       "cooldown": 5,
       "targetType": "Self",
       "unlockLevel": 1,
-      "tags": ["buff", "defense", "magic", "shield"],
+      "tags": [
+        "buff",
+        "defense",
+        "magic",
+        "shield"
+      ],
       "effects": [
         {
           "type": "Shield",
@@ -201,13 +258,19 @@
       "id": "healing-word",
       "name": "Healing Word",
       "description": "Speak a word of power that restores health.",
-      "classIds": ["blood-priest"],
+      "classIds": [
+        "blood-priest"
+      ],
       "costResource": "faith",
       "costAmount": 20,
       "cooldown": 2,
       "targetType": "Self",
       "unlockLevel": 1,
-      "tags": ["heal", "support", "holy"],
+      "tags": [
+        "heal",
+        "support",
+        "holy"
+      ],
       "effects": [
         {
           "type": "Heal",
@@ -221,13 +284,20 @@
       "id": "smite",
       "name": "Smite",
       "description": "Call down holy wrath upon your enemy.",
-      "classIds": ["blood-priest"],
+      "classIds": [
+        "blood-priest"
+      ],
       "costResource": "faith",
       "costAmount": 15,
       "cooldown": 1,
       "targetType": "SingleEnemy",
       "unlockLevel": 1,
-      "tags": ["damage", "ranged", "holy", "magic"],
+      "tags": [
+        "damage",
+        "ranged",
+        "holy",
+        "magic"
+      ],
       "effects": [
         {
           "type": "Damage",
@@ -241,13 +311,20 @@
       "id": "sanctuary",
       "name": "Sanctuary",
       "description": "Create a protective aura that reduces damage taken.",
-      "classIds": ["blood-priest"],
+      "classIds": [
+        "blood-priest"
+      ],
       "costResource": "faith",
       "costAmount": 30,
       "cooldown": 6,
       "targetType": "Self",
       "unlockLevel": 3,
-      "tags": ["buff", "defense", "holy", "aura"],
+      "tags": [
+        "buff",
+        "defense",
+        "holy",
+        "aura"
+      ],
       "effects": [
         {
           "type": "Buff",
@@ -261,13 +338,19 @@
       "id": "deploy-turret",
       "name": "Deploy Turret",
       "description": "Deploy an automated turret that attacks enemies each turn.",
-      "classIds": ["scrap-tinker"],
+      "classIds": [
+        "scrap-tinker"
+      ],
       "costResource": "focus",
       "costAmount": 25,
       "cooldown": 5,
       "targetType": "None",
       "unlockLevel": 1,
-      "tags": ["summon", "utility", "tech"],
+      "tags": [
+        "summon",
+        "utility",
+        "tech"
+      ],
       "effects": [
         {
           "type": "Summon",
@@ -281,13 +364,19 @@
       "id": "repair-kit",
       "name": "Repair Kit",
       "description": "Use a repair kit to heal over time.",
-      "classIds": ["scrap-tinker"],
+      "classIds": [
+        "scrap-tinker"
+      ],
       "costResource": "focus",
       "costAmount": 15,
       "cooldown": 3,
       "targetType": "Self",
       "unlockLevel": 1,
-      "tags": ["heal", "hot", "tech"],
+      "tags": [
+        "heal",
+        "hot",
+        "tech"
+      ],
       "effects": [
         {
           "type": "HealOverTime",
@@ -300,13 +389,20 @@
       "id": "smoke-bomb",
       "name": "Smoke Bomb",
       "description": "Throw a smoke bomb to blind enemies or escape combat.",
-      "classIds": ["scrap-tinker"],
+      "classIds": [
+        "scrap-tinker"
+      ],
       "costResource": "focus",
       "costAmount": 20,
       "cooldown": 4,
       "targetType": "AllEnemies",
       "unlockLevel": 2,
-      "tags": ["debuff", "utility", "tech", "escape"],
+      "tags": [
+        "debuff",
+        "utility",
+        "tech",
+        "escape"
+      ],
       "effects": [
         {
           "type": "Debuff",
@@ -314,6 +410,89 @@
           "duration": 2,
           "statusEffect": "blind",
           "chance": 0.8
+        }
+      ]
+    },
+    {
+      "id": "inscribe-rune",
+      "name": "Inscribe Rune",
+      "description": "Inscribe a temporary rune on a weapon (+2 damage) or armor (+1 Defense) for 10 turns.",
+      "classIds": [
+        "runasmidr"
+      ],
+      "costResource": "rune-charges",
+      "costAmount": 1,
+      "apCost": 3,
+      "cooldown": 0,
+      "targetType": "Self",
+      "unlockLevel": 1,
+      "tags": [
+        "buff",
+        "enhancement",
+        "crafting",
+        "inscription"
+      ],
+      "effects": [
+        {
+          "type": "Buff",
+          "value": 2,
+          "duration": 10,
+          "description": "+2 weapon damage or +1 armor Defense"
+        }
+      ]
+    },
+    {
+      "id": "read-the-marks",
+      "name": "Read the Marks",
+      "description": "Passively identify Jötun technology, bypassing normal Perception and Lore checks.",
+      "classIds": [
+        "runasmidr"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "unlockLevel": 1,
+      "tags": [
+        "passive",
+        "identification",
+        "lore",
+        "perception"
+      ],
+      "effects": [
+        {
+          "type": "Buff",
+          "value": 0,
+          "description": "Auto-identify Jötun technology"
+        }
+      ]
+    },
+    {
+      "id": "runestone-ward",
+      "name": "Runestone Ward",
+      "description": "Create a protective ward that absorbs up to 10 damage. Only one ward per character.",
+      "classIds": [
+        "runasmidr"
+      ],
+      "costResource": "rune-charges",
+      "costAmount": 1,
+      "apCost": 2,
+      "cooldown": 0,
+      "targetType": "Self",
+      "unlockLevel": 1,
+      "tags": [
+        "defense",
+        "ward",
+        "inscription",
+        "absorption"
+      ],
+      "effects": [
+        {
+          "type": "Shield",
+          "value": 10,
+          "duration": 0,
+          "description": "Absorbs up to 10 damage"
         }
       ]
     }
