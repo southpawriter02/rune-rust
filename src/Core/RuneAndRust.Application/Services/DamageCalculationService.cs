@@ -25,8 +25,11 @@ public class DamageCalculationService : IDamageCalculationService
     }
 
     /// <inheritdoc/>
-    public DamageInstance CalculateDamage(int baseDamage, string? damageTypeId, DamageResistances targetResistances)
+    public DamageInstance CalculateDamage(int baseDamage, string? damageTypeId, DamageResistances targetResistances, string context = "Unspecified")
     {
+        _logger.LogTrace("Calculating damage for {Context}: Base {BaseDamage}, Type {DamageTypeId}",
+            context, baseDamage, damageTypeId);
+
         // Normalize damage type
         var effectiveDamageType = string.IsNullOrWhiteSpace(damageTypeId)
             ? IDamageCalculationService.DefaultDamageType
@@ -42,8 +45,8 @@ public class DamageCalculationService : IDamageCalculationService
         if (targetResistances.IsImmune(effectiveDamageType))
         {
             _logger.LogDebug(
-                "Damage calculation: {BaseDamage} {DamageType} -> IMMUNE (100% resistance)",
-                baseDamage, effectiveDamageType);
+                "Damage calculation for {Context}: {BaseDamage} {DamageType} -> IMMUNE (100% resistance)",
+                context, baseDamage, effectiveDamageType);
             return DamageInstance.Immune(baseDamage, effectiveDamageType);
         }
 
@@ -57,12 +60,13 @@ public class DamageCalculationService : IDamageCalculationService
         var wasVulnerable = resistance < 0;
 
         _logger.LogDebug(
-            "Damage calculation: {BaseDamage} {DamageType} x {Multiplier:F2} = {FinalDamage} (resistance: {Resistance}%)",
-            baseDamage, effectiveDamageType, multiplier, finalDamage, resistance);
+            "Damage calculation for {Context}: {BaseDamage} {DamageType} x {Multiplier:F2} = {FinalDamage} (resistance: {Resistance}%)",
+            context, baseDamage, effectiveDamageType, multiplier, finalDamage, resistance);
 
         _eventLogger?.LogCombat("DamageCalculated", $"{baseDamage} {effectiveDamageType} → {finalDamage}",
             data: new Dictionary<string, object>
             {
+                ["context"] = context,
                 ["baseDamage"] = baseDamage,
                 ["damageType"] = effectiveDamageType,
                 ["finalDamage"] = finalDamage,

@@ -21,13 +21,13 @@ public class ExaminationService : IExaminationService
         IExaminationRepository examinationRepository,
         IPerceptionRepository perceptionRepository,
         IFloraFaunaRepository floraFaunaRepository,
-        SkillCheckService? skillCheckService = null,
+        SkillCheckService skillCheckService,
         Random? random = null)
     {
         _examinationRepository = examinationRepository ?? throw new ArgumentNullException(nameof(examinationRepository));
         _perceptionRepository = perceptionRepository ?? throw new ArgumentNullException(nameof(perceptionRepository));
         _floraFaunaRepository = floraFaunaRepository ?? throw new ArgumentNullException(nameof(floraFaunaRepository));
-        _skillCheckService = skillCheckService ?? new SkillCheckService();
+        _skillCheckService = skillCheckService ?? throw new ArgumentNullException(nameof(skillCheckService));
         _random = random ?? new Random();
     }
 

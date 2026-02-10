@@ -18,8 +18,9 @@ public interface IDamageCalculationService
     /// <param name="baseDamage">The base damage before resistances.</param>
     /// <param name="damageTypeId">The type of damage (e.g., "physical", "fire"). Null uses physical.</param>
     /// <param name="targetResistances">The target's damage resistances.</param>
+    /// <param name="context">The context in which this damage is being calculated.</param>
     /// <returns>A DamageInstance containing the calculation results.</returns>
-    DamageInstance CalculateDamage(int baseDamage, string? damageTypeId, DamageResistances targetResistances);
+    DamageInstance CalculateDamage(int baseDamage, string? damageTypeId, DamageResistances targetResistances, string context = "Unspecified");
 
     /// <summary>
     /// Gets a human-readable description of a resistance value.

@@ -102,6 +102,7 @@ public class GameSessionService
     /// </summary>
     /// <param name="repository">The repository for persisting game sessions.</param>
     /// <param name="logger">The logger for service diagnostics.</param>
+    /// <param name="combatService">The combat service.</param>
     /// <param name="itemEffectService">The service for applying item effects.</param>
     /// <param name="abilityService">The service for managing abilities.</param>
     /// <param name="resourceService">The service for managing resources.</param>
@@ -110,21 +111,43 @@ public class GameSessionService
     /// <param name="experienceService">The service for managing experience points.</param>
     /// <param name="progressionService">The service for managing level-up progression.</param>
     /// <param name="lootService">The service for generating and collecting loot.</param>
-    /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
+    /// <param name="skillCheckService">The skill check service.</param>
+    /// <param name="examinationService">The examination service (optional).</param>
+    /// <param name="dungeonGenerator">The dungeon generator (optional).</param>
     /// <param name="eventLogger">Optional event logger for comprehensive game event tracking.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
+        CombatService combatService,
+        ItemEffectService itemEffectService,
+        AbilityService abilityService,
+        ResourceService resourceService,
+        IDiceService diceService,
+        EquipmentService equipmentService,
+        ExperienceService experienceService,
+        ProgressionService progressionService,
+        ILootService lootService,
+        SkillCheckService skillCheckService,
         IExaminationService? examinationService = null,
-        IDungeonGenerator? dungeonGenerator = null)
+        IDungeonGenerator? dungeonGenerator = null,
+        IGameEventLogger? eventLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _combatService = new CombatService();
+        _combatService = combatService ?? throw new ArgumentNullException(nameof(combatService));
+        _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
+        _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
+        _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
+        _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
+        _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
+        _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
+        _progressionService = progressionService ?? throw new ArgumentNullException(nameof(progressionService));
+        _lootService = lootService ?? throw new ArgumentNullException(nameof(lootService));
+        _skillCheckService = skillCheckService ?? throw new ArgumentNullException(nameof(skillCheckService));
         _examinationService = examinationService;
-        _skillCheckService = new SkillCheckService();
         _dungeonGenerator = dungeonGenerator;
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
