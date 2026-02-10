@@ -19,6 +19,45 @@ public class RoomTemplate : IEntity
     public string BaseDescription { get; private set; }
     public int Weight { get; private set; }
 
+    // Missing properties required by TemplateValidationService
+    public string NamePattern { get; set; } = string.Empty;
+    public string DescriptionPattern { get; set; } = string.Empty;
+    public List<string> ValidBiomes { get; set; } = new();
+    public int MinDepth { get; set; }
+    public int? MaxDepth { get; set; }
+    public List<TemplateSlot> Slots { get; set; } = new();
+
+    public IEnumerable<TemplateSlot> GetSlotsByType(SlotType type) => Slots.Where(s => s.Type == type);
+
+    public bool IsValidForBiome(Biome biome)
+    {
+        return ValidBiomes.Contains(biome.ToString(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    public bool IsValidForBiome(string biome)
+    {
+        return ValidBiomes.Contains(biome, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public bool IsValidForDepth(int depth)
+    {
+        if (depth < MinDepth) return false;
+        if (MaxDepth.HasValue && depth > MaxDepth.Value) return false;
+        return true;
+    }
+
+    public bool HasAllTags(IEnumerable<string> tags)
+    {
+        return tags.All(t => _tags.Contains(t, StringComparer.OrdinalIgnoreCase));
+    }
+
+    public bool HasNoTags(IEnumerable<string> tags)
+    {
+        return !tags.Any(t => _tags.Contains(t, StringComparer.OrdinalIgnoreCase));
+    }
+
+    public RoomType RoomType { get; private set; } = RoomType.Standard;
+
     private readonly List<string> _tags = [];
     private readonly List<RoomFeature> _features = [];
 
@@ -34,20 +73,25 @@ public class RoomTemplate : IEntity
 
     public RoomTemplate(
         string templateId,
-        string name,
-        RoomArchetype archetype,
-        Biome biome,
-        string baseDescription,
+        string name = "Unknown",
+        RoomArchetype archetype = RoomArchetype.Chamber,
+        Biome biome = Biome.Citadel,
+        string baseDescription = "Description pending.",
         int minExits = 1,
         int maxExits = 4,
-        int weight = 1)
+        int weight = 1,
+        string namePattern = "",
+        string descriptionPattern = "",
+        List<string>? validBiomes = null,
+        int minDepth = 0,
+        int? maxDepth = null,
+        RoomType roomType = RoomType.Standard,
+        List<TemplateSlot>? slots = null,
+        List<string>? tags = null)
     {
         if (string.IsNullOrWhiteSpace(templateId))
             throw new ArgumentException("Template ID cannot be empty", nameof(templateId));
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be empty", nameof(name));
-        if (string.IsNullOrWhiteSpace(baseDescription))
-            throw new ArgumentException("Description cannot be empty", nameof(baseDescription));
+        // Relaxed validation for optional parameters
         if (minExits < 1)
             throw new ArgumentOutOfRangeException(nameof(minExits), "Minimum exits must be at least 1");
         if (maxExits < minExits)
@@ -64,6 +108,17 @@ public class RoomTemplate : IEntity
         MinExits = minExits;
         MaxExits = maxExits;
         Weight = weight;
+        NamePattern = namePattern;
+        DescriptionPattern = descriptionPattern;
+        ValidBiomes = validBiomes ?? new List<string>();
+        MinDepth = minDepth;
+        MaxDepth = maxDepth;
+        RoomType = roomType;
+        Slots = slots ?? new List<TemplateSlot>();
+        if (tags != null)
+        {
+            _tags.AddRange(tags);
+        }
     }
 
     /// <summary>

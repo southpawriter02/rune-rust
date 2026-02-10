@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
@@ -42,7 +44,7 @@ public class DungeonGenerator : IDungeonGenerator
     {
         return new DungeonGenerator(
             new SproutingVineTopologyGenerator(),
-            new RoomInstantiator(roomTemplateProvider),
+            new RoomInstantiator(roomTemplateProvider, NullLogger<RoomInstantiator>.Instance),
             new ThreatBudgetPopulator(entityTemplateProvider),
             new CoherenceValidator());
     }
@@ -63,7 +65,7 @@ public class DungeonGenerator : IDungeonGenerator
 
         return new DungeonGenerator(
             new SproutingVineTopologyGenerator(),
-            new RoomInstantiator(roomTemplateProvider, descriptorService, descriptorRepository),
+            new RoomInstantiator(roomTemplateProvider, NullLogger<RoomInstantiator>.Instance, descriptorService, descriptorRepository),
             new ThreatBudgetPopulator(entityTemplateProvider),
             new CoherenceValidator());
     }

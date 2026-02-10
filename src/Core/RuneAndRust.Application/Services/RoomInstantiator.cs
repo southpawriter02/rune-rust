@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
@@ -14,6 +15,7 @@ public class RoomInstantiator : IRoomInstantiator
     private readonly IReadOnlyList<RoomTemplate> _templates;
     private readonly IRoomDescriptorService? _descriptorService;
     private readonly IDescriptorRepository? _descriptorRepository;
+    private readonly ILogger<RoomInstantiator> _logger;
     private readonly Dictionary<string, string[]> _sizeAdjectives;
     private readonly Dictionary<string, string[]> _conditionAdjectives;
     private readonly Dictionary<string, string[]> _atmosphereAdjectives;
@@ -21,8 +23,8 @@ public class RoomInstantiator : IRoomInstantiator
     /// <summary>
     /// Creates a RoomInstantiator with legacy placeholder support only.
     /// </summary>
-    public RoomInstantiator(IRoomTemplateProvider templateProvider)
-        : this(templateProvider, null, null)
+    public RoomInstantiator(IRoomTemplateProvider templateProvider, ILogger<RoomInstantiator> logger)
+        : this(templateProvider, logger, null, null)
     {
     }
 
@@ -31,11 +33,13 @@ public class RoomInstantiator : IRoomInstantiator
     /// </summary>
     public RoomInstantiator(
         IRoomTemplateProvider templateProvider,
+        ILogger<RoomInstantiator> logger,
         IRoomDescriptorService? descriptorService,
         IDescriptorRepository? descriptorRepository)
     {
         _templates = templateProvider?.GetAllTemplates()
             ?? throw new ArgumentNullException(nameof(templateProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _descriptorService = descriptorService;
         _descriptorRepository = descriptorRepository;
 
@@ -69,6 +73,8 @@ public class RoomInstantiator : IRoomInstantiator
 
     public Room InstantiateRoom(DungeonNode node, Biome biome, Random random)
     {
+        _logger.LogTrace("Instantiating room for node {NodeId} ({Archetype}) in biome {Biome}", node.Id, node.Archetype, biome);
+
         // Select matching template from legacy system
         var template = SelectTemplate(node, biome, random);
 
@@ -102,7 +108,7 @@ public class RoomInstantiator : IRoomInstantiator
 
                 // Create room
                 var position = new Position(node.Coordinate.X, node.Coordinate.Y);
-                var room = new Room(name, description, position, biome);
+                var room = new Room(name, description, Position3D.FromPosition2D(position), biome);
 
                 // Propagate tags
                 room.AddTags(template.Tags);
@@ -121,9 +127,12 @@ public class RoomInstantiator : IRoomInstantiator
                 if (node.IsBossArena)
                     room.AddTag("BossRoom");
 
+                _logger.LogDebug("Instantiated room {RoomName} ({RoomId}) using descriptor service", room.Name, room.Id);
                 return room;
             }
         }
+
+        _logger.LogDebug("Fallback to legacy template system for node {NodeId}", node.Id);
 
         // Fallback to legacy placeholder system
         var placeholders = GeneratePlaceholders(node, random);
@@ -132,7 +141,7 @@ public class RoomInstantiator : IRoomInstantiator
 
         // Create room at node position (convert 3D to 2D for now)
         var legacyPosition = new Position(node.Coordinate.X, node.Coordinate.Y);
-        var legacyRoom = new Room(name, description, legacyPosition, biome);
+        var legacyRoom = new Room(name, description, Position3D.FromPosition2D(legacyPosition), biome);
 
         // Propagate tags from template and node
         legacyRoom.AddTags(template.Tags);
@@ -150,6 +159,7 @@ public class RoomInstantiator : IRoomInstantiator
         if (node.IsBossArena)
             legacyRoom.AddTag("BossRoom");
 
+        _logger.LogDebug("Instantiated legacy room {RoomName} ({RoomId})", legacyRoom.Name, legacyRoom.Id);
         return legacyRoom;
     }
 
