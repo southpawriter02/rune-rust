@@ -475,10 +475,10 @@ public class SpecializationProviderTests
     // ═══════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Verifies that GetWithSpecialResource returns exactly 7 specializations.
+    /// Verifies that GetWithSpecialResource returns exactly 8 specializations.
     /// </summary>
     [Test]
-    public void GetWithSpecialResource_ReturnsSevenSpecializations()
+    public void GetWithSpecialResource_ReturnsEightSpecializations()
     {
         // Skip if config file doesn't exist (CI environment)
         if (!File.Exists(_testConfigPath))
@@ -494,12 +494,12 @@ public class SpecializationProviderTests
         var withResource = provider.GetWithSpecialResource();
 
         // Assert
-        withResource.Should().HaveCount(7);
+        withResource.Should().HaveCount(8);
         withResource.Should().OnlyContain(s => s.HasSpecialResource);
     }
 
     /// <summary>
-    /// Verifies that the correct 7 specializations have special resources.
+    /// Verifies that the correct 8 specializations have special resources.
     /// </summary>
     [Test]
     public void GetWithSpecialResource_ContainsExpectedSpecializations()
@@ -518,7 +518,7 @@ public class SpecializationProviderTests
         var withResource = provider.GetWithSpecialResource();
         var ids = withResource.Select(s => s.SpecializationId).ToList();
 
-        // Assert — the 7 specializations with special resources
+        // Assert — the 8 specializations with special resources
         ids.Should().Contain(SpecializationId.Berserkr);       // Rage
         ids.Should().Contain(SpecializationId.Skjaldmaer);     // Block Charges
         ids.Should().Contain(SpecializationId.IronBane);       // Righteous Fervor
@@ -526,6 +526,7 @@ public class SpecializationProviderTests
         ids.Should().Contain(SpecializationId.EchoCaller);     // Echoes
         ids.Should().Contain(SpecializationId.JotunReader);    // Lore Insight
         ids.Should().Contain(SpecializationId.Runasmidr);      // Rune Charges
+        ids.Should().Contain(SpecializationId.MyrkGengr);      // Shadow Essence
     }
 
     // ═══════════════════════════════════════════════════════════════

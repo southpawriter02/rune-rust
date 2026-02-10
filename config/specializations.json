@@ -458,8 +458,57 @@
             "parentArchetype": "Skirmisher",
             "pathType": "Heretical",
             "unlockCost": 0,
-            "specialResource": null,
-            "abilityTiers": []
+            "specialResource": {
+                "resourceId": "shadow-essence",
+                "displayName": "Shadow Essence",
+                "minValue": 0,
+                "maxValue": 50,
+                "startsAt": 50,
+                "regenPerTurn": 5,
+                "decayPerTurn": 0,
+                "description": "Dark energy drawn from shadows and darkness, spent to fuel shadow abilities"
+            },
+            "abilityTiers": [
+                {
+                    "tier": 1,
+                    "displayName": "Shadow Foundation",
+                    "unlockCost": 0,
+                    "requiresPreviousTier": false,
+                    "requiredRank": 1,
+                    "abilities": [
+                        {
+                            "abilityId": "shadow-step",
+                            "displayName": "Shadow Step",
+                            "description": "Teleport to a shadow within 6 spaces. Costs 2 AP + 10 Shadow Essence. Generates +5 Essence on arrival in Darkness. Does not require line of sight.",
+                            "isPassive": false,
+                            "resourceCost": 10,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 1
+                        },
+                        {
+                            "abilityId": "cloak-of-night",
+                            "displayName": "Cloak of Night",
+                            "description": "Enter shadow concealment stance. Costs 1 AP to enter, 5 Shadow Essence per turn to maintain. Grants +3 Stealth in shadows, silent movement. Corruption risk in bright light.",
+                            "isPassive": false,
+                            "resourceCost": 5,
+                            "resourceType": "shadow-essence",
+                            "cooldown": 0,
+                            "corruptionRisk": 1
+                        },
+                        {
+                            "abilityId": "dark-adapted",
+                            "displayName": "Dark-Adapted",
+                            "description": "Removes all penalties associated with dim light (Perception, Attack, Skill checks, Movement). Passively generates +2 Shadow Essence per turn in Darkness. Does not grant darkvision.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                }
+            ]
         },
         {
             "specializationId": "Strandhogg",
