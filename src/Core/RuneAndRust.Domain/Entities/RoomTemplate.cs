@@ -18,6 +18,7 @@ public class RoomTemplate : IEntity
     public int MaxExits { get; private set; }
     public string BaseDescription { get; private set; }
     public int Weight { get; private set; }
+    public bool IsSecret { get; private set; }
 
     private readonly List<string> _tags = [];
     private readonly List<RoomFeature> _features = [];
@@ -40,7 +41,8 @@ public class RoomTemplate : IEntity
         string baseDescription,
         int minExits = 1,
         int maxExits = 4,
-        int weight = 1)
+        int weight = 1,
+        bool isSecret = false)
     {
         if (string.IsNullOrWhiteSpace(templateId))
             throw new ArgumentException("Template ID cannot be empty", nameof(templateId));
@@ -64,6 +66,7 @@ public class RoomTemplate : IEntity
         MinExits = minExits;
         MaxExits = maxExits;
         Weight = weight;
+        IsSecret = isSecret;
     }
 
     /// <summary>

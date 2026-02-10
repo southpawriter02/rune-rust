@@ -28,13 +28,17 @@ public class Room : IEntity
     /// Gets the narrative description of this room shown to the player.
     /// </summary>
     public string Description { get; private set; }
-    public Position Position { get; private set; }
     public Biome Biome { get; private set; }
 
     /// <summary>
     /// Gets the 3D position of this room in the dungeon grid.
     /// </summary>
     public Position3D Position { get; private set; }
+
+    /// <summary>
+    /// Gets whether this room is a secret room.
+    /// </summary>
+    public bool IsSecret { get; private set; }
 
     /// <summary>
     /// Dictionary mapping directions to Exit value objects.
@@ -354,7 +358,7 @@ public class Room : IEntity
         Description = null!;
     }
 
-    public Room(string name, string description, Position position, Biome biome = Biome.Citadel)
+    public Room(string name, string description, Position3D position, Biome biome = Biome.Citadel)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -376,6 +380,12 @@ public class Room : IEntity
     {
     }
 
+    [Obsolete("Use the Position3D constructor for new code. This exists for backwards compatibility.")]
+    public Room(string name, string description, Position position, Biome biome)
+        : this(name, description, Position3D.FromPosition2D(position), biome)
+    {
+    }
+
     /// <summary>
     /// Sets the room type.
     /// </summary>
@@ -383,6 +393,11 @@ public class Room : IEntity
     public void SetRoomType(RoomType roomType)
     {
         RoomType = roomType;
+    }
+
+    public void SetIsSecret(bool isSecret)
+    {
+        IsSecret = isSecret;
     }
 
     // ===== Exploration State Methods (v0.1.0d) =====
