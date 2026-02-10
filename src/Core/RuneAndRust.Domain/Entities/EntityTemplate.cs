@@ -12,6 +12,7 @@ public class EntityTemplate : IEntity
     public Guid Id { get; private set; }
     public string EntityId { get; private set; }
     public string Name { get; private set; }
+    public string Description { get; private set; }
     public string FactionId { get; private set; }
     public Biome Biome { get; private set; }
     public int Cost { get; private set; }
@@ -26,12 +27,14 @@ public class EntityTemplate : IEntity
     {
         EntityId = null!;
         Name = null!;
+        Description = null!;
         FactionId = null!;
     } // For EF Core
 
     public EntityTemplate(
         string entityId,
         string name,
+        string description,
         string factionId,
         Biome biome,
         int cost,
@@ -42,6 +45,8 @@ public class EntityTemplate : IEntity
             throw new ArgumentException("Entity ID cannot be empty", nameof(entityId));
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty", nameof(name));
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be empty", nameof(description));
         if (string.IsNullOrWhiteSpace(factionId))
             throw new ArgumentException("Faction ID cannot be empty", nameof(factionId));
         if (cost < 1)
@@ -50,6 +55,7 @@ public class EntityTemplate : IEntity
         Id = Guid.NewGuid();
         EntityId = entityId;
         Name = name;
+        Description = description;
         FactionId = factionId;
         Biome = biome;
         Cost = cost;
@@ -96,8 +102,7 @@ public class EntityTemplate : IEntity
     /// </summary>
     public Monster CreateMonster()
     {
-        var description = $"A hostile {Name.ToLower()}.";
-        return new Monster(Name, description, BaseStats.MaxHealth, BaseStats);
+        return new Monster(Name, Description, BaseStats.MaxHealth, BaseStats);
     }
 
     /// <summary>
@@ -106,6 +111,7 @@ public class EntityTemplate : IEntity
     public static EntityTemplate CreateSwarm(
         string entityId,
         string name,
+        string description,
         string factionId,
         Biome biome,
         int cost,
@@ -114,7 +120,7 @@ public class EntityTemplate : IEntity
         if (cost > 5)
             throw new ArgumentOutOfRangeException(nameof(cost), "Swarm units should cost 1-5");
 
-        var template = new EntityTemplate(entityId, name, factionId, biome, cost, EntityRole.Swarm, stats);
+        var template = new EntityTemplate(entityId, name, description, factionId, biome, cost, EntityRole.Swarm, stats);
         template.AddTag("Swarm");
         return template;
     }
@@ -125,6 +131,7 @@ public class EntityTemplate : IEntity
     public static EntityTemplate CreateGrunt(
         string entityId,
         string name,
+        string description,
         string factionId,
         Biome biome,
         int cost,
@@ -134,7 +141,7 @@ public class EntityTemplate : IEntity
         if (role == EntityRole.Swarm || role == EntityRole.Elite || role == EntityRole.Boss)
             throw new ArgumentException("Use specific factory for Swarm, Elite, or Boss units", nameof(role));
 
-        var template = new EntityTemplate(entityId, name, factionId, biome, cost, role, stats);
+        var template = new EntityTemplate(entityId, name, description, factionId, biome, cost, role, stats);
         template.AddTag("Grunt");
         return template;
     }
@@ -145,6 +152,7 @@ public class EntityTemplate : IEntity
     public static EntityTemplate CreateElite(
         string entityId,
         string name,
+        string description,
         string factionId,
         Biome biome,
         int cost,
@@ -153,7 +161,7 @@ public class EntityTemplate : IEntity
         if (cost < 40)
             throw new ArgumentOutOfRangeException(nameof(cost), "Elite units should cost 40+");
 
-        var template = new EntityTemplate(entityId, name, factionId, biome, cost, EntityRole.Elite, stats);
+        var template = new EntityTemplate(entityId, name, description, factionId, biome, cost, EntityRole.Elite, stats);
         template.AddTag("Elite");
         return template;
     }
@@ -164,6 +172,7 @@ public class EntityTemplate : IEntity
     public static EntityTemplate CreateBoss(
         string entityId,
         string name,
+        string description,
         string factionId,
         Biome biome,
         int cost,
@@ -172,7 +181,7 @@ public class EntityTemplate : IEntity
         if (cost < 100)
             throw new ArgumentOutOfRangeException(nameof(cost), "Boss units should cost 100+");
 
-        var template = new EntityTemplate(entityId, name, factionId, biome, cost, EntityRole.Boss, stats);
+        var template = new EntityTemplate(entityId, name, description, factionId, biome, cost, EntityRole.Boss, stats);
         template.AddTag("Boss");
         return template;
     }

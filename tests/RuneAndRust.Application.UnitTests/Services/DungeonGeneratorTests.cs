@@ -48,13 +48,13 @@ public class DungeonGeneratorTests
         // Create minimal entity templates
         var entityTemplates = new List<EntityTemplate>
         {
-            EntityTemplate.CreateSwarm("skeleton", "Skeleton", "undead_legion", Biome.Citadel, 3,
+            EntityTemplate.CreateSwarm("skeleton", "Skeleton", "A test skeleton.", "undead_legion", Biome.Citadel, 3,
                 new Stats(15, 5, 2, 5)),
-            EntityTemplate.CreateGrunt("warrior", "Skeleton Warrior", "undead_legion", Biome.Citadel, 10,
+            EntityTemplate.CreateGrunt("warrior", "Skeleton Warrior", "A test warrior.", "undead_legion", Biome.Citadel, 10,
                 EntityRole.Melee, new Stats(30, 10, 5, 6)),
-            EntityTemplate.CreateElite("knight", "Death Knight", "undead_legion", Biome.Citadel, 50,
+            EntityTemplate.CreateElite("knight", "Death Knight", "A test knight.", "undead_legion", Biome.Citadel, 50,
                 new Stats(80, 18, 15, 12)),
-            EntityTemplate.CreateBoss("lich", "Lich Lord", "undead_legion", Biome.Citadel, 100,
+            EntityTemplate.CreateBoss("lich", "Lich Lord", "A test boss.", "undead_legion", Biome.Citadel, 100,
                 new Stats(120, 25, 12, 18))
         };
 
