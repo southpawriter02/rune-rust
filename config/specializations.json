@@ -645,6 +645,45 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 2,
+                    "displayName": "Advanced Inscription",
+                    "unlockCost": 4,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 2,
+                    "abilities": [
+                        {
+                            "abilityId": "empowered-inscription",
+                            "displayName": "Empowered Inscription",
+                            "description": "Inscribe an elemental rune on a weapon, adding +1d6 elemental damage (fire, cold, lightning, or aetheric) for 10 turns. Stacks with base Inscribe Rune bonus. Costs 4 AP and 2 Rune Charges.",
+                            "isPassive": false,
+                            "resourceCost": 2,
+                            "resourceType": "rune-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "runic-trap",
+                            "displayName": "Runic Trap",
+                            "description": "Place an invisible runic trap in an adjacent space. Deals 3d6 damage when an enemy enters the space. DC 14 Perception to detect. Maximum 3 active traps. Expires after 1 hour. Costs 3 AP and 2 Rune Charges.",
+                            "isPassive": false,
+                            "resourceCost": 2,
+                            "resourceType": "rune-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "dvergr-techniques",
+                            "displayName": "Dvergr Techniques",
+                            "description": "Passive: Reduces crafting material costs and crafting time by 20%. Does not affect Rune Charge costs. Stacks additively with other cost reductions.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
                 }
             ]
         }
