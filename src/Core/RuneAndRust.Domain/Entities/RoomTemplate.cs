@@ -19,19 +19,35 @@ public class RoomTemplate : IEntity
     public string BaseDescription { get; private set; }
     public int Weight { get; private set; }
 
+    // New properties for generator service compatibility
+    public string NamePattern { get; private set; }
+    public string DescriptionPattern { get; private set; }
+    public IReadOnlyList<string> ValidBiomes { get; private set; }
+    public int? MinDepth { get; private set; }
+    public int? MaxDepth { get; private set; }
+    public RoomType RoomType { get; private set; }
+
     private readonly List<string> _tags = [];
     private readonly List<RoomFeature> _features = [];
+    private readonly List<TemplateSlot> _slots = [];
 
     public IReadOnlyList<string> Tags => _tags.AsReadOnly();
     public IReadOnlyList<RoomFeature> Features => _features.AsReadOnly();
+    public IReadOnlyList<TemplateSlot> Slots => _slots.AsReadOnly();
 
     private RoomTemplate()
     {
         TemplateId = null!;
         Name = null!;
         BaseDescription = null!;
+        NamePattern = null!;
+        DescriptionPattern = null!;
+        ValidBiomes = [];
     } // For EF Core
 
+    /// <summary>
+    /// Legacy constructor.
+    /// </summary>
     public RoomTemplate(
         string templateId,
         string name,
@@ -64,29 +80,81 @@ public class RoomTemplate : IEntity
         MinExits = minExits;
         MaxExits = maxExits;
         Weight = weight;
+
+        // Initialize new properties for compatibility
+        NamePattern = name;
+        DescriptionPattern = baseDescription;
+        ValidBiomes = [biome.ToString()];
+        MinDepth = 0;
+        MaxDepth = 100;
+        RoomType = RoomType.Standard;
     }
 
     /// <summary>
-    /// Adds a tag to this template. Tags are inherited by instantiated rooms.
+    /// Extended constructor for generator service.
     /// </summary>
+    public RoomTemplate(
+        string templateId,
+        string namePattern,
+        IEnumerable<string> validBiomes,
+        string descriptionPattern,
+        RoomType roomType,
+        IEnumerable<TemplateSlot>? slots = null,
+        int weight = 1,
+        int? minDepth = null,
+        int? maxDepth = null,
+        IEnumerable<string>? tags = null,
+        RoomArchetype archetype = RoomArchetype.Chamber,
+        int minExits = 1,
+        int maxExits = 4)
+    {
+        Id = Guid.NewGuid();
+        TemplateId = templateId;
+        NamePattern = namePattern;
+        DescriptionPattern = descriptionPattern;
+        RoomType = roomType;
+        Archetype = archetype;
+        ValidBiomes = validBiomes.ToList().AsReadOnly();
+        MinDepth = minDepth;
+        MaxDepth = maxDepth;
+        MinExits = minExits;
+        MaxExits = maxExits;
+        Weight = weight;
+
+        if (slots != null)
+            _slots.AddRange(slots);
+
+        if (tags != null)
+            _tags.AddRange(tags);
+
+        // Map to legacy properties
+        Name = namePattern;
+        BaseDescription = descriptionPattern;
+
+        // Try to map primary biome to enum
+        var primaryBiome = ValidBiomes.FirstOrDefault();
+        if (primaryBiome != null && Enum.TryParse<Biome>(primaryBiome, true, out var b))
+        {
+            Biome = b;
+        }
+        else
+        {
+            Biome = Biome.Citadel; // Default fallback
+        }
+    }
+
     public void AddTag(string tag)
     {
         if (!string.IsNullOrWhiteSpace(tag) && !_tags.Contains(tag))
             _tags.Add(tag);
     }
 
-    /// <summary>
-    /// Adds multiple tags to this template.
-    /// </summary>
     public void AddTags(IEnumerable<string> tags)
     {
         foreach (var tag in tags)
             AddTag(tag);
     }
 
-    /// <summary>
-    /// Adds a feature spawn rule to this template.
-    /// </summary>
     public void AddFeature(RoomFeature feature)
     {
         if (feature == null)
@@ -94,35 +162,20 @@ public class RoomTemplate : IEntity
         _features.Add(feature);
     }
 
-    /// <summary>
-    /// Adds multiple features to this template.
-    /// </summary>
     public void AddFeatures(IEnumerable<RoomFeature> features)
     {
         foreach (var feature in features)
             AddFeature(feature);
     }
 
-    /// <summary>
-    /// Checks if this template is compatible with a node based on exit count.
-    /// </summary>
     public bool IsCompatibleWithExitCount(int exitCount) =>
         exitCount >= MinExits && exitCount <= MaxExits;
 
-    /// <summary>
-    /// Checks if this template is compatible with a node's archetype.
-    /// </summary>
     public bool IsCompatibleWithArchetype(RoomArchetype archetype) =>
         Archetype == archetype;
 
-    /// <summary>
-    /// Checks if this template is compatible with a specific biome.
-    /// </summary>
-    public bool IsCompatibleWithBiome(Biome biome) => Biome == biome;
+    public bool IsCompatibleWithBiome(Biome biome) => IsValidForBiome(biome);
 
-    /// <summary>
-    /// Creates a room name from this template, with optional placeholder replacement.
-    /// </summary>
     public string ProcessName(Dictionary<string, string>? placeholders = null)
     {
         var result = Name;
@@ -136,10 +189,6 @@ public class RoomTemplate : IEntity
         return result;
     }
 
-    /// <summary>
-    /// Creates a room description from this template, with placeholder replacement.
-    /// Supported placeholders: {ADJ_SIZE}, {ADJ_CONDITION}, {ADJ_ATMOSPHERE}
-    /// </summary>
     public string ProcessDescription(Dictionary<string, string>? placeholders = null)
     {
         var result = BaseDescription;
@@ -151,6 +200,35 @@ public class RoomTemplate : IEntity
             }
         }
         return result;
+    }
+
+    // New methods
+    public IReadOnlyList<TemplateSlot> GetSlotsByType(SlotType type) =>
+        _slots.Where(s => s.Type == type).ToList().AsReadOnly();
+
+    public bool IsValidForBiome(string biomeId) =>
+        ValidBiomes.Contains(biomeId, StringComparer.OrdinalIgnoreCase);
+
+    public bool IsValidForBiome(Biome biome) =>
+        IsValidForBiome(biome.ToString());
+
+    public bool IsValidForDepth(int depth)
+    {
+        if (MinDepth.HasValue && depth < MinDepth.Value) return false;
+        if (MaxDepth.HasValue && depth > MaxDepth.Value) return false;
+        return true;
+    }
+
+    public bool HasAllTags(IEnumerable<string> tags)
+    {
+        if (tags == null) return true;
+        return tags.All(t => _tags.Any(rt => rt.Equals(t, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    public bool HasNoTags(IEnumerable<string> tags)
+    {
+        if (tags == null) return true;
+        return !tags.Any(t => _tags.Any(rt => rt.Equals(t, StringComparison.OrdinalIgnoreCase)));
     }
 
     public override string ToString() => $"{TemplateId} ({Archetype}, {Biome})";

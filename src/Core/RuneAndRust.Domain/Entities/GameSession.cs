@@ -34,9 +34,29 @@ public class GameSession : IEntity
     public Guid CurrentRoomId { get; private set; }
 
     /// <summary>
+    /// Gets the ID of the room the player was previously in.
+    /// </summary>
+    public Guid? PreviousRoomId { get; private set; }
+
+    /// <summary>
     /// Gets the current state of the game (e.g., Playing, GameOver, Victory).
     /// </summary>
     public GameState State { get; private set; }
+
+    /// <summary>
+    /// Gets the number of turns that have passed in the current session.
+    /// </summary>
+    public int TurnCount { get; private set; }
+
+    /// <summary>
+    /// Advances the game turn count.
+    /// </summary>
+    public int AdvanceTurn()
+    {
+        TurnCount++;
+        UpdateLastPlayed();
+        return TurnCount;
+    }
 
     /// <summary>
     /// Gets the UTC timestamp when this session was created.
@@ -49,6 +69,7 @@ public class GameSession : IEntity
     public DateTime LastPlayedAt { get; private set; }
 
     private readonly HashSet<string> _revealedSolutionIds = [];
+    private readonly HashSet<Guid> _visitedRooms = [];
 
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
     public IReadOnlySet<string> RevealedSolutions => _revealedSolutionIds;
