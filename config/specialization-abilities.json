@@ -365,6 +365,78 @@
                         "The psychic static envelops you, hiding you from perception.",
                         "The resonance distorts your presence, making you invisible to minds."
                     ]
+                },
+                {
+                    "id": "umbral-strike",
+                    "name": "[Umbral Strike]",
+                    "type": "active",
+                    "tier": 2,
+                    "description": "Shadow-infused melee attack dealing weapon damage + 2d6 shadow damage from the shadows",
+                    "requirements": [
+                        "Must be in DimLight or Darkness",
+                        "Costs 2 AP + 15 Shadow Essence"
+                    ],
+                    "cost": {
+                        "actions": 2,
+                        "shadowEssence": 15
+                    },
+                    "effect": {
+                        "type": "shadow-melee",
+                        "baseShadowDamage": "2d6",
+                        "critBonusDamage": "1d6",
+                        "cloneConsumeBonusDamage": "1d4",
+                        "damageTypeId": "shadow"
+                    },
+                    "narrativeTemplates": [
+                        "Shadows coalesce around your blade as you strike from the darkness.",
+                        "You channel the void into your weapon, darkness trailing behind the blow.",
+                        "Your strike carries the weight of shadow, tearing through defenses with dark energy."
+                    ]
+                },
+                {
+                    "id": "shadow-clone",
+                    "name": "[Shadow Clone]",
+                    "type": "active",
+                    "tier": 2,
+                    "description": "Create an illusory shadow duplicate to confuse and distract enemies",
+                    "requirements": [
+                        "Maximum 2 active clones",
+                        "Costs 3 AP + 20 Shadow Essence"
+                    ],
+                    "cost": {
+                        "actions": 3,
+                        "shadowEssence": 20
+                    },
+                    "effect": {
+                        "type": "summon-illusion",
+                        "hitPoints": 1,
+                        "detectionDC": 14,
+                        "durationSeconds": 60,
+                        "maxActive": 2,
+                        "behaviors": ["mirror", "independent", "decoy", "static"]
+                    },
+                    "narrativeTemplates": [
+                        "A shadow peels away from you, taking your shape as it steps into existence.",
+                        "Darkness congeals beside you, forming a perfect mirror of your silhouette.",
+                        "You split the shadows, and another you emerges from the dark."
+                    ]
+                },
+                {
+                    "id": "void-touched",
+                    "name": "[Void Touched]",
+                    "type": "passive",
+                    "tier": 2,
+                    "description": "Your communion with the void grants resistance to Aetheric energy",
+                    "effect": {
+                        "type": "damage-resistance",
+                        "damageTypeId": "aetheric",
+                        "resistanceMultiplier": 0.5,
+                        "grantsSaveAdvantage": true
+                    },
+                    "narrativeTemplates": [
+                        "The void within you absorbs the Aetheric energy, dissipating it harmlessly.",
+                        "Your bond with the dark between-spaces shields you from the raw power of the Aether."
+                    ]
                 }
             ]
         }
