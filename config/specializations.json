@@ -684,6 +684,54 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 3,
+                    "displayName": "Master Inscription",
+                    "unlockCost": 5,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 3,
+                    "abilities": [
+                        {
+                            "abilityId": "master-scrivener",
+                            "displayName": "Master Scrivener",
+                            "description": "Passive: All inscribed runes last twice as long. Applies to Inscribe Rune, Empowered Inscription, and Runic Trap durations.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "living-runes",
+                            "displayName": "Living Runes",
+                            "description": "Summon 2 animated rune entities (10 HP, 12 DEF, +4 ATK, 1d8 DMG). They attack the nearest enemy for 5 turns. Costs 4 AP and 3 Rune Charges.",
+                            "isPassive": false,
+                            "resourceCost": 3,
+                            "resourceType": "rune-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                },
+                {
+                    "tier": 4,
+                    "displayName": "Word of Unmaking",
+                    "unlockCost": 6,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 4,
+                    "abilities": [
+                        {
+                            "abilityId": "word-of-unmaking",
+                            "displayName": "Word of Unmaking",
+                            "description": "Speak the word that unmakes magic. Dispels ALL magical effects in a 4-space radius. Affects allies and enemies equally. Cannot be resisted. Once per combat. Costs 5 AP and 4 Rune Charges.",
+                            "isPassive": false,
+                            "resourceCost": 4,
+                            "resourceType": "rune-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
                 }
             ]
         }
