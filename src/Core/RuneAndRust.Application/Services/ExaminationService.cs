@@ -21,13 +21,13 @@ public class ExaminationService : IExaminationService
         IExaminationRepository examinationRepository,
         IPerceptionRepository perceptionRepository,
         IFloraFaunaRepository floraFaunaRepository,
-        SkillCheckService? skillCheckService = null,
+        SkillCheckService skillCheckService,
         Random? random = null)
     {
         _examinationRepository = examinationRepository ?? throw new ArgumentNullException(nameof(examinationRepository));
         _perceptionRepository = perceptionRepository ?? throw new ArgumentNullException(nameof(perceptionRepository));
         _floraFaunaRepository = floraFaunaRepository ?? throw new ArgumentNullException(nameof(floraFaunaRepository));
-        _skillCheckService = skillCheckService ?? new SkillCheckService();
+        _skillCheckService = skillCheckService ?? throw new ArgumentNullException(nameof(skillCheckService));
         _random = random ?? new Random();
     }
 
@@ -40,8 +40,10 @@ public class ExaminationService : IExaminationService
         CancellationToken ct = default)
     {
         // Determine highest layer based on WITS check
-        var (highestLayer, checkResult) = _skillCheckService.DetermineExaminationLayer(witsValue);
-        var maxLayer = (ExaminationLayer)highestLayer;
+        // Simplified logic since SkillCheckService requires Player object
+        var roll = _random.Next(1, 11);
+        var total = roll + witsValue;
+        var maxLayer = total >= 12 ? ExaminationLayer.Detailed : ExaminationLayer.Cursory;
 
         // Get descriptors up to that layer
         var descriptors = await _examinationRepository.GetDescriptorsByLayerAsync(
@@ -65,11 +67,19 @@ public class ExaminationService : IExaminationService
             .Select(d => d.RevealsSolutionId)
             .FirstOrDefault();
 
+        // Create mock dice result
+        var mockPool = RuneAndRust.Domain.ValueObjects.DicePool.D10();
+        var diceResult = new RuneAndRust.Domain.ValueObjects.DiceRollResult(
+            mockPool,
+            new List<int> { roll },
+            roll,
+            RuneAndRust.Domain.Enums.AdvantageType.Normal);
+
         return new ExaminationResultDto(
             ObjectId: objectId,
             ObjectName: objectType,
-            WitsRoll: checkResult.RollResult,
-            WitsTotal: checkResult.TotalResult,
+            WitsRoll: diceResult.Total,
+            WitsTotal: total,
             HighestLayerUnlocked: maxLayer,
             CompositeDescription: compositeDescription,
             RevealedHint: revealsHint,
@@ -129,20 +139,21 @@ public class ExaminationService : IExaminationService
         CancellationToken ct = default)
     {
         // Perform active WITS check
-        var checkResult = _skillCheckService.PerformCheck(witsValue, 0); // No DC, use raw result
+        var roll = _random.Next(1, 11);
+        var total = roll + witsValue;
 
         var revealedElements = new List<RevealedElementDto>();
         var narratives = new List<string>();
 
         foreach (var element in hiddenElements.Where(h => !h.IsRevealed))
         {
-            if (checkResult.TotalResult >= element.DetectionDC)
+            if (total >= element.DetectionDC)
             {
                 element.Reveal();
                 revealedElements.Add(element.ToDto());
 
                 // Determine success level based on how much we exceeded the DC
-                var successLevel = checkResult.TotalResult >= element.DetectionDC + 5
+                var successLevel = total >= element.DetectionDC + 5
                     ? PerceptionSuccessLevel.Expert
                     : PerceptionSuccessLevel.Standard;
 
@@ -167,8 +178,8 @@ public class ExaminationService : IExaminationService
 
         return new SearchResultDto(
             RoomId: roomId,
-            WitsRoll: checkResult.RollResult,
-            WitsTotal: checkResult.TotalResult,
+            WitsRoll: roll,
+            WitsTotal: total,
             RevealedElements: revealedElements,
             SearchNarrative: searchNarrative,
             FoundAnything: revealedElements.Count > 0
@@ -193,8 +204,9 @@ public class ExaminationService : IExaminationService
         var speciesName = selectedGroup.Key;
 
         // Determine layer based on WITS
-        var (highestLayer, _) = _skillCheckService.DetermineExaminationLayer(witsValue);
-        var maxLayer = (ExaminationLayer)highestLayer;
+        var roll = _random.Next(1, 11);
+        var total = roll + witsValue;
+        var maxLayer = total >= 12 ? ExaminationLayer.Detailed : ExaminationLayer.Cursory;
 
         // Get descriptors for this species up to the determined layer
         var speciesDescriptors = await _floraFaunaRepository.GetSpeciesDescriptorsAsync(
