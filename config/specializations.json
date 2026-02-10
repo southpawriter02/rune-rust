@@ -306,6 +306,45 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 2,
+                    "displayName": "Advanced Techniques",
+                    "unlockCost": 4,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 2,
+                    "abilities": [
+                        {
+                            "abilityId": "hold-the-line",
+                            "displayName": "Hold the Line",
+                            "description": "For 2 turns, enemies cannot move through your space. Allies pass freely. Costs 3 AP.",
+                            "isPassive": false,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "counter-shield",
+                            "displayName": "Counter-Shield",
+                            "description": "When you successfully block a melee attack, deal 1d6 damage to the attacker.",
+                            "isPassive": false,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "rally",
+                            "displayName": "Rally",
+                            "description": "All allies within 6 spaces gain +2 to their next saving throw. Costs 2 AP.",
+                            "isPassive": false,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
                 }
             ]
         },

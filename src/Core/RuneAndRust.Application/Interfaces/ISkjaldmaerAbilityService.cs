@@ -1,25 +1,29 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // ISkjaldmaerAbilityService.cs
-// Interface for Skjaldmær-specific ability operations.
-// Version: 0.20.1a
+// Interface for Skjaldmær-specific ability operations across all tiers.
+// Version: 0.20.1b
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Application.Interfaces;
 
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
 /// <summary>
-/// Defines operations for Skjaldmær specialization abilities.
+/// Defines operations for Skjaldmær specialization abilities across all tiers.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This interface defines the contract for Shield Wall, Intercept, and Bulwark
-/// ability execution. Implementation is deferred until combat system hooks
-/// and character entity integration are available.
+/// <b>Tier 1:</b> Shield Wall, Intercept, Bulwark (v0.20.1a)
+/// </para>
+/// <para>
+/// <b>Tier 2:</b> Hold the Line, Counter-Shield, Rally (v0.20.1b)
 /// </para>
 /// </remarks>
 public interface ISkjaldmaerAbilityService
 {
+    // ═══════ Tier 1: Foundational Defenses (v0.20.1a) ═══════
+
     /// <summary>
     /// Activates Shield Wall stance at the specified position.
     /// </summary>
@@ -46,4 +50,73 @@ public interface ISkjaldmaerAbilityService
     /// <param name="blockCharges">Current Block Charge resource.</param>
     /// <returns>Max HP bonus from Bulwark passive.</returns>
     int CalculateBulwarkHpBonus(BlockChargeResource? blockCharges);
+
+    // ═══════ Tier 2: Advanced Techniques (v0.20.1b) ═══════
+
+    /// <summary>
+    /// Activates Hold the Line at the specified position for 2 turns.
+    /// Enemies cannot move through the blocked position while active.
+    /// </summary>
+    /// <param name="position">Grid position to block.</param>
+    /// <returns>An active HoldTheLineState.</returns>
+    HoldTheLineState ActivateHoldTheLine((int X, int Y) position);
+
+    /// <summary>
+    /// Advances the Hold the Line effect by one turn.
+    /// </summary>
+    /// <param name="state">Current Hold the Line state.</param>
+    /// <returns>Updated state with decremented turns (deactivated at 0).</returns>
+    HoldTheLineState TickHoldTheLine(HoldTheLineState state);
+
+    /// <summary>
+    /// Force-deactivates an active Hold the Line effect.
+    /// </summary>
+    /// <returns>An inactive HoldTheLineState.</returns>
+    HoldTheLineState DeactivateHoldTheLine();
+
+    /// <summary>
+    /// Executes a Counter-Shield reaction, rolling 1d6 damage against a melee attacker.
+    /// </summary>
+    /// <param name="skjaldmaerId">ID of the Skjaldmær triggering the reaction.</param>
+    /// <param name="attackerId">ID of the melee attacker being countered.</param>
+    /// <param name="attackerDefense">The attacker's defense value (for logging).</param>
+    /// <returns>A result containing the damage roll and attacker information.</returns>
+    CounterShieldResult ExecuteCounterShield(Guid skjaldmaerId, Guid attackerId, int attackerDefense);
+
+    /// <summary>
+    /// Activates Rally, granting +2 save bonus to all specified allies.
+    /// </summary>
+    /// <param name="casterId">ID of the Skjaldmær casting Rally.</param>
+    /// <param name="allyIds">IDs of allies within Rally's 6-space radius.</param>
+    /// <returns>List of active RallyBuff instances applied to allies.</returns>
+    IReadOnlyList<RallyBuff> ActivateRally(Guid casterId, IReadOnlyList<Guid> allyIds);
+
+    /// <summary>
+    /// Consumes a Rally buff after a saving throw has been made.
+    /// </summary>
+    /// <param name="buff">The buff to consume.</param>
+    /// <returns>A consumed (inactive) RallyBuff.</returns>
+    RallyBuff ConsumeRallyBuff(RallyBuff buff);
+
+    /// <summary>
+    /// Calculates the total Rally save bonus for a specific character.
+    /// </summary>
+    /// <param name="buffs">All active Rally buffs in play.</param>
+    /// <param name="allyId">Character to calculate bonus for.</param>
+    /// <returns>Total save bonus from all active Rally buffs targeting this character.</returns>
+    int GetAllySaveBonus(IReadOnlyList<RallyBuff> buffs, Guid allyId);
+
+    /// <summary>
+    /// Checks whether Tier 2 abilities can be unlocked based on PP invested.
+    /// </summary>
+    /// <param name="ppInvested">Total PP invested in the Skjaldmær tree.</param>
+    /// <returns>True if the 8 PP threshold is met.</returns>
+    bool CanUnlockTier2(int ppInvested);
+
+    /// <summary>
+    /// Calculates total PP invested from a list of unlocked abilities.
+    /// </summary>
+    /// <param name="unlockedAbilities">Currently unlocked abilities.</param>
+    /// <returns>Total PP cost of all unlocked abilities.</returns>
+    int CalculatePPInvested(IReadOnlyList<SkjaldmaerAbilityId> unlockedAbilities);
 }
