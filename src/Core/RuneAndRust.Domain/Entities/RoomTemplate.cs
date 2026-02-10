@@ -21,9 +21,26 @@ public class RoomTemplate : IEntity
 
     private readonly List<string> _tags = [];
     private readonly List<RoomFeature> _features = [];
+    private readonly List<string> _validBiomes = [];
+    private readonly List<TemplateSlot> _slots = [];
 
     public IReadOnlyList<string> Tags => _tags.AsReadOnly();
     public IReadOnlyList<RoomFeature> Features => _features.AsReadOnly();
+
+    public IReadOnlyList<string> ValidBiomes => _validBiomes.AsReadOnly();
+    public int MinDepth { get; private set; }
+    public int? MaxDepth { get; private set; }
+    public IReadOnlyList<TemplateSlot> Slots => _slots.AsReadOnly();
+    public string NamePattern { get; private set; } = "";
+    public string DescriptionPattern { get; private set; } = "";
+    public RoomType RoomType { get; private set; } = RoomType.Standard;
+
+    public bool IsValidForBiome(Biome biome) => _validBiomes.Contains(biome.ToString()) || _validBiomes.Count == 0;
+    public bool IsValidForBiome(string biomeName) => _validBiomes.Contains(biomeName, StringComparer.OrdinalIgnoreCase) || _validBiomes.Count == 0;
+    public bool IsValidForDepth(int depth) => depth >= MinDepth && (!MaxDepth.HasValue || depth <= MaxDepth.Value);
+    public bool HasAllTags(IEnumerable<string> tags) => !tags.Except(_tags, StringComparer.OrdinalIgnoreCase).Any();
+    public bool HasNoTags(IEnumerable<string> tags) => !tags.Intersect(_tags, StringComparer.OrdinalIgnoreCase).Any();
+    public IEnumerable<TemplateSlot> GetSlotsByType(SlotType type) => _slots.Where(s => s.Type == type);
 
     private RoomTemplate()
     {
@@ -40,7 +57,15 @@ public class RoomTemplate : IEntity
         string baseDescription,
         int minExits = 1,
         int maxExits = 4,
-        int weight = 1)
+        int weight = 1,
+        string namePattern = "",
+        string descriptionPattern = "",
+        IEnumerable<TemplateSlot>? slots = null,
+        IEnumerable<string>? validBiomes = null,
+        int minDepth = 0,
+        int? maxDepth = null,
+        RoomType roomType = RoomType.Standard,
+        IEnumerable<string>? tags = null)
     {
         if (string.IsNullOrWhiteSpace(templateId))
             throw new ArgumentException("Template ID cannot be empty", nameof(templateId));
@@ -64,6 +89,52 @@ public class RoomTemplate : IEntity
         MinExits = minExits;
         MaxExits = maxExits;
         Weight = weight;
+        NamePattern = namePattern;
+        DescriptionPattern = descriptionPattern;
+        MinDepth = minDepth;
+        MaxDepth = maxDepth;
+        RoomType = roomType;
+
+        if (slots != null) _slots.AddRange(slots);
+        if (validBiomes != null) _validBiomes.AddRange(validBiomes);
+        if (tags != null) _tags.AddRange(tags);
+    }
+
+    /// <summary>
+    /// Constructor for procedural generation usage (name/description from patterns).
+    /// </summary>
+    public RoomTemplate(
+        string templateId,
+        string namePattern,
+        string descriptionPattern,
+        IEnumerable<string> validBiomes,
+        RoomType roomType,
+        IEnumerable<TemplateSlot> slots,
+        int weight = 1,
+        int minDepth = 0,
+        int? maxDepth = null,
+        IEnumerable<string>? tags = null)
+    {
+        Id = Guid.NewGuid();
+        TemplateId = templateId;
+        NamePattern = namePattern;
+        DescriptionPattern = descriptionPattern;
+        RoomType = roomType;
+        Weight = weight;
+        MinDepth = minDepth;
+        MaxDepth = maxDepth;
+
+        if (validBiomes != null) _validBiomes.AddRange(validBiomes);
+        if (slots != null) _slots.AddRange(slots);
+        if (tags != null) _tags.AddRange(tags);
+
+        // Defaults
+        Name = "Generated Room";
+        BaseDescription = "Generated Description";
+        Archetype = RoomArchetype.Chamber;
+        Biome = Biome.Citadel;
+        MinExits = 1;
+        MaxExits = 4;
     }
 
     /// <summary>

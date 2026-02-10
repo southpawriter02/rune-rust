@@ -152,7 +152,7 @@ public class GameView
 
             case ExamineCommand examine:
                 _logger.LogDebug("Handling examine command: {Target}", examine.Target);
-                await HandleExamineAsync(examine.Target, ct);
+                await DoExamineAsync(examine.Target, ct);
                 break;
 
             case StatusCommand:
@@ -186,10 +186,6 @@ public class GameView
 
             case InvestigateCommand investigate:
                 await HandleInvestigateAsync(investigate.Target, ct);
-                break;
-
-            case ExamineCommand examine:
-                await HandleExamineAsync(examine.Target, ct);
                 break;
 
             case TravelCommand travel:
@@ -252,6 +248,11 @@ public class GameView
             {
                 await _renderer.RenderRoomAsync(room, ct);
             }
+            else
+            {
+                _logger.LogWarning("HandleLookAsync: No current room available");
+                await _renderer.RenderMessageAsync("You are not in a room.", MessageType.Warning, ct);
+            }
         }
         else
         {
@@ -283,10 +284,6 @@ public class GameView
             {
                 await _renderer.RenderMessageAsync(lookResult.ErrorMessage!, MessageType.Warning, ct);
             }
-        }
-        else
-        {
-            _logger.LogWarning("HandleLookAsync: No current room available");
         }
     }
 
@@ -328,20 +325,6 @@ public class GameView
         await _renderer.RenderMessageAsync(message, messageType, ct);
     }
 
-    private async Task HandleExamineAsync(string target, CancellationToken ct)
-    {
-        var result = _gameService.GetExamineInfo(target);
-        if (result == null)
-        {
-            _logger.LogDebug("Examine failed: target not found: {Target}", target);
-            await _renderer.RenderMessageAsync($"You don't see '{target}' here.", MessageType.Warning, ct);
-            return;
-        }
-
-        _logger.LogDebug("Examining: {Target} (Type: {TargetType})", result.Name, result.Type);
-        await _renderer.RenderExamineResultAsync(result, ct);
-    }
-
     private async Task HandleStatusAsync(CancellationToken ct)
     {
         var stats = _gameService.GetPlayerStats();
@@ -374,7 +357,7 @@ public class GameView
             ct);
 
         _logger.LogInformation("Loading game session: {SessionId}", selected.Id);
-        await _gameService.LoadGameAsync(selected.Id, ct);
+        await _gameService.LoadGameAsync(selected.Id, "GameView", ct);
         await _renderer.RenderMessageAsync($"Loaded game: {selected.PlayerName}", MessageType.Success, ct);
     }
 
@@ -428,7 +411,7 @@ public class GameView
     private async Task HandleSaveAsync(CancellationToken ct)
     {
         _logger.LogInformation("Saving game...");
-        await _gameService.SaveCurrentGameAsync(ct);
+        await _gameService.SaveCurrentGameAsync("GameView", ct);
         _logger.LogInformation("Game saved successfully");
         await _renderer.RenderMessageAsync("Game saved successfully!", MessageType.Success, ct);
     }
@@ -459,7 +442,7 @@ public class GameView
         }
     }
 
-    private async Task HandleExamineAsync(string target, CancellationToken ct)
+    private async Task DoExamineAsync(string target, CancellationToken ct)
     {
         var (success, result, errorMessage) = await _gameService.TryExamineAsync(target, ct);
 
@@ -486,13 +469,6 @@ public class GameView
             Domain.Enums.ExaminationLayer.Detailed => "Detailed",
             Domain.Enums.ExaminationLayer.Expert => "Expert",
             _ => "Basic"
-        };
-
-        var checkColor = result.HighestLayerUnlocked switch
-        {
-            Domain.Enums.ExaminationLayer.Expert => "green",
-            Domain.Enums.ExaminationLayer.Detailed => "yellow",
-            _ => "grey"
         };
 
         await _renderer.RenderMessageAsync(
@@ -611,5 +587,29 @@ public class GameView
 
         _logger.LogDebug("User cancelled quit");
         return true;
+    }
+
+    private async Task HandleAbilitiesAsync(CancellationToken ct)
+    {
+        var abilities = _gameService.GetPlayerAbilities();
+        var table = new Table().Title("Abilities");
+        table.AddColumn("Name");
+        table.AddColumn("Cost");
+        table.AddColumn("Description");
+
+        foreach(var ability in abilities)
+        {
+            var cost = ability.CostAmount > 0 ? $"{ability.CostAmount} {ability.CostResourceTypeId}" : "None";
+            table.AddRow(ability.Name, cost, ability.Description);
+        }
+
+        AnsiConsole.Write(table);
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleUseAbilityAsync(string abilityName, CancellationToken ct)
+    {
+        var (success, message) = _gameService.TryUseAbility(abilityName); // Context default
+        await _renderer.RenderMessageAsync(message, success ? MessageType.Success : MessageType.Warning, ct);
     }
 }

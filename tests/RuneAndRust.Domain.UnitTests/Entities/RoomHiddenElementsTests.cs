@@ -13,7 +13,7 @@ public class RoomHiddenElementsTests
     [SetUp]
     public void SetUp()
     {
-        _room = new Room("Test Room", "A test room", new Position(0, 0), Biome.Citadel);
+        _room = new Room("Test Room", "A test room", new Position3D(0, 0, 0), Biome.Citadel);
     }
 
     [Test]
@@ -153,8 +153,8 @@ public class RoomHiddenElementsTests
     public void Room_WithBiome_StoresBiomeCorrectly()
     {
         // Arrange & Act
-        var rootsRoom = new Room("Root Chamber", "A fungal chamber", new Position(0, 0), Biome.TheRoots);
-        var fireRoom = new Room("Magma Forge", "A volcanic forge", new Position(1, 0), Biome.Muspelheim);
+        var rootsRoom = new Room("Root Chamber", "A fungal chamber", new Position3D(0, 0, 0), Biome.TheRoots);
+        var fireRoom = new Room("Magma Forge", "A volcanic forge", new Position3D(1, 0, 0), Biome.Muspelheim);
 
         // Assert
         rootsRoom.Biome.Should().Be(Biome.TheRoots);
@@ -165,7 +165,7 @@ public class RoomHiddenElementsTests
     public void Room_DefaultBiome_IsCitadel()
     {
         // Arrange & Act
-        var room = new Room("Standard Room", "A standard room", new Position(0, 0));
+        var room = new Room("Standard Room", "A standard room", new Position3D(0, 0, 0));
 
         // Assert
         room.Biome.Should().Be(Biome.Citadel);

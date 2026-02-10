@@ -34,6 +34,11 @@ public class GameSession : IEntity
     public Guid CurrentRoomId { get; private set; }
 
     /// <summary>
+    /// Gets the unique identifier of the room the player was previously in.
+    /// </summary>
+    public Guid? PreviousRoomId { get; private set; }
+
+    /// <summary>
     /// Gets the current state of the game (e.g., Playing, GameOver, Victory).
     /// </summary>
     public GameState State { get; private set; }
@@ -48,7 +53,13 @@ public class GameSession : IEntity
     /// </summary>
     public DateTime LastPlayedAt { get; private set; }
 
+    /// <summary>
+    /// Gets the current turn count for this session.
+    /// </summary>
+    public int TurnCount { get; private set; }
+
     private readonly HashSet<string> _revealedSolutionIds = [];
+    private readonly HashSet<Guid> _visitedRooms = [];
 
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
     public IReadOnlySet<string> RevealedSolutions => _revealedSolutionIds;
@@ -175,6 +186,17 @@ public class GameSession : IEntity
     {
         State = newState;
         UpdateLastPlayed();
+    }
+
+    /// <summary>
+    /// Advances the turn count by one.
+    /// </summary>
+    /// <returns>The new turn count.</returns>
+    public int AdvanceTurn()
+    {
+        TurnCount++;
+        UpdateLastPlayed();
+        return TurnCount;
     }
 
     /// <summary>

@@ -45,15 +45,16 @@ public class SkillCheckService
         string skillId,
         string difficultyClassId,
         AdvantageType advantageType = AdvantageType.Normal,
-        int additionalBonus = 0)
+        int additionalBonus = 0,
+        string context = "Unspecified")
     {
         ArgumentNullException.ThrowIfNull(player);
         ArgumentException.ThrowIfNullOrWhiteSpace(skillId, nameof(skillId));
         ArgumentException.ThrowIfNullOrWhiteSpace(difficultyClassId, nameof(difficultyClassId));
 
-        _logger.LogDebug(
-            "Performing skill check: Player={Player}, Skill={Skill}, DC={DC}, Advantage={Advantage}",
-            player.Name, skillId, difficultyClassId, advantageType);
+        _logger.LogTrace(
+            "Performing skill check: Player={Player}, Skill={Skill}, DC={DC}, Advantage={Advantage} Context={Context}",
+            player.Name, skillId, difficultyClassId, advantageType, context);
 
         var skill = _configProvider.GetSkillById(skillId)
             ?? throw new ArgumentException($"Unknown skill: {skillId}", nameof(skillId));
@@ -61,7 +62,7 @@ public class SkillCheckService
         var dc = _configProvider.GetDifficultyClassById(difficultyClassId)
             ?? throw new ArgumentException($"Unknown difficulty class: {difficultyClassId}", nameof(difficultyClassId));
 
-        return PerformCheckInternal(player, skill, dc, advantageType, additionalBonus);
+        return PerformCheckInternal(player, skill, dc, advantageType, additionalBonus, context);
     }
 
     /// <summary>
@@ -73,7 +74,8 @@ public class SkillCheckService
         int difficultyClass,
         string difficultyName = "Custom",
         AdvantageType advantageType = AdvantageType.Normal,
-        int additionalBonus = 0)
+        int additionalBonus = 0,
+        string context = "Unspecified")
     {
         ArgumentNullException.ThrowIfNull(player);
         ArgumentException.ThrowIfNullOrWhiteSpace(skillId, nameof(skillId));
@@ -81,15 +83,15 @@ public class SkillCheckService
         if (difficultyClass < 1)
             throw new ArgumentOutOfRangeException(nameof(difficultyClass), "Difficulty class must be at least 1");
 
-        _logger.LogDebug(
-            "Performing skill check: Player={Player}, Skill={Skill}, DC={DC}, Advantage={Advantage}",
-            player.Name, skillId, difficultyClass, advantageType);
+        _logger.LogTrace(
+            "Performing skill check: Player={Player}, Skill={Skill}, DC={DC}, Advantage={Advantage} Context={Context}",
+            player.Name, skillId, difficultyClass, advantageType, context);
 
         var skill = _configProvider.GetSkillById(skillId)
             ?? throw new ArgumentException($"Unknown skill: {skillId}", nameof(skillId));
 
         var attributeBonus = CalculateAttributeBonus(player, skill);
-        var otherBonus = CalculateOtherBonus(player, skill, additionalBonus);
+        var otherBonus = CalculateOtherBonus(player, skill, additionalBonus, context);
 
         var dicePool = DicePool.Parse(skill.BaseDicePool);
         var rollResult = _diceService.Roll(dicePool, advantageType);
@@ -103,7 +105,7 @@ public class SkillCheckService
             difficultyClass,
             difficultyName);
 
-        LogCheckResult(result);
+        LogCheckResult(result, context);
         return result;
     }
 
@@ -116,27 +118,28 @@ public class SkillCheckService
         string activeSkillId,
         string passiveSkillId,
         AdvantageType activeAdvantage = AdvantageType.Normal,
-        AdvantageType passiveAdvantage = AdvantageType.Normal)
+        AdvantageType passiveAdvantage = AdvantageType.Normal,
+        string context = "Unspecified")
     {
         ArgumentNullException.ThrowIfNull(activePlayer);
         ArgumentNullException.ThrowIfNull(passivePlayer);
 
-        _logger.LogDebug(
-            "Performing contested check: {Active} ({ActiveSkill}) vs {Passive} ({PassiveSkill})",
-            activePlayer.Name, activeSkillId, passivePlayer.Name, passiveSkillId);
+        _logger.LogTrace(
+            "Performing contested check: {Active} ({ActiveSkill}) vs {Passive} ({PassiveSkill}) Context={Context}",
+            activePlayer.Name, activeSkillId, passivePlayer.Name, passiveSkillId, context);
 
-        var activeResult = PerformCheckWithDC(activePlayer, activeSkillId, 0, "Contested", activeAdvantage);
-        var passiveResult = PerformCheckWithDC(passivePlayer, passiveSkillId, 0, "Contested", passiveAdvantage);
+        var activeResult = PerformCheckWithDC(activePlayer, activeSkillId, 0, "Contested", activeAdvantage, 0, context);
+        var passiveResult = PerformCheckWithDC(passivePlayer, passiveSkillId, 0, "Contested", passiveAdvantage, 0, context);
 
         var winner = activeResult.TotalResult >= passiveResult.TotalResult
             ? activePlayer.Name
             : passivePlayer.Name;
 
         _logger.LogInformation(
-            "Contested check: {Active} ({ActiveTotal}) vs {Passive} ({PassiveTotal}) -> {Winner} wins",
+            "Contested check: {Active} ({ActiveTotal}) vs {Passive} ({PassiveTotal}) -> {Winner} wins Context={Context}",
             activePlayer.Name, activeResult.TotalResult,
             passivePlayer.Name, passiveResult.TotalResult,
-            winner);
+            winner, context);
 
         return (activeResult, passiveResult, winner);
     }
@@ -146,10 +149,11 @@ public class SkillCheckService
         SkillDefinition skill,
         DifficultyClassDefinition dc,
         AdvantageType advantageType,
-        int additionalBonus)
+        int additionalBonus,
+        string context)
     {
         var attributeBonus = CalculateAttributeBonus(player, skill);
-        var otherBonus = CalculateOtherBonus(player, skill, additionalBonus);
+        var otherBonus = CalculateOtherBonus(player, skill, additionalBonus, context);
 
         var dicePool = DicePool.Parse(skill.BaseDicePool);
         var rollResult = _diceService.Roll(dicePool, advantageType);
@@ -163,7 +167,7 @@ public class SkillCheckService
             dc.TargetNumber,
             dc.Name);
 
-        LogCheckResult(result);
+        LogCheckResult(result, context);
         return result;
     }
 
@@ -180,7 +184,7 @@ public class SkillCheckService
         return primaryBonus;
     }
 
-    private int CalculateOtherBonus(Player player, SkillDefinition skill, int additionalBonus)
+    private int CalculateOtherBonus(Player player, SkillDefinition skill, int additionalBonus, string context)
     {
         var otherBonus = additionalBonus;
 
@@ -188,8 +192,8 @@ public class SkillCheckService
         {
             otherBonus -= skill.UntrainedPenalty;
             _logger.LogDebug(
-                "Applied untrained penalty of -{Penalty} for {Skill}",
-                skill.UntrainedPenalty, skill.Name);
+                "Applied untrained penalty of -{Penalty} for {Skill} Context={Context}",
+                skill.UntrainedPenalty, skill.Name, context);
         }
 
         return otherBonus;
@@ -214,18 +218,19 @@ public class SkillCheckService
         return true;
     }
 
-    private void LogCheckResult(SkillCheckResult result)
+    private void LogCheckResult(SkillCheckResult result, string context)
     {
         var level = result.IsCritical ? LogLevel.Information : LogLevel.Debug;
 
         _logger.Log(level,
-            "Skill check complete: Skill={Skill} Roll={Roll} Bonus={Bonus} Total={Total} DC={DC} Result={Result}",
+            "Skill check complete: Skill={Skill} Roll={Roll} Bonus={Bonus} Total={Total} DC={DC} Result={Result} Context={Context}",
             result.SkillName,
             result.DiceResult.Total,
             result.TotalBonus,
             result.TotalResult,
             result.DifficultyClass,
-            result.SuccessLevel);
+            result.SuccessLevel,
+            context);
 
         _eventLogger?.LogDice("SkillCheck", $"{result.SkillName}: {result.SuccessLevel}",
             data: new Dictionary<string, object>
@@ -239,13 +244,14 @@ public class SkillCheckService
                 ["dcName"] = result.DifficultyName,
                 ["success"] = result.IsSuccess,
                 ["critical"] = result.IsCritical,
-                ["successLevel"] = result.SuccessLevel.ToString()
+                ["successLevel"] = result.SuccessLevel.ToString(),
+                ["context"] = context
             });
 
         if (result.IsCriticalSuccess)
-            _logger.LogInformation("Critical success on {Skill}!", result.SkillName);
+            _logger.LogInformation("Critical success on {Skill}! Context={Context}", result.SkillName, context);
         else if (result.IsCriticalFailure)
-            _logger.LogInformation("Critical failure on {Skill}!", result.SkillName);
+            _logger.LogInformation("Critical failure on {Skill}! Context={Context}", result.SkillName, context);
     }
 
     /// <summary>
