@@ -1,0 +1,55 @@
+{
+  "$schema": "./legacy-class-mappings.schema.json",
+  "version": "0.20.0a",
+  "description": "Maps legacy character classes to Aethelgard archetypes and suggested specializations for the migration system.",
+  "mappings": [
+    {
+      "legacy-class-id": "rogue",
+      "legacy-class-display-name": "Rogue",
+      "target-archetype": "skirmisher",
+      "suggested-specializations": ["myrk-gengr", "veidimadr"],
+      "grants-free-specialization": true,
+      "migration-description": "Your training in stealth and precision translates naturally to the Skirmisher's mobile combat style."
+    },
+    {
+      "legacy-class-id": "fighter",
+      "legacy-class-display-name": "Fighter",
+      "target-archetype": "warrior",
+      "suggested-specializations": ["skjaldmaer", "berserkr"],
+      "grants-free-specialization": true,
+      "migration-description": "Your frontline combat experience makes you a natural Warrior, excelling in both defense and devastating melee attacks."
+    },
+    {
+      "legacy-class-id": "mage",
+      "legacy-class-display-name": "Mage",
+      "target-archetype": "mystic",
+      "suggested-specializations": ["seidkona"],
+      "grants-free-specialization": true,
+      "migration-description": "Your arcane knowledge aligns with the Mystic's command of the corrupted Aether."
+    },
+    {
+      "legacy-class-id": "healer",
+      "legacy-class-display-name": "Healer",
+      "target-archetype": "adept",
+      "suggested-specializations": ["bone-setter"],
+      "grants-free-specialization": true,
+      "migration-description": "Your healing arts find their truest expression in the Adept's Bone-Setter specialization."
+    },
+    {
+      "legacy-class-id": "scholar",
+      "legacy-class-display-name": "Scholar",
+      "target-archetype": "adept",
+      "suggested-specializations": ["jotun-reader"],
+      "grants-free-specialization": true,
+      "migration-description": "Your scholarly pursuits align with the Adept's knowledge-based specializations."
+    },
+    {
+      "legacy-class-id": "crafter",
+      "legacy-class-display-name": "Crafter",
+      "target-archetype": "adept",
+      "suggested-specializations": ["skald", "scrap-tinker"],
+      "grants-free-specialization": true,
+      "migration-description": "Your crafting expertise translates to the Adept's creation-focused specializations."
+    }
+  ]
+}
