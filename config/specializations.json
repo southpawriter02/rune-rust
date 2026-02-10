@@ -597,6 +597,45 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 2,
+                    "displayName": "Applied Knowledge",
+                    "unlockCost": 4,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 2,
+                    "abilities": [
+                        {
+                            "abilityId": "technical-memory",
+                            "displayName": "Technical Memory",
+                            "description": "Recall the solution to a puzzle similar to one previously solved, providing the exact solution or reducing DC by 5. Costs 1 AP + 2 Lore Insight.",
+                            "isPassive": false,
+                            "resourceCost": 2,
+                            "resourceType": "lore-insight",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "exploit-weakness",
+                            "displayName": "Exploit Weakness",
+                            "description": "Analyze an enemy to reveal vulnerabilities, resistances, and weak points. Attacks exploiting weaknesses deal +1d6 damage. Lasts until end of combat. Costs 2 AP + 3 Lore Insight.",
+                            "isPassive": false,
+                            "resourceCost": 3,
+                            "resourceType": "lore-insight",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "data-recovery",
+                            "displayName": "Data Recovery",
+                            "description": "Extract information from damaged, corrupted, or locked terminals. Recovers 1d4 fragments on success; critical success grants full recovery + bonus Lore Insight. Costs 3 AP + 2 Lore Insight.",
+                            "isPassive": false,
+                            "resourceCost": 2,
+                            "resourceType": "lore-insight",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
                 }
             ]
         },
