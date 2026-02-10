@@ -345,6 +345,54 @@
                             "corruptionRisk": 0
                         }
                     ]
+                },
+                {
+                    "tier": 3,
+                    "displayName": "Master Defenses",
+                    "unlockCost": 5,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 3,
+                    "abilities": [
+                        {
+                            "abilityId": "unbreakable",
+                            "displayName": "Unbreakable",
+                            "description": "Reduce all damage taken by 3. Damage cannot be reduced below 1.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "guardians-sacrifice",
+                            "displayName": "Guardian's Sacrifice",
+                            "description": "When an ally within 2 spaces is hit by an attack, spend 2 Block Charges to absorb all damage from that attack.",
+                            "isPassive": false,
+                            "resourceCost": 2,
+                            "resourceType": "block-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                },
+                {
+                    "tier": 4,
+                    "displayName": "The Wall",
+                    "unlockCost": 6,
+                    "requiresPreviousTier": true,
+                    "requiredRank": 4,
+                    "abilities": [
+                        {
+                            "abilityId": "the-wall-lives",
+                            "displayName": "The Wall Lives",
+                            "description": "For 3 turns, you cannot be reduced below 1 HP. Usable once per combat. Costs 4 AP.",
+                            "isPassive": false,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
                 }
             ]
         },

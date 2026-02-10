@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // ISkjaldmaerAbilityService.cs
 // Interface for Skjaldmær-specific ability operations across all tiers.
-// Version: 0.20.1b
+// Version: 0.20.1c
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Application.Interfaces;
@@ -18,6 +18,12 @@ using RuneAndRust.Domain.ValueObjects;
 /// </para>
 /// <para>
 /// <b>Tier 2:</b> Hold the Line, Counter-Shield, Rally (v0.20.1b)
+/// </para>
+/// <para>
+/// <b>Tier 3:</b> Unbreakable, Guardian's Sacrifice (v0.20.1c)
+/// </para>
+/// <para>
+/// <b>Capstone:</b> The Wall Lives (v0.20.1c)
 /// </para>
 /// </remarks>
 public interface ISkjaldmaerAbilityService
@@ -119,4 +125,49 @@ public interface ISkjaldmaerAbilityService
     /// <param name="unlockedAbilities">Currently unlocked abilities.</param>
     /// <returns>Total PP cost of all unlocked abilities.</returns>
     int CalculatePPInvested(IReadOnlyList<SkjaldmaerAbilityId> unlockedAbilities);
+
+    // ═══════ Tier 3: Master Defenses (v0.20.1c) ═══════
+
+    /// <summary>
+    /// Gets damage reduction from Unbreakable passive.
+    /// </summary>
+    /// <param name="unlockedAbilities">Currently unlocked abilities.</param>
+    /// <returns>Damage reduction value (3 if Unbreakable is unlocked, 0 otherwise).</returns>
+    int GetDamageReduction(IReadOnlyList<SkjaldmaerAbilityId> unlockedAbilities);
+
+    /// <summary>
+    /// Checks whether Tier 3 abilities can be unlocked based on PP invested.
+    /// </summary>
+    /// <param name="ppInvested">Total PP invested in the Skjaldmær tree.</param>
+    /// <returns>True if the 16 PP threshold is met.</returns>
+    bool CanUnlockTier3(int ppInvested);
+
+    // ═══════ Capstone: The Wall Lives (v0.20.1c) ═══════
+
+    /// <summary>
+    /// Activates The Wall Lives capstone ability.
+    /// </summary>
+    /// <returns>An active TheWallLivesState with 3 turns remaining.</returns>
+    TheWallLivesState ActivateTheWallLives();
+
+    /// <summary>
+    /// Advances The Wall Lives effect by one turn.
+    /// </summary>
+    /// <param name="state">Current The Wall Lives state.</param>
+    /// <returns>Updated state with decremented turns (deactivated at 0).</returns>
+    TheWallLivesState TickTheWallLives(TheWallLivesState state);
+
+    /// <summary>
+    /// Checks if the capstone ability can be used this combat.
+    /// </summary>
+    /// <param name="hasUsedCapstoneThisCombat">Whether the capstone has already been used.</param>
+    /// <returns>True if capstone is available (not already used this combat).</returns>
+    bool CanUseCapstone(bool hasUsedCapstoneThisCombat);
+
+    /// <summary>
+    /// Checks whether Capstone ability can be unlocked based on PP invested.
+    /// </summary>
+    /// <param name="ppInvested">Total PP invested in the Skjaldmær tree.</param>
+    /// <returns>True if the 24 PP threshold is met.</returns>
+    bool CanUnlockCapstone(int ppInvested);
 }

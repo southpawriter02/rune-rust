@@ -50,7 +50,7 @@ using RuneAndRust.Domain.ValueObjects;
 ///   <item><description>Path types must match the specialization's inherent classification from enum extensions</description></item>
 ///   <item><description>Parent archetypes must match the specialization's inherent archetype from enum extensions</description></item>
 ///   <item><description>Special resource values must have valid ranges (min &lt;= max, startsAt within range)</description></item>
-///   <item><description>Ability tier numbers must be in range 1-3 with correct prerequisite flags</description></item>
+///   <item><description>Ability tier numbers must be in range 1-4 with correct prerequisite flags</description></item>
 /// </list>
 /// </para>
 /// <para>

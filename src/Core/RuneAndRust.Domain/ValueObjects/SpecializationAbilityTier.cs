@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // SpecializationAbilityTier.cs
 // Value object representing a tier of abilities within a specialization.
-// Each specialization has three tiers (1, 2, 3) with escalating PP unlock costs
+// Each specialization has up to four tiers (1-4) with escalating PP unlock costs
 // and rank requirements. Tiers contain 2-4 abilities (mix of active and passive).
 // Version: 0.17.4c
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -83,10 +83,10 @@ public readonly record struct SpecializationAbilityTier
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Gets the tier number (1, 2, or 3).
+    /// Gets the tier number (1, 2, 3, or 4).
     /// </summary>
     /// <value>
-    /// An integer from 1 to 3 representing the tier level.
+    /// An integer from 1 to 4 representing the tier level.
     /// Higher tiers require more PP and higher rank to unlock.
     /// </value>
     /// <remarks>
@@ -213,7 +213,7 @@ public readonly record struct SpecializationAbilityTier
     /// <summary>
     /// Creates a new ability tier with comprehensive validation.
     /// </summary>
-    /// <param name="tier">Tier number (1, 2, or 3). Determines unlock requirements and position in progression.</param>
+    /// <param name="tier">Tier number (1-4). Determines unlock requirements and position in progression.</param>
     /// <param name="displayName">UI display name (e.g., "Core Techniques"). Cannot be null or whitespace.</param>
     /// <param name="unlockCost">Progression Point cost to unlock. Must be non-negative.</param>
     /// <param name="requiresPreviousTier">
@@ -225,7 +225,7 @@ public readonly record struct SpecializationAbilityTier
     /// <param name="logger">Optional logger for diagnostic output during creation.</param>
     /// <returns>A validated and immutable <see cref="SpecializationAbilityTier"/> instance.</returns>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="tier"/> is not 1-3, <paramref name="unlockCost"/> is negative,
+    /// Thrown when <paramref name="tier"/> is not 1-4, <paramref name="unlockCost"/> is negative,
     /// or <paramref name="requiredRank"/> is less than 1.
     /// </exception>
     /// <exception cref="ArgumentException">
@@ -275,9 +275,9 @@ public readonly record struct SpecializationAbilityTier
             requiresPreviousTier,
             requiredRank);
 
-        // Validate tier number range (1-3)
+        // Validate tier number range (1-4)
         ArgumentOutOfRangeException.ThrowIfLessThan(tier, 1, nameof(tier));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(tier, 3, nameof(tier));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(tier, 4, nameof(tier));
 
         // Validate display name
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
@@ -537,6 +537,39 @@ public readonly record struct SpecializationAbilityTier
             unlockCost: 3,
             requiresPreviousTier: true,
             requiredRank: 3,
+            abilities: abilities,
+            logger: logger);
+    }
+
+    /// <summary>
+    /// Creates a standard Tier 4 / Capstone (6 PP cost, requires Tier 3, Rank 4 required).
+    /// </summary>
+    /// <param name="displayName">UI display name for the tier (e.g., "The Wall").</param>
+    /// <param name="abilities">Abilities in this tier.</param>
+    /// <param name="logger">Optional logger for diagnostic output.</param>
+    /// <returns>A validated Tier 4 <see cref="SpecializationAbilityTier"/>.</returns>
+    /// <remarks>
+    /// <para>
+    /// Convenience factory that sets standard Tier 4 (Capstone) parameters:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item><description>Tier: 4</description></item>
+    ///   <item><description>UnlockCost: 6 PP</description></item>
+    ///   <item><description>RequiresPreviousTier: true</description></item>
+    ///   <item><description>RequiredRank: 4</description></item>
+    /// </list>
+    /// </remarks>
+    public static SpecializationAbilityTier CreateTier4(
+        string displayName,
+        IEnumerable<SpecializationAbility> abilities,
+        ILogger<SpecializationAbilityTier>? logger = null)
+    {
+        return Create(
+            tier: 4,
+            displayName: displayName,
+            unlockCost: 6,
+            requiresPreviousTier: true,
+            requiredRank: 4,
             abilities: abilities,
             logger: logger);
     }

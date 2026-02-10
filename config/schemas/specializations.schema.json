@@ -190,7 +190,7 @@
                     "items": {
                         "$ref": "#/definitions/abilityTierEntry"
                     },
-                    "maxItems": 3
+                    "maxItems": 4
                 }
             },
             "additionalProperties": false
@@ -263,8 +263,8 @@
                 "tier": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": 3,
-                    "description": "Tier number (1, 2, or 3). Determines progression order and unlock requirements."
+                    "maximum": 4,
+                    "description": "Tier number (1-4). Determines progression order and unlock requirements."
                 },
                 "displayName": {
                     "type": "string",
@@ -283,8 +283,8 @@
                 "requiredRank": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": 3,
-                    "description": "Minimum progression rank required. Standard: Tier 1 = 1, Tier 2 = 2, Tier 3 = 3."
+                    "maximum": 4,
+                    "description": "Minimum progression rank required. Standard: Tier 1 = 1, Tier 2 = 2, Tier 3 = 3, Tier 4 = 4."
                 },
                 "abilities": {
                     "type": "array",
