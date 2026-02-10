@@ -117,6 +117,13 @@ public static class DependencyInjection
         // Text variety services
         services.AddScoped<LexiconService>();
 
+        // Core Randomization
+        services.AddScoped<DiceService>();
+        services.AddScoped<IDiceService, DiceService>();
+
+        // Skill Checks
+        services.AddScoped<SkillCheckService>();
+
         // Environment coherence service (v0.0.11a)
         services.AddScoped(sp =>
         {

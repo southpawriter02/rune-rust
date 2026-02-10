@@ -6,6 +6,7 @@ using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Services;
 using RuneAndRust.Domain.ValueObjects;
+using DomainSkillCheckService = RuneAndRust.Domain.Services.SkillCheckService;
 
 namespace RuneAndRust.Application.Services;
 
@@ -34,7 +35,7 @@ public class GameSessionService
     /// </summary>
     private readonly CombatService _combatService;
     private readonly IExaminationService? _examinationService;
-    private readonly SkillCheckService _skillCheckService;
+    private readonly DomainSkillCheckService _skillCheckService;
     private readonly IDungeonGenerator? _dungeonGenerator;
 
     /// <summary>
@@ -116,14 +117,33 @@ public class GameSessionService
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
+        ItemEffectService itemEffectService,
+        AbilityService abilityService,
+        ResourceService resourceService,
+        IDiceService diceService,
+        EquipmentService equipmentService,
+        ExperienceService experienceService,
+        ProgressionService progressionService,
+        ILootService lootService,
         IExaminationService? examinationService = null,
-        IDungeonGenerator? dungeonGenerator = null)
+        IDungeonGenerator? dungeonGenerator = null,
+        IGameEventLogger? eventLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
+        _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
+        _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
+        _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
+        _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
+        _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
+        _progressionService = progressionService ?? throw new ArgumentNullException(nameof(progressionService));
+        _lootService = lootService ?? throw new ArgumentNullException(nameof(lootService));
+        _eventLogger = eventLogger;
+
         _combatService = new CombatService();
         _examinationService = examinationService;
-        _skillCheckService = new SkillCheckService();
+        _skillCheckService = new DomainSkillCheckService();
         _dungeonGenerator = dungeonGenerator;
     }
 
@@ -133,8 +153,9 @@ public class GameSessionService
     /// <param name="playerName">The name for the new player character.</param>
     /// <param name="ct">Cancellation token for async operation.</param>
     /// <returns>The initial game state as a DTO.</returns>
-    public async Task<GameStateDto> StartNewGameAsync(string playerName, CancellationToken ct = default)
+    public async Task<GameStateDto> StartNewGameAsync(string playerName, CancellationToken ct = default, string context = "Unspecified")
     {
+        _logger.LogTrace("Entering StartNewGameAsync for {PlayerName} in {Context}", playerName, context);
         _logger.LogInformation("Starting new game for player: {PlayerName}", playerName);
 
         _currentSession = GameSession.CreateNew(playerName);
@@ -157,6 +178,7 @@ public class GameSessionService
             _currentSession.Player.Position.Y,
             _currentSession.Dungeon.RoomCount);
 
+        _logger.LogDebug("StartNewGameAsync complete for {Context}", context);
         return _currentSession.ToDto();
     }
 
@@ -176,8 +198,10 @@ public class GameSessionService
         DifficultyTier difficulty,
         int roomCount = 15,
         int? seed = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string context = "Unspecified")
     {
+        _logger.LogTrace("Entering StartGeneratedGameAsync for {PlayerName} in {Context}", playerName, context);
         _logger.LogInformation(
             "Starting generated game for player: {PlayerName}, Biome: {Biome}, Difficulty: {Difficulty}",
             playerName, biome, difficulty);
@@ -197,6 +221,8 @@ public class GameSessionService
             _ => "The Unknown Depths"
         };
 
+        _logger.LogTrace("Resolved dungeon name for {Biome}: {DungeonName}", biome, dungeonName);
+
         var dungeon = await generator.GenerateDungeonAsync(
             dungeonName, biome, difficulty, roomCount, seed, ct);
 
@@ -207,11 +233,13 @@ public class GameSessionService
             "Generated game session created: {SessionId}, Rooms: {RoomCount}",
             _currentSession.Id, dungeon.RoomCount);
 
+        _logger.LogDebug("StartGeneratedGameAsync complete for {Context}", context);
         return _currentSession.ToDto();
     }
 
-    public async Task<GameStateDto?> LoadGameAsync(Guid sessionId, CancellationToken ct = default)
+    public async Task<GameStateDto?> LoadGameAsync(Guid sessionId, CancellationToken ct = default, string context = "Unspecified")
     {
+        _logger.LogTrace("Entering LoadGameAsync for session {SessionId} in {Context}", sessionId, context);
         _logger.LogInformation("Loading game session: {SessionId}", sessionId);
 
         _currentSession = await _repository.GetByIdAsync(sessionId, ct);
@@ -238,6 +266,7 @@ public class GameSessionService
             _currentSession.Player.Inventory.Count,
             _currentSession.Player.Inventory.Capacity);
 
+        _logger.LogDebug("LoadGameAsync complete for {Context}", context);
         return _currentSession.ToDto();
     }
 
