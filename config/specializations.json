@@ -267,7 +267,47 @@
                 "decayPerTurn": 0,
                 "description": "Stored defensive reactions ready to deflect incoming attacks"
             },
-            "abilityTiers": []
+            "abilityTiers": [
+                {
+                    "tier": 1,
+                    "displayName": "Foundational Defenses",
+                    "unlockCost": 0,
+                    "requiresPreviousTier": false,
+                    "requiredRank": 1,
+                    "abilities": [
+                        {
+                            "abilityId": "shield-wall",
+                            "displayName": "Shield Wall",
+                            "description": "Adopt a defensive stance. Grants +3 Defense to self and +1 Defense to each adjacent ally.",
+                            "isPassive": false,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "intercept",
+                            "displayName": "Intercept",
+                            "description": "Redirect an attack targeting an ally within 2 spaces to yourself instead.",
+                            "isPassive": false,
+                            "resourceCost": 1,
+                            "resourceType": "block-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "bulwark",
+                            "displayName": "Bulwark",
+                            "description": "Passive: Gain +5 Max HP per Block Charge held (max +15 HP).",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                }
+            ]
         },
         {
             "specializationId": "SkarHorde",
