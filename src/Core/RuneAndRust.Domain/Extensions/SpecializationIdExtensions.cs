@@ -32,10 +32,10 @@ using RuneAndRust.Domain.Enums;
 /// Key classification data:
 /// </para>
 /// <list type="bullet">
-///   <item><description>17 total specializations across 4 archetypes</description></item>
+///   <item><description>18 total specializations across 4 archetypes</description></item>
 ///   <item><description>5 Heretical (Berserkr, GorgeMaw, MyrkGengr, Seidkona, EchoCaller)</description></item>
-///   <item><description>12 Coherent (all others)</description></item>
-///   <item><description>Warrior: 6, Skirmisher: 4, Mystic: 2, Adept: 5</description></item>
+///   <item><description>13 Coherent (all others)</description></item>
+///   <item><description>Warrior: 6, Skirmisher: 4, Mystic: 2, Adept: 6</description></item>
 /// </list>
 /// </remarks>
 /// <seealso cref="SpecializationId"/>
@@ -93,7 +93,7 @@ public static class SpecializationIdExtensions
             SpecializationId.Seidkona => SpecializationPathType.Heretical,
             SpecializationId.EchoCaller => SpecializationPathType.Heretical,
 
-            // All others are Coherent (12 total)
+            // All others are Coherent (13 total)
             _ => SpecializationPathType.Coherent
         };
     }
@@ -145,7 +145,7 @@ public static class SpecializationIdExtensions
     ///   <item><description>Warrior (6): Berserkr, IronBane, Skjaldmaer, SkarHorde, AtgeirWielder, GorgeMaw</description></item>
     ///   <item><description>Skirmisher (4): Veidimadr, MyrkGengr, Strandhogg, HlekkrMaster</description></item>
     ///   <item><description>Mystic (2): Seidkona, EchoCaller</description></item>
-    ///   <item><description>Adept (5): BoneSetter, JotunReader, Skald, ScrapTinker, Einbui</description></item>
+    ///   <item><description>Adept (6): BoneSetter, JotunReader, Skald, ScrapTinker, Einbui, Runasmidr</description></item>
     /// </list>
     /// </remarks>
     /// <example>
@@ -185,6 +185,7 @@ public static class SpecializationIdExtensions
             SpecializationId.Skald => Archetype.Adept,
             SpecializationId.ScrapTinker => Archetype.Adept,
             SpecializationId.Einbui => Archetype.Adept,
+            SpecializationId.Runasmidr => Archetype.Adept,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(specializationId),
@@ -259,6 +260,7 @@ public static class SpecializationIdExtensions
             SpecializationId.Skald => "Skald",
             SpecializationId.ScrapTinker => "Scrap-Tinker",
             SpecializationId.Einbui => "Einbúi",
+            SpecializationId.Runasmidr => "Rúnasmiðr",
 
             _ => specializationId.ToString()
         };

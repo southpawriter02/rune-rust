@@ -85,6 +85,11 @@
             "specializationId": "Einbui",
             "pathType": "Coherent",
             "corruptionRisk": null
+        },
+        {
+            "specializationId": "Runasmidr",
+            "pathType": "Coherent",
+            "corruptionRisk": null
         }
     ],
     "definitions": [
@@ -581,6 +586,67 @@
             "unlockCost": 0,
             "specialResource": null,
             "abilityTiers": []
+        },
+        {
+            "specializationId": "Runasmidr",
+            "displayName": "Rúnasmiðr",
+            "tagline": "Inscriber of Power",
+            "description": "The Rúnasmiðr inscribes ancient runes onto equipment and surfaces, combining Dvergr inscription techniques with practical combat applications. Their runes enhance weapons, provide protective wards, and reveal secrets of Jötun technology.",
+            "selectionText": "Inscribe the ancient marks. Your runes bring order to a broken world.",
+            "parentArchetype": "Adept",
+            "pathType": "Coherent",
+            "unlockCost": 0,
+            "specialResource": {
+                "resourceId": "rune-charges",
+                "displayName": "Rune Charges",
+                "minValue": 0,
+                "maxValue": 5,
+                "startsAt": 5,
+                "regenPerTurn": 0,
+                "decayPerTurn": 0,
+                "description": "Stored inscription energy generated through crafting and rest"
+            },
+            "abilityTiers": [
+                {
+                    "tier": 1,
+                    "displayName": "Foundational Inscription",
+                    "unlockCost": 0,
+                    "requiresPreviousTier": false,
+                    "requiredRank": 1,
+                    "abilities": [
+                        {
+                            "abilityId": "inscribe-rune",
+                            "displayName": "Inscribe Rune",
+                            "description": "Inscribe a rune on a weapon (+2 damage) or armor (+1 Defense) for 10 turns. Only one rune per item.",
+                            "isPassive": false,
+                            "resourceCost": 1,
+                            "resourceType": "rune-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "read-the-marks",
+                            "displayName": "Read the Marks",
+                            "description": "Passive: Automatically identify Jötun technology when examined, bypassing Perception/Lore checks.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        },
+                        {
+                            "abilityId": "runestone-ward",
+                            "displayName": "Runestone Ward",
+                            "description": "Create a protective ward that absorbs up to 10 damage. Maximum 1 active ward per character.",
+                            "isPassive": false,
+                            "resourceCost": 1,
+                            "resourceType": "rune-charges",
+                            "cooldown": 0,
+                            "corruptionRisk": 0
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

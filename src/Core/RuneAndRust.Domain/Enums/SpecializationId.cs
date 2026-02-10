@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // SpecializationId.cs
-// Enum defining the unique identifier for each of the 17 specializations in
+// Enum defining the unique identifier for each of the 18 specializations in
 // Aethelgard. Specializations are grouped by parent archetype: Warrior (6),
-// Skirmisher (4), Mystic (2), and Adept (5). Each specialization is classified
+// Skirmisher (4), Mystic (2), and Adept (6). Each specialization is classified
 // as either Coherent or Heretical via its path type.
 // Version: 0.17.4a
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -44,21 +44,21 @@ namespace RuneAndRust.Domain.Enums;
 ///   </item>
 ///   <item>
 ///     <description>
-///       <b>Adept</b>: 5 specializations (Bone-Setter, Jötun-Reader, Skald,
-///       Scrap-Tinker, Einbúi) — values 12-16
+///       <b>Adept</b>: 6 specializations (Bone-Setter, Jötun-Reader, Skald,
+///       Scrap-Tinker, Einbúi, Rúnasmiðr) — values 12-17
 ///     </description>
 ///   </item>
 /// </list>
 /// <para>
-/// Of 17 total specializations, 5 are Heretical (risk Corruption) and 12 are
+/// Of 18 total specializations, 5 are Heretical (risk Corruption) and 13 are
 /// Coherent (no Corruption risk). Path type is determined per specialization
 /// via the <c>GetPathType()</c> extension method.
 /// </para>
 /// <para>
-/// Enum values are explicitly assigned (0-16) to ensure stable serialization
+/// Enum values are explicitly assigned (0-17) to ensure stable serialization
 /// and database storage. The order groups specializations by parent archetype,
 /// with Warrior specializations first (0-5), then Skirmisher (6-9), Mystic
-/// (10-11), and Adept (12-16).
+/// (10-11), and Adept (12-17).
 /// </para>
 /// </remarks>
 /// <seealso cref="SpecializationPathType"/>
@@ -328,5 +328,21 @@ public enum SpecializationId
     /// independence rather than supernatural endurance.
     /// </para>
     /// </remarks>
-    Einbui = 16
+    Einbui = 16,
+
+    /// <summary>
+    /// Crafting-focused inscription specialist.
+    /// </summary>
+    /// <remarks>
+    /// <para>Parent: Adept</para>
+    /// <para>Path: Coherent</para>
+    /// <para>Special Resource: Rune Charges (0-5)</para>
+    /// <para>
+    /// The Rúnasmiðr inscribes ancient runes onto equipment and surfaces,
+    /// providing enhancement bonuses, protective wards, and identification
+    /// of Jötun technology. Their Coherent path reflects scholarly craftsmanship
+    /// and disciplined inscription techniques.
+    /// </para>
+    /// </remarks>
+    Runasmidr = 17
 }
