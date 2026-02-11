@@ -535,7 +535,7 @@ public class SpecializationProviderTests
 
     /// <summary>
     /// Verifies that GetAbility returns the ability and parent specialization
-    /// for a valid ability ID (rage-strike belongs to Berserkr Tier 1).
+    /// for a valid ability ID (fury-strike belongs to Berserkr Tier 1).
     /// </summary>
     [Test]
     public void GetAbility_ValidAbilityId_ReturnsAbilityAndSpecialization()
@@ -551,12 +551,12 @@ public class SpecializationProviderTests
         var provider = new SpecializationProvider(_mockLogger.Object, _testConfigPath);
 
         // Act
-        var result = provider.GetAbility("rage-strike");
+        var result = provider.GetAbility("fury-strike");
 
         // Assert
         result.Should().NotBeNull();
         result!.Value.Specialization.SpecializationId.Should().Be(SpecializationId.Berserkr);
-        result.Value.Ability.DisplayName.Should().Be("Rage Strike");
+        result.Value.Ability.DisplayName.Should().Be("Fury Strike");
         result.Value.Ability.IsPassive.Should().BeFalse();
     }
 

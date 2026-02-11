@@ -121,19 +121,19 @@
                     "requiredRank": 1,
                     "abilities": [
                         {
-                            "abilityId": "rage-strike",
-                            "displayName": "Rage Strike",
-                            "description": "Channel rage into a devastating blow. Damage scales with current Rage.",
+                            "abilityId": "fury-strike",
+                            "displayName": "Fury Strike",
+                            "description": "Channel fury into a devastating blow. Deals weapon damage + 3d6 fury damage. Nat 20 adds +1d6. Costs 2 AP + 20 Rage. Corruption: +1 if used at 80+ Rage.",
                             "isPassive": false,
                             "resourceCost": 20,
                             "resourceType": "rage",
                             "cooldown": 0,
-                            "corruptionRisk": 5
+                            "corruptionRisk": 1
                         },
                         {
-                            "abilityId": "blood-frenzy",
-                            "displayName": "Blood Frenzy",
-                            "description": "When below 50% health, deal 10% increased damage.",
+                            "abilityId": "blood-scent",
+                            "displayName": "Blood Scent",
+                            "description": "Passive. When an enemy becomes bloodied (≤50% HP), gain +10 Rage. Gain +1 Attack against bloodied targets. No Corruption risk.",
                             "isPassive": true,
                             "resourceCost": 0,
                             "resourceType": "",
@@ -141,13 +141,13 @@
                             "corruptionRisk": 0
                         },
                         {
-                            "abilityId": "intimidating-presence",
-                            "displayName": "Intimidating Presence",
-                            "description": "Your fury terrifies nearby enemies, reducing their accuracy.",
-                            "isPassive": false,
-                            "resourceCost": 15,
-                            "resourceType": "rage",
-                            "cooldown": 3,
+                            "abilityId": "pain-is-fuel",
+                            "displayName": "Pain is Fuel",
+                            "description": "Passive. Gain +5 Rage whenever you take damage. Fuels the rage engine through received punishment. No Corruption risk.",
+                            "isPassive": true,
+                            "resourceCost": 0,
+                            "resourceType": "",
+                            "cooldown": 0,
                             "corruptionRisk": 0
                         }
                     ]
