@@ -13,26 +13,26 @@ public static class RoomFunctionSeeder
     {
         // Utility/Infrastructure functions
         yield return new RoomFunction(
-            "Pumping Station",
-            "Massive geothermal pumps once circulated superheated fluids through the facility. Now they groan with neglect, leaking scalding steam from corroded seals.",
+            "Circulation Station",
+            "Massive geothermal engines once circulated superheated fluids through the facility. Now they groan with neglect, leaking scalding steam from rusted seals.",
             [Biome.TheRoots, Biome.Muspelheim],
             weight: 2);
 
         yield return new RoomFunction(
-            "Power Station",
-            "Banks of capacitors and generators line the walls, some still humming with residual charge. Cables snake across the floor like mechanical tendrils.",
+            "Lightning Station",
+            "Banks of lightning-jars and dynamos line the walls, some still humming with residual charge. Iron-vines snake across the floor like iron tendrils.",
             [Biome.TheRoots, Biome.Citadel],
             weight: 2);
 
         yield return new RoomFunction(
-            "Water Treatment",
-            "Massive filtration tanks dominate the space, filled with murky liquid. The air is thick with chemical odors and the sound of dripping.",
+            "Water Purification",
+            "Massive purification vats dominate the space, filled with murky liquid. The air is thick with alchemical odors and the sound of dripping.",
             [Biome.TheRoots],
             weight: 1);
 
         yield return new RoomFunction(
-            "Ventilation Hub",
-            "Giant fans hang motionless from the ceiling, their blades casting strange shadows. Air shafts lead off in multiple directions.",
+            "Breath-Chamber",
+            "Giant wind-wheels hang motionless from the ceiling, their blades casting strange shadows. Air shafts lead off in multiple directions.",
             [Biome.TheRoots, Biome.Citadel],
             weight: 2);
 
@@ -57,14 +57,14 @@ public static class RoomFunctionSeeder
 
         // Research/Knowledge functions
         yield return new RoomFunction(
-            "Research Lab",
-            "Workbenches cluttered with equipment and half-finished experiments. Notes and diagrams cover every available surface, their meaning now obscure.",
+            "Scholar's Study",
+            "Workbenches cluttered with tools and half-finished experiments. Notes and diagrams cover every available surface, their meaning now obscure.",
             [Biome.Alfheim, Biome.Citadel],
             weight: 2);
 
         yield return new RoomFunction(
             "Archives",
-            "Shelves of data crystals and ancient tomes stretch into the darkness. The accumulated knowledge of ages gathers dust here.",
+            "Shelves of rune-crystals and ancient tomes stretch into the darkness. The accumulated knowledge of ages gathers dust here.",
             [Biome.Citadel, Biome.Alfheim],
             weight: 1);
 
@@ -82,8 +82,8 @@ public static class RoomFunctionSeeder
             weight: 2);
 
         yield return new RoomFunction(
-            "Assembly Floor",
-            "Conveyor systems and assembly machinery fill the chamber. Whatever was built here required precision beyond mortal hands.",
+            "Creation Floor",
+            "Moving tracks and creation-engines fill the chamber. Whatever was built here required precision beyond mortal hands.",
             [Biome.TheRoots, Biome.Jotunheim],
             weight: 1);
 
@@ -95,8 +95,8 @@ public static class RoomFunctionSeeder
 
         // Storage/Resource functions
         yield return new RoomFunction(
-            "Cryo Storage",
-            "Rows of cryogenic pods line the walls, their contents obscured by frost. Condensation drips in the unnaturally cold air.",
+            "Frost Vault",
+            "Rows of frost-coffins line the walls, their contents obscured by frost. Frost-melt drips in the unnaturally cold air.",
             [Biome.Niflheim],
             weight: 2);
 
@@ -114,27 +114,27 @@ public static class RoomFunctionSeeder
 
         // Command/Control functions
         yield return new RoomFunction(
-            "Operations Nexus",
-            "A command center with displays and consoles arranged in concentric rings. From here, entire systems were once directed.",
+            "Command Nexus",
+            "A command center with seeing-stones and control-slabs arranged in concentric rings. From here, entire systems were once directed.",
             [Biome.Citadel, Biome.TheRoots],
             weight: 1);
 
         yield return new RoomFunction(
-            "Communications Array",
-            "Antenna arrays and signal processors fill the space. Some still blink with activity, sending messages to receivers long destroyed.",
+            "Whisper-Hall",
+            "Listening-spires and message-stones fill the space. Some still blink with activity, sending messages to receivers long destroyed.",
             [Biome.Citadel, Biome.Alfheim],
             weight: 1);
 
         // Specialized biome functions
         yield return new RoomFunction(
-            "Reactor Core",
-            "The heart of the facility's power generation. Containment fields flicker weakly around an energy source that defies understanding.",
+            "Heart-Core",
+            "The heart of the facility's power generation. Warding runes flicker weakly around a power source that defies understanding.",
             [Biome.Muspelheim, Biome.Alfheim],
             weight: 1);
 
         yield return new RoomFunction(
             "Spore Garden",
-            "Bioluminescent fungi carpet every surface, casting an eerie glow. The air is thick with spores and the musty smell of growth.",
+            "Ghost-light fungi carpet every surface, casting an eerie glow. The air is thick with spores and the musty smell of growth.",
             [Biome.TheRoots],
             weight: 1);
 

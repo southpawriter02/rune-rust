@@ -81,11 +81,11 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Terminal", "Dormant",
-            "The screen is dark. But the box still ticks, waiting");
+            "The face is dark. But the box still ticks, waiting");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Terminal", "Corrupted",
-            "Static crawls across the display. Symbols writhe, half-formed");
+            "Ghost-light crawls across the glass. Symbols writhe, half-formed");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Terminal", "Dead",
@@ -296,7 +296,7 @@ public static class InteractionDescriptorSeeder
         // Lore Discovery
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.Discovery, "Lore", "DataSlate",
-            "A data-slate, still readable. Someone left a record");
+            "A rune-slate, still readable. Someone left a record");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.Discovery, "Lore", "DataSlate2",
@@ -426,7 +426,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Trade", "FieldMedicine",
-            "Medical supplies. Some expired, some contaminated, some... usable");
+            "Healing supplies. Some expired, some contaminated, some... usable");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Trade", "FieldMedicine2",
@@ -447,7 +447,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "JotunReader2",
-            "This is Giant-tech. Original. Unmolested since the Glitch");
+            "This is Jotun-craft. Original. Unmolested since the Glitch");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "RuinStalker",

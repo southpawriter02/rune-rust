@@ -66,16 +66,16 @@ public static class RoomFeatureExaminationSeeder
             ObjectCategory.Container, "old_crate",
             "The wood is from surface trees - this was brought down from above, long ago.");
 
-        // rusted_terminal
+        // rusted_console
         yield return ExaminationDescriptor.CreateCursory(
-            ObjectCategory.Machinery, "rusted_terminal",
-            "An ancient computing device, its screen dark and cracked.");
+            ObjectCategory.Machinery, "rusted_console",
+            "An ancient oracle-box, its face dark and cracked.");
         yield return ExaminationDescriptor.CreateDetailed(
-            ObjectCategory.Machinery, "rusted_terminal",
+            ObjectCategory.Machinery, "rusted_console",
             "Corrosion has claimed most of the internals, but the power coupling might be salvageable.");
         yield return ExaminationDescriptor.CreateExpert(
-            ObjectCategory.Machinery, "rusted_terminal",
-            "Oracle-box, pre-Glitch Series 3. If the memory core survived, it might hold administrative data.", revealsHint: true);
+            ObjectCategory.Machinery, "rusted_console",
+            "Oracle-box, pre-Glitch Series 3. If the mind-stone survived, it might hold administrative records.", revealsHint: true);
 
         // salvage_pile
         yield return ExaminationDescriptor.CreateCursory(
@@ -91,13 +91,13 @@ public static class RoomFeatureExaminationSeeder
         // harvestable_fungus
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Flora, "harvestable_fungus",
-            "Shelf mushrooms spiral up the wall in a bioluminescent cascade.");
+            "Shelf mushrooms spiral up the wall in a ghost-light cascade.");
         yield return ExaminationDescriptor.CreateDetailed(
             ObjectCategory.Flora, "harvestable_fungus",
             "Some species are edible. Others are poisonous. A few have alchemical properties.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Flora, "harvestable_fungus",
-            "The blue-glow variety is Whisper Fungus - useful for calming draughts and sleep aids.");
+            "The ghost-light variety is Whisper Fungus - useful for calming draughts and sleep aids.");
 
         // ancient_forge
         yield return ExaminationDescriptor.CreateCursory(
@@ -141,17 +141,17 @@ public static class RoomFeatureExaminationSeeder
             "Despite its size, the craftsmanship is delicate. Carved runes circle the edge.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Decorative, "giant_table",
-            "A feast table from the Titan Age. The runes are blessings for hospitality and abundance.");
+            "A feast table from the Jotun Age. The runes are blessings for hospitality and abundance.");
 
-        // giant_artifact
+        // jotun_artifact
         yield return ExaminationDescriptor.CreateCursory(
-            ObjectCategory.Decorative, "giant_artifact",
+            ObjectCategory.Decorative, "jotun_artifact",
             "Massive relics of the Jotun civilization tower overhead.");
         yield return ExaminationDescriptor.CreateDetailed(
-            ObjectCategory.Decorative, "giant_artifact",
+            ObjectCategory.Decorative, "jotun_artifact",
             "Power still hums within. These artifacts shaped the world before humanity emerged.");
         yield return ExaminationDescriptor.CreateExpert(
-            ObjectCategory.Decorative, "giant_artifact",
+            ObjectCategory.Decorative, "jotun_artifact",
             "This is a Worldstone fragment - one of the primal tools of creation. Handle with extreme care.", revealsHint: true);
     }
 
@@ -186,7 +186,7 @@ public static class RoomFeatureExaminationSeeder
         // heart_fungus
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Flora, "heart_fungus",
-            "A pulsing mass of organic material, veined with bioluminescence.");
+            "A pulsing mass of organic material, veined with ghost-light.");
         yield return ExaminationDescriptor.CreateDetailed(
             ObjectCategory.Flora, "heart_fungus",
             "This is the apex organism of The Roots. Everything here connects to it.");
@@ -225,7 +225,7 @@ public static class RoomFeatureExaminationSeeder
             "Jotun proportions. This was a memorial or deity representation.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Decorative, "broken_statue",
-            "The statue depicted Ymir, the First Giant. Its destruction was deliberate.");
+            "The statue depicted Ymir, the First Jotun. Its destruction was deliberate.");
 
         // glowing_runes
         yield return ExaminationDescriptor.CreateCursory(
@@ -236,18 +236,18 @@ public static class RoomFeatureExaminationSeeder
             "The script is Old Jotun. A few phrases are translatable: warnings, directions, names.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Inscription, "glowing_runes",
-            "This is a historical record. The Giants documented their fall here, for whoever would follow.", revealsHint: true);
+            "This is a historical record. The Jotun documented their fall here, for whoever would follow.", revealsHint: true);
 
-        // giant_sarcophagus
+        // jotun_sarcophagus
         yield return ExaminationDescriptor.CreateCursory(
-            ObjectCategory.Decorative, "giant_sarcophagus",
+            ObjectCategory.Decorative, "jotun_sarcophagus",
             "A burial chamber of impossible scale. The lid has been moved.");
         yield return ExaminationDescriptor.CreateDetailed(
-            ObjectCategory.Decorative, "giant_sarcophagus",
+            ObjectCategory.Decorative, "jotun_sarcophagus",
             "Runes of binding encircle the base. Whatever was sealed here was meant to sleep forever.");
         yield return ExaminationDescriptor.CreateExpert(
-            ObjectCategory.Decorative, "giant_sarcophagus",
-            "This held a Titan - not Jotun, but older. And now it wakes.", revealsHint: true);
+            ObjectCategory.Decorative, "jotun_sarcophagus",
+            "This held a Primal Jotun - not mere Jotun, but older. And now it wakes.", revealsHint: true);
     }
 
     #endregion
@@ -270,7 +270,7 @@ public static class RoomFeatureExaminationSeeder
         // glowing_fungus
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Flora, "glowing_fungus",
-            "Bioluminescent mushrooms provide a pale blue glow.");
+            "Ghost-light mushrooms provide a pale blue glow.");
         yield return ExaminationDescriptor.CreateDetailed(
             ObjectCategory.Flora, "glowing_fungus",
             "The light pulses slowly, like breathing. The spores in the air shimmer.");
@@ -287,7 +287,7 @@ public static class RoomFeatureExaminationSeeder
             "Runic fire. It provides light and heat but consumes nothing.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Decorative, "brazier",
-            "An Ever-Flame, created during the Titan Age. It will burn until the world ends.");
+            "An Ever-Flame, created during the Jotun Age. It will burn until the world ends.");
 
         // ice_crystal
         yield return ExaminationDescriptor.CreateCursory(
@@ -388,7 +388,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "walls",
-            "Massive blocks sized for titans. You feel small.",
+            "Massive blocks sized for Jotun. You feel small.",
             Biome.Jotunheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "walls",
@@ -418,7 +418,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "wall",
-            "Massive blocks sized for titans. You feel small.",
+            "Massive blocks sized for Jotun. You feel small.",
             Biome.Jotunheim);
 
         // Floor by biome
@@ -440,7 +440,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "floor",
-            "Flagstones as large as houses. Giant-scale construction.",
+            "Flagstones as large as houses. Jotun-scale construction.",
             Biome.Jotunheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "floor",
@@ -470,7 +470,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "ground",
-            "Flagstones as large as houses. Giant-scale construction.",
+            "Flagstones as large as houses. Jotun-scale construction.",
             Biome.Jotunheim);
 
         // Ceiling by biome
@@ -492,7 +492,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "ceiling",
-            "So high it's lost in darkness. Built for colossi.",
+            "So high it's lost in darkness. Built for Jotun-Lords.",
             Biome.Jotunheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "ceiling",

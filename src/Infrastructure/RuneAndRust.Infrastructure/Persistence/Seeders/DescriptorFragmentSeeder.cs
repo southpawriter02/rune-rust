@@ -80,7 +80,7 @@ public static class DescriptorFragmentSeeder
     {
         // Wall subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Corroded metal plates form the walls, held together by massive rivets",
+            "Rusted metal plates form the walls, held together by massive rivets",
             ArchitecturalSubcategory.Wall,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -92,7 +92,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateArchitectural(
-            "Smooth, seamless walls suggest advanced pre-Glitch fabrication",
+            "Smooth, seamless walls suggest advanced pre-Glitch craft",
             ArchitecturalSubcategory.Wall,
             weight: 2);
 
@@ -115,7 +115,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateArchitectural(
-            "Crystal formations grow from the walls like geometric tumors",
+            "Crystal formations grow from the walls like jagged tumors",
             ArchitecturalSubcategory.Wall,
             biomeAffinity: Biome.Alfheim,
             weight: 2);
@@ -128,7 +128,7 @@ public static class DescriptorFragmentSeeder
 
         // Ceiling subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Pipes snake across the ceiling like mechanical serpents",
+            "Pipes snake across the ceiling like iron serpents",
             ArchitecturalSubcategory.Ceiling,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -152,14 +152,14 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateArchitectural(
-            "The ceiling glows with bioluminescent fungal growth",
+            "The ceiling glows with ghost-light fungal growth",
             ArchitecturalSubcategory.Ceiling,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
 
         // Floor subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Grated flooring reveals machinery churning below",
+            "Grated flooring reveals iron-works churning below",
             ArchitecturalSubcategory.Floor,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -420,7 +420,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "tinged with ozone and electricity",
+            "tinged with storm-scent and lightning",
             AtmosphericSubcategory.Smell,
             weight: 2);
 
@@ -449,7 +449,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "chemical and wrong, like nothing natural",
+            "alchemical and wrong, like nothing natural",
             AtmosphericSubcategory.Smell,
             biomeAffinity: Biome.Surface,
             weight: 2);
@@ -520,7 +520,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "A low hum vibrates through everything",
+            "A lightning hum vibrates through everything",
             AtmosphericSubcategory.Sound,
             weight: 2);
 
@@ -584,13 +584,13 @@ public static class DescriptorFragmentSeeder
             weight: 3);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Emergency lighting flickers weakly",
+            "Warning lights flicker weakly",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Bioluminescent fungi provide eerie illumination",
+            "Ghost-light fungi provide eerie illumination",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -675,7 +675,7 @@ public static class DescriptorFragmentSeeder
             weight: 1);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Sparks of static electricity dance in the shadows",
+            "Sparks of invisible fire dance in the shadows",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.Surface,
             weight: 2);
