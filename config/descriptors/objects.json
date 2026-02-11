@@ -407,7 +407,7 @@
                 { "id": "glowing_statue", "text": "A statue glows with an inner light", "weight": 30, "tags": ["magical"] },
                 { "id": "animated_statue", "text": "A statue seems to shift when not directly observed", "weight": 25, "tags": ["magical"] },
                 { "id": "watchful_statue", "text": "A statue's eyes seem to follow your movements", "weight": 25 },
-                { "id": "humming_statue", "text": "A statue hums with barely contained power", "weight": 20, "tags": ["magical"] }
+                { "id": "humming_statue", "text": "A statue hums with the anger of the gods", "weight": 20, "tags": ["magical"] }
             ]
         },
         "statue_look": {
@@ -470,10 +470,10 @@
             "id": "altar_active_glance",
             "name": "Altar (Active) - Glance",
             "descriptors": [
-                { "id": "glowing_altar", "text": "An altar pulses with power", "weight": 30, "tags": ["magical"] },
-                { "id": "humming_altar", "text": "An altar hums with energy", "weight": 25, "tags": ["magical"] },
+                { "id": "glowing_altar", "text": "An altar pulses with spirit-light", "weight": 30, "tags": ["magical"] },
+                { "id": "humming_altar", "text": "An altar hums with spirit-song", "weight": 25, "tags": ["magical"] },
                 { "id": "radiant_altar", "text": "An altar radiates divine light", "weight": 25, "tags": ["blessed"] },
-                { "id": "thrumming_altar", "text": "Power thrums visibly through this altar", "weight": 20, "tags": ["magical"] }
+                { "id": "thrumming_altar", "text": "Spirit-fire thrums visibly through this altar", "weight": 20, "tags": ["magical"] }
             ]
         },
         "altar_desecrated_glance": {
@@ -493,7 +493,7 @@
                 { "id": "sacrificial_altar", "text": "A stone altar with channels carved into its surface. Dark stains suggest its purpose", "weight": 20, "tags": ["evil"] },
                 { "id": "holy_altar", "text": "A holy altar surrounded by offerings. Candles still burn here", "weight": 25, "tags": ["blessed"] },
                 { "id": "forgotten_altar", "text": "An altar to some forgotten deity. The symbols are unfamiliar", "weight": 20, "tags": ["ancient"] },
-                { "id": "active_altar", "text": "An altar that thrums with barely contained power", "weight": 20, "tags": ["magical"] },
+                { "id": "active_altar", "text": "An altar that thrums with the anger of sleeping gods", "weight": 20, "tags": ["magical"] },
                 { "id": "simple_altar", "text": "A simple stone altar. Recent offerings suggest it still sees use", "weight": 15 }
             ]
         },
@@ -521,7 +521,7 @@
                 },
                 {
                     "id": "active_power",
-                    "text": "Power thrums through this altar. The stone itself seems alive with energy, and touching it sends tingles up your arm. Something here awaits activation",
+                    "text": "Spirit-fire thrums through this altar. The stone itself seems alive with unseen breath, and touching it sends cold fire up your arm. Something here awaits waking",
                     "weight": 20,
                     "tags": ["magical", "active"]
                 },
@@ -633,7 +633,7 @@
                 },
                 {
                     "id": "magical_runes",
-                    "text": "These runes pulse with magical energy. As you study them, their meaning becomes clear - a spell of protection, or perhaps containment",
+                    "text": "These runes pulse with the light of the weave. As you study them, their intent becomes clear - a warding of the spirits, or perhaps a cage",
                     "weight": 20,
                     "tags": ["magical"]
                 },
