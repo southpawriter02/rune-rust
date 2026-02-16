@@ -6,8 +6,8 @@ namespace RuneAndRust.Application.Interfaces;
 
 /// <summary>
 /// Defines the contract for Bone-Setter specialization ability execution.
-/// Handles Tier 1 (Foundation) ability logic including Field Dressing active healing,
-/// Diagnose information gathering, and Steady Hands passive bonus processing.
+/// Handles Tier 1 (Foundation) and Tier 2 (Discipline) ability logic including
+/// healing, diagnosis, crafting, and tactical triage evaluation.
 /// </summary>
 /// <remarks>
 /// <para>The Bone-Setter is the first dedicated healing specialization and the first
@@ -19,8 +19,12 @@ namespace RuneAndRust.Application.Interfaces;
 /// <item>Diagnose (Active): Reveals target HP, wound severity, status effects, costs 1 AP</item>
 /// <item>Steady Hands (Passive): +2 to all healing rolls when unlocked</item>
 /// </list>
-/// <para>This interface will be extended in v0.20.6b with Tier 2 ability methods
-/// (Emergency Surgery, Antidote Craft, Triage) following the same pattern.</para>
+/// <para>Tier 2 abilities (4 PP each, 8 PP invested required):</para>
+/// <list type="bullet">
+/// <item>Emergency Surgery (Active): 4d6 + quality + recovery bonus healing, costs 3 AP + 1 supply</item>
+/// <item>Antidote Craft (Active): Creates Antidote from Herbs + crafting materials, costs 2 AP</item>
+/// <item>Triage (Passive): +50% healing bonus to most wounded ally within 5-space radius</item>
+/// </list>
 /// </remarks>
 public interface IBoneSetterAbilityService
 {
@@ -96,6 +100,86 @@ public interface IBoneSetterAbilityService
         IEnumerable<string> statusEffects,
         IEnumerable<string> vulnerabilities,
         IEnumerable<string> resistances);
+
+    // ===== Tier 2 Abilities (v0.20.6b) =====
+
+    /// <summary>
+    /// Executes the Emergency Surgery active healing ability on a target.
+    /// High-impact healing (4d6) with recovery condition bonus for critical targets.
+    /// </summary>
+    /// <param name="player">The Bone-Setter player performing the surgery.</param>
+    /// <param name="targetId">Unique identifier of the target being healed.</param>
+    /// <param name="targetName">Display name of the target being healed.</param>
+    /// <param name="targetCurrentHp">Target's current HP before healing.</param>
+    /// <param name="targetMaxHp">Target's maximum HP (healing is capped at this value).</param>
+    /// <param name="targetCondition">Target's current recovery condition for bonus calculation.</param>
+    /// <returns>
+    /// An <see cref="EmergencySurgeryResult"/> containing the full healing breakdown
+    /// including recovery bonus if applicable; null if prerequisites were not met.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Bone-Setter specialization, Emergency Surgery unlocked, 3+ AP,
+    /// at least 1 Medical Supply available.</para>
+    /// <para>Recovery bonus by condition:</para>
+    /// <list type="bullet">
+    /// <item>Active: +0 (no bonus)</item>
+    /// <item>Incapacitated: +1</item>
+    /// <item>Recovering: +3</item>
+    /// <item>Dying: +4 (maximum bonus)</item>
+    /// </list>
+    /// <para>Uses highest-quality supply available (opposite of Field Dressing which uses lowest).</para>
+    /// <para>No Corruption risk — Emergency Surgery follows the Coherent path.</para>
+    /// </remarks>
+    EmergencySurgeryResult? ExecuteEmergencySurgery(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetCurrentHp,
+        int targetMaxHp,
+        RecoveryCondition targetCondition);
+
+    /// <summary>
+    /// Executes the Antidote Craft active ability to create an Antidote from materials.
+    /// Always succeeds if prerequisites are met (100% success rate, no DC check).
+    /// </summary>
+    /// <param name="player">The Bone-Setter player performing the crafting.</param>
+    /// <param name="availableMaterials">Array of crafting materials available to the player.</param>
+    /// <returns>
+    /// An <see cref="AntidoteCraftResult"/> containing the crafting outcome;
+    /// null if ability prerequisites were not met (wrong spec, ability not unlocked, insufficient AP).
+    /// Returns a failure result (not null) if materials are insufficient.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Bone-Setter specialization, Antidote Craft unlocked, 2+ AP,
+    /// at least 1 Herbs supply, 2+ Plant Fiber, 1+ Mineral Powder.</para>
+    /// <para>Output quality: Min(Herbs Quality + material bonus, 5).</para>
+    /// <para>Material bonus: +1 if all crafting materials are Quality 3+, otherwise +0.</para>
+    /// <para>No Corruption risk — Antidote Craft follows the Coherent path.</para>
+    /// </remarks>
+    AntidoteCraftResult? ExecuteAntidoteCraft(
+        Player player,
+        CraftingMaterial[] availableMaterials);
+
+    /// <summary>
+    /// Evaluates the Triage passive ability to determine bonus healing for the most wounded ally.
+    /// Called by other healing abilities to check if Triage bonus should be applied.
+    /// </summary>
+    /// <param name="player">The Bone-Setter player with Triage passive.</param>
+    /// <param name="alliesInRadius">Array of allies within the 5-space Triage radius.</param>
+    /// <param name="baseHealing">The base healing amount from the executing ability.</param>
+    /// <returns>
+    /// A <see cref="TriageResult"/> with the most wounded target and bonus calculation;
+    /// null if Triage is not unlocked, player is not a Bone-Setter, or no allies are in radius.
+    /// </returns>
+    /// <remarks>
+    /// <para>Triage is a passive ability — always active when unlocked, no AP or supply cost.</para>
+    /// <para>Bonus: +50% healing (×1.5 multiplier, rounded down) to the most wounded ally
+    /// (lowest HP percentage) within 5-space radius.</para>
+    /// </remarks>
+    TriageResult? EvaluateTriage(
+        Player player,
+        TriageTarget[] alliesInRadius,
+        int baseHealing);
 
     // ===== Utility Methods =====
 

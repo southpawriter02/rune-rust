@@ -8,18 +8,23 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Bone-Setter specialization ability execution.
-/// Implements Tier 1 (Foundation) abilities: Field Dressing, Diagnose, and Steady Hands.
+/// Implements Tier 1 (Foundation) and Tier 2 (Discipline) abilities.
 /// </summary>
 /// <remarks>
 /// <para>The Bone-Setter is the first dedicated healing specialization and the first Coherent
 /// (no Corruption) path in the v0.20.x series. This service does NOT depend on a corruption
 /// service, unlike <see cref="BerserkrAbilityService"/>.</para>
+/// <para>Tier 1 abilities: Field Dressing, Diagnose, Steady Hands (v0.20.6a).</para>
+/// <para>Tier 2 abilities: Emergency Surgery, Antidote Craft, Triage (v0.20.6b).</para>
 /// <para>Key design decisions:</para>
 /// <list type="bullet">
 /// <item>No Corruption evaluation step — all Bone-Setter abilities follow the Coherent path</item>
 /// <item>Immutable supply operations — spending supplies creates new resource instances</item>
 /// <item>Guard-clause chain: null → spec → ability unlocked → AP → supply → execute</item>
 /// <item>Target data passed as method parameters (not loaded from repository)</item>
+/// <item>Emergency Surgery uses highest-quality supply (opposite of Field Dressing)</item>
+/// <item>Antidote Craft always succeeds — 100% success rate, no DC check</item>
+/// <item>Triage is evaluated by other abilities to apply bonus healing inline</item>
 /// </list>
 /// <para>Dice roll methods are marked <c>internal virtual</c> for unit test overriding.
 /// Requires <c>InternalsVisibleTo</c> in the project file to be accessible from test assemblies.</para>
@@ -47,6 +52,80 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
     /// Healing bonus granted by the Steady Hands passive ability.
     /// </summary>
     private const int SteadyHandsHealingBonus = 2;
+
+    // ===== Tier 2 Cost Constants (v0.20.6b) =====
+
+    /// <summary>
+    /// AP cost for the Emergency Surgery high-impact healing ability.
+    /// </summary>
+    private const int EmergencySurgeryApCost = 3;
+
+    /// <summary>
+    /// Number of Medical Supplies consumed by Emergency Surgery.
+    /// </summary>
+    private const int EmergencySurgerySupplyCost = 1;
+
+    /// <summary>
+    /// AP cost for the Antidote Craft ability.
+    /// </summary>
+    private const int AntidoteCraftApCost = 2;
+
+    /// <summary>
+    /// Number of Herbs supplies consumed by Antidote Craft.
+    /// </summary>
+    private const int AntidoteCraftHerbsCost = 1;
+
+    /// <summary>
+    /// Number of Plant Fiber materials required for Antidote Craft.
+    /// </summary>
+    private const int AntidoteCraftPlantFiberCost = 2;
+
+    /// <summary>
+    /// Number of Mineral Powder materials required for Antidote Craft.
+    /// </summary>
+    private const int AntidoteCraftMineralPowderCost = 1;
+
+    /// <summary>
+    /// Maximum quality rating for crafted items.
+    /// </summary>
+    private const int MaxCraftedQuality = 5;
+
+    /// <summary>
+    /// Minimum material quality for the high-quality material bonus.
+    /// All materials must be at or above this threshold for +1 quality bonus.
+    /// </summary>
+    private const int HighQualityMaterialThreshold = 3;
+
+    /// <summary>
+    /// Radius in spaces for the Triage passive ability evaluation.
+    /// </summary>
+    private const int TriageRadius = 5;
+
+    /// <summary>
+    /// Healing bonus multiplier for the Triage passive.
+    /// Most wounded ally receives BaseHealing * this value as bonus.
+    /// </summary>
+    private const float TriageBonusMultiplier = 0.5f;
+
+    /// <summary>
+    /// Recovery bonus for targets in the Recovering condition (+3).
+    /// </summary>
+    private const int RecoveryBonusRecovering = 3;
+
+    /// <summary>
+    /// Recovery bonus for targets in the Incapacitated condition (+1).
+    /// </summary>
+    private const int RecoveryBonusIncapacitated = 1;
+
+    /// <summary>
+    /// Recovery bonus for targets in the Dying condition (+4, maximum).
+    /// </summary>
+    private const int RecoveryBonusDying = 4;
+
+    /// <summary>
+    /// Recipe name for the Basic Antidote crafting recipe.
+    /// </summary>
+    private const string BasicAntidoteRecipeName = "Basic Antidote";
 
     // ===== Tier Unlock PP Requirements =====
 
@@ -307,6 +386,363 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
         return result;
     }
 
+    // ===== Tier 2 Ability Methods (v0.20.6b) =====
+
+    /// <inheritdoc />
+    public EmergencySurgeryResult? ExecuteEmergencySurgery(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetCurrentHp,
+        int targetMaxHp,
+        RecoveryCondition targetCondition)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBoneSetter(player))
+        {
+            _logger.LogWarning(
+                "Emergency Surgery failed: {Player} ({PlayerId}) is not a Bone-Setter",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.EmergencySurgery))
+        {
+            _logger.LogWarning(
+                "Emergency Surgery failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < EmergencySurgeryApCost)
+        {
+            _logger.LogWarning(
+                "Emergency Surgery failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, EmergencySurgeryApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate Medical Supply availability
+        if (!_suppliesService.ValidateSupplyAvailability(player))
+        {
+            _logger.LogWarning(
+                "Emergency Surgery failed: {Player} ({PlayerId}) has no Medical Supplies available",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Deduct AP
+        player.CurrentAP -= EmergencySurgeryApCost;
+
+        // Spend 1 Medical Supply (highest quality for emergency use)
+        var highestSupply = _suppliesService.GetHighestQualitySupply(player);
+        if (highestSupply == null)
+        {
+            // Defensive guard — shouldn't happen after validation
+            _logger.LogWarning(
+                "Emergency Surgery failed: {Player} ({PlayerId}) highest quality supply lookup " +
+                "returned null after validation passed — restoring AP",
+                player.Name, player.Id);
+            player.CurrentAP += EmergencySurgeryApCost;
+            return null;
+        }
+
+        var spentSupply = _suppliesService.SpendSupply(player, highestSupply.SupplyType);
+        if (spentSupply == null)
+        {
+            // Defensive guard — shouldn't happen after validation
+            _logger.LogWarning(
+                "Emergency Surgery failed: {Player} ({PlayerId}) supply spend returned null " +
+                "after validation passed — restoring AP",
+                player.Name, player.Id);
+            player.CurrentAP += EmergencySurgeryApCost;
+            return null;
+        }
+
+        // Roll healing dice (4d6)
+        var healingRoll = Roll4D6();
+
+        // Calculate quality bonus from consumed supply
+        var qualityBonus = _suppliesService.CalculateQualityBonus(spentSupply);
+
+        // Check Steady Hands passive bonus
+        var steadyHandsBonus = player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.SteadyHands)
+            ? SteadyHandsHealingBonus
+            : 0;
+
+        // Calculate recovery condition bonus
+        var recoveryBonus = CalculateRecoveryBonus(targetCondition);
+        var bonusTriggered = recoveryBonus > 0;
+
+        // Calculate total healing, capped at target's max HP
+        var totalHealing = healingRoll + qualityBonus + steadyHandsBonus + recoveryBonus;
+        var hpAfter = Math.Min(targetCurrentHp + totalHealing, targetMaxHp);
+
+        // Get remaining supplies count for result
+        var suppliesRemaining = player.MedicalSupplies?.GetTotalSupplyCount() ?? 0;
+
+        // Build result
+        var result = new EmergencySurgeryResult
+        {
+            TargetId = targetId,
+            TargetName = targetName,
+            HpBefore = targetCurrentHp,
+            HealingRoll = healingRoll,
+            QualityBonus = qualityBonus,
+            SteadyHandsBonus = steadyHandsBonus,
+            RecoveryBonus = recoveryBonus,
+            HpAfter = hpAfter,
+            SuppliesUsed = EmergencySurgerySupplyCost,
+            SuppliesRemaining = suppliesRemaining,
+            SupplyTypeUsed = spentSupply.SupplyType.ToString(),
+            BonusTriggered = bonusTriggered,
+            TargetCondition = bonusTriggered ? targetCondition : null
+        };
+
+        _logger.LogInformation(
+            "Emergency Surgery executed: {Player} ({PlayerId}) healed {Target} ({TargetId}). " +
+            "{HealingBreakdown}. HP: {HpBefore} → {HpAfter}/{MaxHp}. " +
+            "Recovery condition: {Condition} (bonus: +{RecoveryBonus}). " +
+            "Supply used: {SupplyType} (Quality: {Quality}). " +
+            "Supplies remaining: {Remaining}. AP remaining: {RemainingAP}",
+            player.Name, player.Id, targetName, targetId,
+            result.GetHealingBreakdown(),
+            targetCurrentHp, hpAfter, targetMaxHp,
+            targetCondition, recoveryBonus,
+            spentSupply.SupplyType, spentSupply.Quality,
+            suppliesRemaining, player.CurrentAP);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public AntidoteCraftResult? ExecuteAntidoteCraft(
+        Player player,
+        CraftingMaterial[] availableMaterials)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBoneSetter(player))
+        {
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) is not a Bone-Setter",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.AntidoteCraft))
+        {
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < AntidoteCraftApCost)
+        {
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, AntidoteCraftApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate Herbs supply availability
+        if (!_suppliesService.ValidateSupplyAvailability(player, MedicalSupplyType.Herbs))
+        {
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) has no Herbs supplies available",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Get remaining supplies count for result (before crafting)
+        var suppliesRemaining = player.MedicalSupplies?.GetTotalSupplyCount() ?? 0;
+
+        // Validate crafting materials
+        var materialsArray = availableMaterials ?? [];
+        var plantFiber = materialsArray
+            .FirstOrDefault(m => m.Type == CraftingMaterialType.PlantFiber);
+        var mineralPowder = materialsArray
+            .FirstOrDefault(m => m.Type == CraftingMaterialType.MineralPowder);
+
+        if (plantFiber == null || plantFiber.Quantity < AntidoteCraftPlantFiberCost)
+        {
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) has insufficient Plant Fiber " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, AntidoteCraftPlantFiberCost,
+                plantFiber?.Quantity ?? 0);
+            return AntidoteCraftResult.CreateFailure(
+                BasicAntidoteRecipeName,
+                $"Insufficient Plant Fiber (need {AntidoteCraftPlantFiberCost}, " +
+                $"have {plantFiber?.Quantity ?? 0})",
+                suppliesRemaining);
+        }
+
+        if (mineralPowder == null || mineralPowder.Quantity < AntidoteCraftMineralPowderCost)
+        {
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) has insufficient Mineral Powder " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, AntidoteCraftMineralPowderCost,
+                mineralPowder?.Quantity ?? 0);
+            return AntidoteCraftResult.CreateFailure(
+                BasicAntidoteRecipeName,
+                $"Insufficient Mineral Powder (need {AntidoteCraftMineralPowderCost}, " +
+                $"have {mineralPowder?.Quantity ?? 0})",
+                suppliesRemaining);
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Deduct AP
+        player.CurrentAP -= AntidoteCraftApCost;
+
+        // Spend 1 Herbs supply
+        var spentHerbs = _suppliesService.SpendSupply(player, MedicalSupplyType.Herbs);
+        if (spentHerbs == null)
+        {
+            // Defensive guard — shouldn't happen after validation
+            _logger.LogWarning(
+                "Antidote Craft failed: {Player} ({PlayerId}) Herbs spend returned null " +
+                "after validation passed — restoring AP",
+                player.Name, player.Id);
+            player.CurrentAP += AntidoteCraftApCost;
+            return null;
+        }
+
+        // Calculate output quality: Min(Herbs quality + material bonus, MaxCraftedQuality)
+        var materialBonus = CalculateMaterialBonus(materialsArray);
+        var craftedQuality = Math.Min(spentHerbs.Quality + materialBonus, MaxCraftedQuality);
+
+        // Create the Antidote supply item
+        var antidote = MedicalSupplyItem.Create(
+            MedicalSupplyType.Antidote,
+            $"Crafted Antidote (Q{craftedQuality})",
+            "An antidote crafted from herbs and salvage materials by a skilled Bone-Setter.",
+            craftedQuality,
+            "craft");
+
+        // Add Antidote to player's Medical Supplies inventory
+        var addSuccess = _suppliesService.AddSupply(player, antidote);
+        if (!addSuccess)
+        {
+            _logger.LogWarning(
+                "Antidote Craft: {Player} ({PlayerId}) crafted Antidote but inventory is full — " +
+                "Antidote could not be added. Herbs were already consumed.",
+                player.Name, player.Id);
+        }
+
+        // Get updated supplies count for result
+        suppliesRemaining = player.MedicalSupplies?.GetTotalSupplyCount() ?? 0;
+
+        // Build materials consumed summary
+        var materialsConsumed = new Dictionary<string, int>
+        {
+            ["Herbs"] = AntidoteCraftHerbsCost,
+            ["Plant Fiber"] = AntidoteCraftPlantFiberCost,
+            ["Mineral Powder"] = AntidoteCraftMineralPowderCost
+        };
+
+        // Build result
+        var result = AntidoteCraftResult.CreateSuccess(
+            BasicAntidoteRecipeName,
+            craftedQuality,
+            materialsConsumed,
+            antidote,
+            suppliesRemaining);
+
+        _logger.LogInformation(
+            "Antidote Craft executed: {Player} ({PlayerId}) crafted {Recipe} " +
+            "(Quality: {Quality}). Material bonus: +{MaterialBonus}. " +
+            "Herbs quality: {HerbsQuality}. Materials consumed: {Materials}. " +
+            "Antidote added to inventory: {AddSuccess}. " +
+            "Supplies remaining: {Remaining}. AP remaining: {RemainingAP}",
+            player.Name, player.Id, BasicAntidoteRecipeName,
+            craftedQuality, materialBonus,
+            spentHerbs.Quality, result.GetMaterialSummary(),
+            addSuccess, suppliesRemaining, player.CurrentAP);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public TriageResult? EvaluateTriage(
+        Player player,
+        TriageTarget[] alliesInRadius,
+        int baseHealing)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBoneSetter(player))
+        {
+            _logger.LogWarning(
+                "Triage evaluation skipped: {Player} ({PlayerId}) is not a Bone-Setter",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.Triage))
+        {
+            _logger.LogWarning(
+                "Triage evaluation skipped: {Player} ({PlayerId}) has not unlocked the Triage passive",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate allies in radius
+        if (alliesInRadius == null || alliesInRadius.Length == 0)
+        {
+            _logger.LogWarning(
+                "Triage evaluation skipped: no allies within {Radius}-space radius " +
+                "for {Player} ({PlayerId})",
+                TriageRadius, player.Name, player.Id);
+            return null;
+        }
+
+        // Find the most wounded ally (lowest HP percentage)
+        var mostWounded = alliesInRadius
+            .OrderBy(a => a.HpPercentage)
+            .First();
+
+        // Calculate bonus healing: base × multiplier, rounded down via integer cast
+        var bonusHealing = (int)(baseHealing * TriageBonusMultiplier);
+
+        // Build result
+        var result = new TriageResult
+        {
+            MostWoundedTargetId = mostWounded.TargetId,
+            MostWoundedTargetName = mostWounded.TargetName,
+            MostWoundedHpPercentage = mostWounded.HpPercentage,
+            TargetsInRadius = alliesInRadius.Length,
+            BaseHealing = baseHealing
+        };
+
+        _logger.LogInformation(
+            "Triage evaluated: {Player} ({PlayerId}) identified {Target} ({TargetId}) " +
+            "as most wounded ({HpPercent:P0} HP). {BonusSummary}. " +
+            "Allies in radius: {AlliesCount}",
+            player.Name, player.Id,
+            mostWounded.TargetName, mostWounded.TargetId,
+            mostWounded.HpPercentage, result.GetBonusSummary(),
+            alliesInRadius.Length);
+
+        return result;
+    }
+
     // ===== Utility Methods =====
 
     /// <inheritdoc />
@@ -326,14 +762,26 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
         {
             var isReady = abilityId switch
             {
+                // Tier 1 abilities
                 BoneSetterAbilityId.FieldDressing =>
                     player.CurrentAP >= FieldDressingApCost && hasSupplies,
 
                 BoneSetterAbilityId.Diagnose =>
                     player.CurrentAP >= DiagnoseApCost,
 
-                // Passive abilities are always "ready" (they apply automatically)
+                // Tier 1 passive — always ready when unlocked
                 BoneSetterAbilityId.SteadyHands => true,
+
+                // Tier 2 abilities
+                BoneSetterAbilityId.EmergencySurgery =>
+                    player.CurrentAP >= EmergencySurgeryApCost && hasSupplies,
+
+                BoneSetterAbilityId.AntidoteCraft =>
+                    player.CurrentAP >= AntidoteCraftApCost &&
+                    _suppliesService.ValidateSupplyAvailability(player, MedicalSupplyType.Herbs),
+
+                // Tier 2 passive — always ready when unlocked
+                BoneSetterAbilityId.Triage => true,
 
                 _ => false
             };
@@ -402,7 +850,63 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
              + Random.Shared.Next(1, 7);
     }
 
+    /// <summary>
+    /// Rolls 4d6 for Emergency Surgery base healing.
+    /// </summary>
+    /// <returns>Sum of four d6 rolls (range: 4–24).</returns>
+    /// <remarks>
+    /// Marked <c>internal virtual</c> to allow test subclasses to provide deterministic values.
+    /// Double the dice pool of Field Dressing's 2d6, reflecting the higher-impact Tier 2 healing.
+    /// </remarks>
+    internal virtual int Roll4D6()
+    {
+        return Random.Shared.Next(1, 7)
+             + Random.Shared.Next(1, 7)
+             + Random.Shared.Next(1, 7)
+             + Random.Shared.Next(1, 7);
+    }
+
     // ===== Private Helper Methods =====
+
+    /// <summary>
+    /// Calculates the recovery condition bonus for Emergency Surgery.
+    /// More critical conditions yield higher bonuses to reward triage prioritization.
+    /// </summary>
+    /// <param name="condition">The target's current recovery condition.</param>
+    /// <returns>
+    /// The recovery bonus value: 0 (Active), +1 (Incapacitated), +3 (Recovering),
+    /// +4 (Dying), 0 (Dead or unknown).
+    /// </returns>
+    private static int CalculateRecoveryBonus(RecoveryCondition condition)
+    {
+        return condition switch
+        {
+            RecoveryCondition.Active => 0,
+            RecoveryCondition.Incapacitated => RecoveryBonusIncapacitated,
+            RecoveryCondition.Recovering => RecoveryBonusRecovering,
+            RecoveryCondition.Dying => RecoveryBonusDying,
+            RecoveryCondition.Dead => 0,
+            _ => 0
+        };
+    }
+
+    /// <summary>
+    /// Calculates the material quality bonus for Antidote Craft.
+    /// If all crafting materials are at or above the high-quality threshold, grants +1 bonus.
+    /// </summary>
+    /// <param name="materials">Array of crafting materials used in the recipe.</param>
+    /// <returns>+1 if all materials are Quality 3+, otherwise 0.</returns>
+    private static int CalculateMaterialBonus(CraftingMaterial[] materials)
+    {
+        if (materials == null || materials.Length == 0)
+            return 0;
+
+        // All materials must be at or above the threshold for the bonus
+        var allHighQuality = materials
+            .All(m => m.Quality >= HighQualityMaterialThreshold);
+
+        return allHighQuality ? 1 : 0;
+    }
 
     /// <summary>
     /// Classifies wound severity based on current HP as a percentage of max HP.

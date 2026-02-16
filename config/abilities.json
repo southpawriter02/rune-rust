@@ -1169,6 +1169,138 @@
           "description": "+2 to all healing roll totals"
         }
       ]
+    },
+    {
+      "id": "emergency-surgery",
+      "name": "Emergency Surgery",
+      "description": "Perform high-impact emergency surgery on a wounded ally, healing 4d6 HP plus quality bonus, Steady Hands bonus, and a recovery condition bonus based on the target's severity. Uses the highest quality Medical Supply available. Targets in Recovering, Incapacitated, or Dying conditions receive additional healing.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "medical-supplies",
+      "costAmount": 1,
+      "apCost": 3,
+      "cooldown": 0,
+      "targetType": "SingleAlly",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 2,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "heal",
+        "medical",
+        "tier2",
+        "active",
+        "coherent"
+      ],
+      "effects": [
+        {
+          "type": "Heal",
+          "dice": "4d6",
+          "qualityBonus": "supplyQuality - 1",
+          "qualityRange": "0-4",
+          "passiveBonus": "SteadyHands:+2",
+          "recoveryBonus": {
+            "Active": 0,
+            "Incapacitated": 1,
+            "Recovering": 3,
+            "Dying": 4
+          },
+          "supplySelection": "HighestQuality"
+        }
+      ]
+    },
+    {
+      "id": "antidote-craft",
+      "name": "Antidote Craft",
+      "description": "Craft an Antidote from Herbs and salvage materials. Consumes 1 Herbs supply, 2 Plant Fiber, and 1 Mineral Powder. Always succeeds (100% success rate). Output quality is Herbs quality + material bonus (capped at 5). High-quality materials (all Q3+) grant +1 quality bonus.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "medical-supplies",
+      "costResourceSpecificType": "Herbs",
+      "costAmount": 1,
+      "apCost": 2,
+      "cooldown": 0,
+      "targetType": "Self",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "crafting",
+        "medical",
+        "tier2",
+        "active",
+        "coherent"
+      ],
+      "effects": [
+        {
+          "type": "Craft",
+          "recipe": "Basic Antidote",
+          "successRate": 1.0,
+          "output": "Antidote",
+          "outputQuality": "HerbsQuality + MaterialBonus",
+          "maxQuality": 5,
+          "requirements": {
+            "Herbs": 1,
+            "PlantFiber": 2,
+            "MineralPowder": 1
+          },
+          "materialBonus": {
+            "condition": "AllMaterialsQ3+",
+            "bonus": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "triage",
+      "name": "Triage",
+      "description": "Your medical instincts identify the most critically wounded ally within 5 spaces. When you heal any ally, the most wounded target in Triage radius receives a +50% healing bonus (×1.5 multiplier, rounded down). Always active when unlocked.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "type": "Passive",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 5,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 0,
+      "durationUnit": "Persistent",
+      "tags": [
+        "passive",
+        "medical",
+        "tier2",
+        "healing-bonus",
+        "coherent"
+      ],
+      "effects": [
+        {
+          "type": "HealingBonus",
+          "multiplier": 1.5,
+          "target": "MostWounded",
+          "radius": 5,
+          "description": "+50% healing to most wounded ally within 5 spaces"
+        }
+      ]
     }
   ]
 }
