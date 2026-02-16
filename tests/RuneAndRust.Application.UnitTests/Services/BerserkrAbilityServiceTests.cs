@@ -663,4 +663,588 @@ public class BerserkrAbilityServiceTests
         // Assert
         result.Should().BeNull();
     }
+
+    // ===== Tier 3 & Capstone Tests (v0.20.5c) =====
+
+    /// <summary>
+    /// Creates a Berserkr with all Tier 1, Tier 2, and specified Tier 3 abilities unlocked.
+    /// Unlocks FuryOfTheForlorn + DeathDefiance by default (22 PP total >= 16 PP for Tier 3).
+    /// </summary>
+    private Player CreateTier3Berserkr(params BerserkrAbilityId[] extraAbilities)
+    {
+        var player = CreateTier2Berserkr(
+            BerserkrAbilityId.FuryOfTheForlorn,
+            BerserkrAbilityId.DeathDefiance);
+
+        // Initialize Death Defiance state
+        player.DeathDefianceState = DeathDefianceState.Create(player.Id);
+
+        foreach (var ability in extraAbilities)
+        {
+            player.UnlockBerserkrAbility(ability);
+        }
+
+        return player;
+    }
+
+    // ===== Fury of the Forlorn Tests =====
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_HitsAllTargets_ReturnsResult()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(85, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 30)).Returns(true);
+
+        var corruptionResult = BerserkrCorruptionRiskResult.CreateTriggered(
+            1, BerserkrCorruptionTrigger.FuryOfTheForlornUsage,
+            "Fury of the Forlorn always corrupts");
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.FuryOfTheForlorn, 85, false))
+            .Returns(corruptionResult);
+
+        // FixedD20 = 15, FixedWeaponDamage = 6, Fixed3D6 = 12 → damage = 18
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Draugr Warrior 1", 10),
+            (Guid.NewGuid(), "Draugr Warrior 2", 12),
+            (Guid.NewGuid(), "Draugr Warrior 3", 14),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.AttackRoll.Should().Be(15);
+        result.DamageDealt.Should().Be(18); // 6 weapon + 12 fury
+        result.GetHitCount().Should().Be(3); // 15 >= 10, 12, 14
+        result.GetMissCount().Should().Be(0);
+        result.TotalDamageAcrossTargets.Should().Be(54); // 18 × 3
+        result.CorruptionTriggered.Should().BeTrue();
+        result.RageSpent.Should().Be(30);
+        player.CurrentAP.Should().Be(7); // 10 - 3
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_PartialHitsMisses_SplitsCorrectly()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(90, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 30)).Returns(true);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.FuryOfTheForlorn, 90, false))
+            .Returns(BerserkrCorruptionRiskResult.CreateTriggered(
+                1, BerserkrCorruptionTrigger.FuryOfTheForlornUsage, "Always"));
+
+        // Override attack roll to 12 for this test
+        _service.FixedD20 = 12;
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Draugr 1", 10),  // hit (12 >= 10)
+            (Guid.NewGuid(), "Draugr 2", 12),  // hit (12 >= 12)
+            (Guid.NewGuid(), "Draugr 3", 15),  // miss (12 < 15)
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.GetHitCount().Should().Be(2);
+        result.GetMissCount().Should().Be(1);
+        result.WasEffective().Should().BeTrue();
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_InsufficientRage_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(20, "Test"); // Only 20 Rage, need 30
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Enemy", 10),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_RageBelow80_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(50, "Test"); // 50 Rage (above 30 cost but below 80 requirement)
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Enemy", 10),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(85, "Test");
+        player.CurrentAP = 2; // Need 3 AP
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Enemy", 10),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_NoTargets_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(85, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>();
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_AlwaysTriggersCorruption()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(85, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 30)).Returns(true);
+
+        var corruptionResult = BerserkrCorruptionRiskResult.CreateTriggered(
+            1, BerserkrCorruptionTrigger.FuryOfTheForlornUsage,
+            "Always triggers");
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.FuryOfTheForlorn, 85, false))
+            .Returns(corruptionResult);
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Enemy", 10),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionTriggered.Should().BeTrue();
+        result.CorruptionAmount.Should().Be(1);
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(player.Id, corruptionResult), Times.Once);
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_Tier3Locked_ReturnsNull()
+    {
+        // Arrange — player with FuryOfTheForlorn unlocked but insufficient PP for Tier 3
+        var player = CreateBerserkr(BerserkrAbilityId.FuryStrike);
+        player.UnlockBerserkrAbility(BerserkrAbilityId.FuryOfTheForlorn);
+        // PP: 0 (FuryStrike) + 5 (FuryOfTheForlorn) = 5 PP, need 16
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Enemy", 10),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteFuryOfTheForlorn_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange — Tier 3 PP met but ability not unlocked
+        var player = CreateTier2Berserkr();
+        // PP: 12, but FuryOfTheForlorn not unlocked
+
+        player.Rage!.Gain(85, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        var targets = new List<(Guid targetId, string targetName, int defense)>
+        {
+            (Guid.NewGuid(), "Enemy", 10),
+        };
+
+        // Act
+        var result = _service.ExecuteFuryOfTheForlorn(player, targets);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    // ===== Death Defiance Tests =====
+
+    [Test]
+    public void CheckDeathDefiance_PreventsLethalDamage()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(40, "Test");
+        _mockRageService.Setup(s => s.AddRage(player, 20, "Death Defiance")).Returns(20);
+
+        // Simulate lethal damage: player starts at 100 HP (MaxHealth), Defense = 5
+        // TakeDamage(105) → actualDamage = 105 - 5 = 100 → Health = 0
+        player.TakeDamage(105);
+        player.Health.Should().Be(0);
+
+        // Act
+        var result = _service.CheckDeathDefiance(player, 105);
+
+        // Assert
+        result.Should().BeTrue();
+        player.Health.Should().Be(1); // Healed to 1 HP
+        player.DeathDefianceState!.HasTriggeredThisCombat.Should().BeTrue();
+        _mockRageService.Verify(s => s.AddRage(player, 20, "Death Defiance"), Times.Once);
+    }
+
+    [Test]
+    public void CheckDeathDefiance_NonLethalDamage_ReturnsFalse()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+
+        // Take some damage but survive
+        player.TakeDamage(10); // 10 - 5 defense = 5 actual → HP = 95
+        player.Health.Should().BeGreaterThan(0);
+
+        // Act
+        var result = _service.CheckDeathDefiance(player, 10);
+
+        // Assert
+        result.Should().BeFalse();
+        player.DeathDefianceState!.HasTriggeredThisCombat.Should().BeFalse();
+    }
+
+    [Test]
+    public void CheckDeathDefiance_GrantsTwentyRage()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        _mockRageService.Setup(s => s.AddRage(player, 20, "Death Defiance")).Returns(20);
+
+        player.TakeDamage(105); // HP → 0
+        player.Health.Should().Be(0);
+
+        // Act
+        _service.CheckDeathDefiance(player, 105);
+
+        // Assert
+        _mockRageService.Verify(
+            s => s.AddRage(player, 20, "Death Defiance"), Times.Once);
+    }
+
+    [Test]
+    public void CheckDeathDefiance_CannotTriggerTwice()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        _mockRageService.Setup(s => s.AddRage(player, 20, "Death Defiance")).Returns(20);
+
+        // First lethal hit — triggers Death Defiance
+        player.TakeDamage(105);
+        _service.CheckDeathDefiance(player, 105);
+        player.Health.Should().Be(1);
+
+        // Second lethal hit — should NOT trigger
+        player.TakeDamage(6); // 6 - 5 defense = 1 actual → HP = 0
+        player.Health.Should().Be(0);
+
+        // Act
+        var result = _service.CheckDeathDefiance(player, 6);
+
+        // Assert
+        result.Should().BeFalse(); // Already used this combat
+    }
+
+    [Test]
+    public void CheckDeathDefiance_AbilityNotUnlocked_ReturnsFalse()
+    {
+        // Arrange — create player without Death Defiance
+        var player = CreateTier2Berserkr();
+        player.TakeDamage(105);
+        player.Health.Should().Be(0);
+
+        // Act
+        var result = _service.CheckDeathDefiance(player, 105);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    // ===== Avatar of Destruction Tests =====
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_At100Rage_ReturnsAvatarState()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 100)).Returns(true);
+
+        var corruptionResult = BerserkrCorruptionRiskResult.CreateTriggered(
+            2, BerserkrCorruptionTrigger.CapstoneActivation,
+            "The price of ultimate power");
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.AvatarOfDestruction, 100, false))
+            .Returns(corruptionResult);
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.TurnsRemaining.Should().Be(2);
+        result.GetDamageMultiplier().Should().Be(2.0f);
+        result.IsActive().Should().BeTrue();
+        result.ImmuneToCrowdControl.Should().BeTrue();
+        result.MovementBonus.Should().Be(2);
+        result.CorruptionGenerated.Should().Be(2);
+        result.WillCauseExhaustion.Should().BeTrue();
+        player.CurrentAP.Should().Be(7); // 10 - 3
+        player.HasUsedCapstoneThisCombat.Should().BeTrue();
+        player.IsInAvatarState.Should().BeTrue();
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_RageNot100_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(99, "Test"); // Not exactly 100
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        player.CurrentAP = 2; // Need 3
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_AlreadyUsedThisCombat_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        player.HasUsedCapstoneThisCombat = true; // Already used
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_DoublesDamageMultiplier()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 100)).Returns(true);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.AvatarOfDestruction, 100, false))
+            .Returns(BerserkrCorruptionRiskResult.CreateTriggered(
+                2, BerserkrCorruptionTrigger.CapstoneActivation, "Always"));
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.GetDamageMultiplier().Should().Be(2.0f);
+    }
+
+    [TestCase(CrowdControlType.Stun)]
+    [TestCase(CrowdControlType.Root)]
+    [TestCase(CrowdControlType.Fear)]
+    [TestCase(CrowdControlType.Charm)]
+    [TestCase(CrowdControlType.Paralyze)]
+    [TestCase(CrowdControlType.Slow)]
+    [TestCase(CrowdControlType.Prone)]
+    [TestCase(CrowdControlType.ForcedMovement)]
+    [TestCase(CrowdControlType.Sleep)]
+    [TestCase(CrowdControlType.Confusion)]
+    public void ExecuteAvatarOfDestruction_CCImmunity_AllTenTypes(CrowdControlType ccType)
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 100)).Returns(true);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.AvatarOfDestruction, 100, false))
+            .Returns(BerserkrCorruptionRiskResult.CreateTriggered(
+                2, BerserkrCorruptionTrigger.CapstoneActivation, "Always"));
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsImmuneToCC(ccType).Should().BeTrue();
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_AlwaysTriggersTwoCorruption()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 100)).Returns(true);
+
+        var corruptionResult = BerserkrCorruptionRiskResult.CreateTriggered(
+            2, BerserkrCorruptionTrigger.CapstoneActivation,
+            "The price of ultimate power");
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.AvatarOfDestruction, 100, false))
+            .Returns(corruptionResult);
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionGenerated.Should().Be(2);
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(player.Id, corruptionResult), Times.Once);
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_CapstoneLocked_ReturnsNull()
+    {
+        // Arrange — player with AvatarOfDestruction unlocked but insufficient PP for Capstone
+        var player = CreateBerserkr(
+            BerserkrAbilityId.FuryStrike,
+            BerserkrAbilityId.BloodScent,
+            BerserkrAbilityId.PainIsFuel);
+        player.UnlockBerserkrAbility(BerserkrAbilityId.RecklessAssault); // +4 = 4 PP
+        player.UnlockBerserkrAbility(BerserkrAbilityId.AvatarOfDestruction); // +6 = 10 PP < 24
+
+        player.Rage!.Gain(100, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        // Act
+        var result = _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteAvatarOfDestruction_SpendsAll100Rage()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(100, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+        _mockRageService.Setup(s => s.SpendRage(player, 100)).Returns(true);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(BerserkrAbilityId.AvatarOfDestruction, 100, false))
+            .Returns(BerserkrCorruptionRiskResult.CreateTriggered(
+                2, BerserkrCorruptionTrigger.CapstoneActivation, "Always"));
+
+        // Act
+        _service.ExecuteAvatarOfDestruction(player);
+
+        // Assert
+        _mockRageService.Verify(s => s.SpendRage(player, 100), Times.Once);
+    }
+
+    // ===== Tier 3 & Capstone Readiness Tests =====
+
+    [Test]
+    public void GetAbilityReadiness_IncludesTier3Abilities()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr();
+        player.Rage!.Gain(85, "Test");
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert
+        readiness.Should().ContainKey(BerserkrAbilityId.FuryOfTheForlorn);
+        readiness.Should().ContainKey(BerserkrAbilityId.DeathDefiance);
+
+        readiness[BerserkrAbilityId.FuryOfTheForlorn].Should().BeTrue(); // 3 AP, 80+ Rage
+        readiness[BerserkrAbilityId.DeathDefiance].Should().BeTrue(); // Passive, not triggered
+    }
+
+    [Test]
+    public void GetAbilityReadiness_AvatarRequiresExactly100Rage()
+    {
+        // Arrange
+        var player = CreateTier3Berserkr(BerserkrAbilityId.AvatarOfDestruction);
+        player.Rage!.Gain(99, "Test"); // 99, not 100
+        _mockRageService.Setup(s => s.GetRage(player)).Returns(player.Rage);
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert
+        readiness.Should().ContainKey(BerserkrAbilityId.AvatarOfDestruction);
+        readiness[BerserkrAbilityId.AvatarOfDestruction].Should().BeFalse(); // Need exactly 100
+    }
 }

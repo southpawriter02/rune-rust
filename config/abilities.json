@@ -895,6 +895,164 @@
         "Mindless",
         "FearImmune"
       ]
+    },
+    {
+      "id": "fury-of-the-forlorn",
+      "name": "Fury of the Forlorn",
+      "description": "You raise your weapon high and sweep it in a whirlwind of destruction, striking all adjacent enemies simultaneously. A single attack roll is compared against each target's Defense individually, and a single damage roll applies to all enemies hit. Requires 80+ Rage — the fury of fighting alone against many. Always triggers +1 Corruption.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "rage",
+      "costAmount": 30,
+      "apCost": 3,
+      "cooldown": 0,
+      "targetType": "AllAdjacent",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 1,
+      "rangeUnit": "Spaces",
+      "areaType": "Adjacent",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "attack",
+        "cleave",
+        "area-of-effect",
+        "tier3"
+      ],
+      "effects": [
+        {
+          "type": "CleaveAttack",
+          "attackType": "SingleRoll",
+          "damageType": "Weapon+3d6",
+          "targetSelection": "AllAdjacent",
+          "maxTargets": 8
+        },
+        {
+          "type": "RageRequirement",
+          "minimumRage": 80
+        },
+        {
+          "type": "CorruptionRisk",
+          "condition": "Always",
+          "corruptionAmount": 1,
+          "trigger": "FuryOfTheForlornUsage"
+        }
+      ]
+    },
+    {
+      "id": "death-defiance",
+      "name": "Death Defiance",
+      "description": "Your primal survival instinct refuses to let you fall. When damage would reduce your HP to 0, you instead stay at 1 HP and gain 20 Rage from the near-death fury. This ability can only trigger once per combat encounter and resets after rest or a new combat. No Corruption risk — this is survival, not dark power.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "PerCombat",
+      "tags": [
+        "passive",
+        "survival",
+        "death-prevention",
+        "tier3"
+      ],
+      "effects": [
+        {
+          "type": "DeathPrevention",
+          "hpSetTo": 1,
+          "usesPerCombat": 1
+        },
+        {
+          "type": "OnTrigger",
+          "effect": "RageGain",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "avatar-of-destruction",
+      "name": "Avatar of Destruction",
+      "description": "You channel the totality of your fury into a devastating transformation, becoming a living weapon of annihilation. For 2 turns, all damage dealt is doubled, you are immune to all crowd control effects, and you gain +2 movement spaces per turn. Requires exactly 100 Rage — all of which is consumed. Causes Exhausted condition (1 turn) when Avatar ends. Once per combat. Always triggers +2 Corruption — the highest price of ultimate power.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "rage",
+      "costAmount": 100,
+      "apCost": 3,
+      "cooldown": 0,
+      "targetType": "Self",
+      "type": "Ultimate",
+      "unlockLevel": 4,
+      "ppCost": 6,
+      "ppPrerequisite": 24,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 2,
+      "durationUnit": "Turns",
+      "tags": [
+        "transformation",
+        "capstone",
+        "ultimate",
+        "damage-multiplier",
+        "cc-immunity"
+      ],
+      "effects": [
+        {
+          "type": "Transformation",
+          "damageMultiplier": 2.0,
+          "movementBonus": 2,
+          "duration": 2
+        },
+        {
+          "type": "CrowdControlImmunity",
+          "immuneTypes": [
+            "Stun",
+            "Root",
+            "Fear",
+            "Charm",
+            "Paralyze",
+            "Slow",
+            "Prone",
+            "ForcedMovement",
+            "Sleep",
+            "Confusion"
+          ]
+        },
+        {
+          "type": "Aftermath",
+          "condition": "Exhausted",
+          "duration": 1
+        },
+        {
+          "type": "RageRequirement",
+          "exactRage": 100
+        },
+        {
+          "type": "CorruptionRisk",
+          "condition": "Always",
+          "corruptionAmount": 2,
+          "trigger": "CapstoneActivation"
+        }
+      ],
+      "restrictions": [
+        "OncePerCombat",
+        "ExactRage100"
+      ]
     }
   ]
 }

@@ -1638,6 +1638,39 @@ public class Player : IEntity
     /// </summary>
     public bool HasUnstoppableActive => UnstoppableEffect is { TurnsRemaining: > 0 };
 
+    // ===== Berserkr Tier 3 & Capstone Properties (v0.20.5c) =====
+
+    /// <summary>
+    /// Gets or sets the Death Defiance passive ability state.
+    /// Null when the player has not unlocked or initialized Death Defiance.
+    /// </summary>
+    /// <remarks>
+    /// Death Defiance prevents death once per combat by setting HP to 1
+    /// and granting +20 Rage. The state tracks whether it has been triggered
+    /// this combat encounter.
+    /// </remarks>
+    public DeathDefianceState? DeathDefianceState { get; set; }
+
+    /// <summary>
+    /// Gets or sets the active Avatar of Destruction transformation state.
+    /// Null when the player is not in the Avatar transformation.
+    /// </summary>
+    /// <remarks>
+    /// Avatar of Destruction is the Berserkr capstone ability granting
+    /// 2× damage, CC immunity, and +2 movement for 2 turns.
+    /// </remarks>
+    public AvatarState? AvatarState { get; set; }
+
+    /// <summary>
+    /// Gets whether the player has Death Defiance available (unlocked and not yet triggered this combat).
+    /// </summary>
+    public bool HasDeathDefianceAvailable => DeathDefianceState?.CanTrigger() == true;
+
+    /// <summary>
+    /// Gets whether the player is currently in the Avatar of Destruction transformation.
+    /// </summary>
+    public bool IsInAvatarState => AvatarState?.IsActive() == true;
+
     // ===== Berserkr Specialization Methods (v0.20.5a) =====
 
     /// <summary>

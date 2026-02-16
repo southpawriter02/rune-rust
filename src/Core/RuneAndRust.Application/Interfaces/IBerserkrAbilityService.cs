@@ -184,4 +184,93 @@ public interface IBerserkrAbilityService
     /// <param name="player">The player to check.</param>
     /// <returns>The active Unstoppable effect, or null if not active.</returns>
     UnstoppableEffect? GetUnstoppableEffect(Player player);
+
+    // ===== Tier 3 & Capstone Abilities (v0.20.5c) =====
+
+    /// <summary>
+    /// Executes the Fury of the Forlorn Tier 3 cleave attack against all adjacent enemies.
+    /// A single attack roll is made and compared against each target's Defense individually.
+    /// A single damage roll is applied to all targets that are hit.
+    /// </summary>
+    /// <param name="player">The Berserkr player executing the cleave.</param>
+    /// <param name="targets">
+    /// List of adjacent enemy targets with their identifiers and Defense values:
+    /// (targetId, targetName, defense).
+    /// </param>
+    /// <returns>
+    /// A <see cref="FuryCleavesResult"/> containing the attack roll, hit/miss breakdown,
+    /// damage dealt, and Corruption status if the ability was successfully executed;
+    /// null if prerequisites were not met.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Berserkr, Fury of the Forlorn unlocked, Tier 3 (16 PP),
+    /// 3+ AP, 30+ Rage, Rage ≥ 80, at least one target.</para>
+    /// <para>Execution order:</para>
+    /// <list type="number">
+    /// <item>Validate prerequisites (spec, ability, tier, AP, Rage, targets)</item>
+    /// <item>Evaluate Corruption risk BEFORE spending resources (always +1)</item>
+    /// <item>Spend 3 AP and 30 Rage</item>
+    /// <item>Roll single attack (d20) and damage (weapon + 3d6)</item>
+    /// <item>Compare attack roll vs each target's Defense individually</item>
+    /// <item>Apply Corruption, return complete result</item>
+    /// </list>
+    /// </remarks>
+    FuryCleavesResult? ExecuteFuryOfTheForlorn(
+        Player player,
+        List<(Guid targetId, string targetName, int defense)> targets);
+
+    /// <summary>
+    /// Checks and processes the Death Defiance passive when lethal damage is received.
+    /// If the player's HP has been reduced to 0 or below and Death Defiance has not
+    /// yet triggered this combat, prevents death by setting HP to 1 and grants +20 Rage.
+    /// </summary>
+    /// <param name="player">The Berserkr player who received lethal damage.</param>
+    /// <param name="damageWouldInflict">
+    /// The amount of damage that would have killed the character.
+    /// Used for state tracking and combat log display.
+    /// </param>
+    /// <returns>
+    /// True if Death Defiance triggered (player saved from death);
+    /// false if prerequisites were not met or already used this combat.
+    /// </returns>
+    /// <remarks>
+    /// <para>This method should be called AFTER <c>TakeDamage</c> has reduced
+    /// the player's HP to 0. It uses <c>Heal(1)</c> to restore the player to 1 HP.</para>
+    /// <para>No Corruption risk — Death Defiance represents survival instinct,
+    /// not Heretical power.</para>
+    /// </remarks>
+    bool CheckDeathDefiance(Player player, int damageWouldInflict);
+
+    /// <summary>
+    /// Executes the Avatar of Destruction capstone transformation.
+    /// Requires exactly 100 Rage, which is fully consumed on activation.
+    /// </summary>
+    /// <param name="player">The Berserkr player activating the capstone.</param>
+    /// <returns>
+    /// An <see cref="AvatarState"/> representing the active transformation if successful;
+    /// null if prerequisites are not met or already used this combat.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Berserkr, Avatar of Destruction unlocked, Capstone (24 PP),
+    /// 3+ AP, exactly 100 Rage, not already used this combat.</para>
+    /// <para>Effects (2 turns): 2× damage, CC immunity (all 10 types),
+    /// +2 movement spaces.</para>
+    /// <para>Aftermath: Exhausted condition (1 turn) when Avatar ends.</para>
+    /// <para>Corruption: always +2 (highest in game).</para>
+    /// </remarks>
+    AvatarState? ExecuteAvatarOfDestruction(Player player);
+
+    /// <summary>
+    /// Gets the current Death Defiance state for a player.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <returns>The Death Defiance state, or null if not initialized.</returns>
+    DeathDefianceState? GetDeathDefianceState(Player player);
+
+    /// <summary>
+    /// Gets the current Avatar of Destruction state for a player.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <returns>The active Avatar state, or null if not in transformation.</returns>
+    AvatarState? GetAvatarState(Player player);
 }

@@ -8,7 +8,7 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Berserkr specialization ability execution.
-/// Implements Tier 1 (Foundation) and Tier 2 ability logic.
+/// Implements Tier 1 (Foundation), Tier 2, Tier 3, and Capstone ability logic.
 /// </summary>
 /// <remarks>
 /// <para>Tier 1 abilities (v0.20.5a):</para>
@@ -22,6 +22,15 @@ namespace RuneAndRust.Application.Services;
 /// <item>Reckless Assault (Stance): +4 Attack (+1/20 Rage), -2 Defense, +1 Corruption/turn at 80+ Rage</item>
 /// <item>Unstoppable (Active): Ignore movement penalties for 2 turns, 1 AP + 15 Rage</item>
 /// <item>Intimidating Presence (Active): Fear-based AoE, save DC 12+Rage/20, 2 AP + 10 Rage</item>
+/// </list>
+/// <para>Tier 3 abilities (v0.20.5c):</para>
+/// <list type="bullet">
+/// <item>Fury of the Forlorn (Active): Cleave attack hitting all adjacent enemies, 3 AP + 30 Rage, requires 80+ Rage, always +1 Corruption</item>
+/// <item>Death Defiance (Passive): Prevent death once per combat, stay at 1 HP, +20 Rage on trigger, no Corruption</item>
+/// </list>
+/// <para>Capstone ability (v0.20.5c):</para>
+/// <list type="bullet">
+/// <item>Avatar of Destruction (Ultimate): 2-turn transformation with 2× damage, CC immunity, +2 movement. Costs 3 AP + exactly 100 Rage. Always +2 Corruption. Once per combat. Exhaustion aftermath.</item>
 /// </list>
 /// <para>Critical design principle: Corruption risk is evaluated BEFORE resources are spent.
 /// This ensures the player sees the risk assessment before committing to an action.</para>
@@ -81,6 +90,40 @@ public class BerserkrAbilityService : IBerserkrAbilityService
     /// Rage cost for the Intimidating Presence ability.
     /// </summary>
     private const int IntimidatingPresenceRageCost = 10;
+
+    // ===== Tier 3 & Capstone Constants (v0.20.5c) =====
+
+    /// <summary>
+    /// AP cost for the Fury of the Forlorn ability.
+    /// </summary>
+    private const int FuryOfTheForlornApCost = 3;
+
+    /// <summary>
+    /// Rage cost for the Fury of the Forlorn ability.
+    /// </summary>
+    private const int FuryOfTheForlornRageCost = 30;
+
+    /// <summary>
+    /// Minimum Rage required to use Fury of the Forlorn.
+    /// The ability requires the character to be in an Enraged state.
+    /// </summary>
+    private const int FuryOfTheForlornRageRequirement = 80;
+
+    /// <summary>
+    /// Rage gained when Death Defiance triggers.
+    /// </summary>
+    private const int DeathDefianceRageGain = 20;
+
+    /// <summary>
+    /// AP cost for the Avatar of Destruction capstone ability.
+    /// </summary>
+    private const int AvatarOfDestructionApCost = 3;
+
+    /// <summary>
+    /// Rage cost for the Avatar of Destruction capstone ability.
+    /// Requires exactly 100 Rage (all Rage consumed).
+    /// </summary>
+    private const int AvatarOfDestructionRageCost = 100;
 
     /// <summary>
     /// The specialization ID string for Berserkr.
@@ -316,6 +359,21 @@ public class BerserkrAbilityService : IBerserkrAbilityService
                 BerserkrAbilityId.IntimidatingPresence =>
                     player.CurrentAP >= IntimidatingPresenceApCost
                     && currentRage >= IntimidatingPresenceRageCost,
+
+                // Tier 3 abilities (v0.20.5c)
+                BerserkrAbilityId.FuryOfTheForlorn =>
+                    player.CurrentAP >= FuryOfTheForlornApCost
+                    && currentRage >= FuryOfTheForlornRageRequirement,
+
+                // Death Defiance is passive — always "ready" if available
+                BerserkrAbilityId.DeathDefiance => player.HasDeathDefianceAvailable,
+
+                // Capstone ability (v0.20.5c)
+                BerserkrAbilityId.AvatarOfDestruction =>
+                    !player.HasUsedCapstoneThisCombat
+                    && !player.IsInAvatarState
+                    && player.CurrentAP >= AvatarOfDestructionApCost
+                    && currentRage == AvatarOfDestructionRageCost,
 
                 _ => false
             };
@@ -720,6 +778,361 @@ public class BerserkrAbilityService : IBerserkrAbilityService
     {
         ArgumentNullException.ThrowIfNull(player);
         return player.UnstoppableEffect;
+    }
+
+    // ===== Tier 3 & Capstone Ability Methods (v0.20.5c) =====
+
+    /// <inheritdoc />
+    public FuryCleavesResult? ExecuteFuryOfTheForlorn(
+        Player player,
+        List<(Guid targetId, string targetName, int defense)> targets)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(targets);
+
+        // Validate specialization
+        if (!IsBerserkr(player))
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) is not a Berserkr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBerserkrAbilityUnlocked(BerserkrAbilityId.FuryOfTheForlorn))
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate Tier 3 PP requirement
+        if (!CanUnlockTier3(player))
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) has insufficient PP " +
+                "for Tier 3 (need {Required}, have {Available})",
+                player.Name, player.Id, Tier3PpRequirement, GetPPInvested(player));
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < FuryOfTheForlornApCost)
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, FuryOfTheForlornApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate Rage cost and minimum requirement
+        var rage = _rageService.GetRage(player);
+        if (rage == null || rage.CurrentRage < FuryOfTheForlornRageCost)
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) has insufficient Rage " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, FuryOfTheForlornRageCost, rage?.CurrentRage ?? 0);
+            return null;
+        }
+
+        // Validate Rage meets Enraged threshold (80+)
+        if (rage.CurrentRage < FuryOfTheForlornRageRequirement)
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) Rage {CurrentRage} " +
+                "is below Enraged threshold ({Required}). Must be in a state of fury",
+                player.Name, player.Id, rage.CurrentRage, FuryOfTheForlornRageRequirement);
+            return null;
+        }
+
+        // Validate at least one target
+        if (targets.Count == 0)
+        {
+            _logger.LogWarning(
+                "Fury of the Forlorn failed: {Player} ({PlayerId}) has no adjacent enemies to cleave",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // === Evaluate Corruption risk BEFORE spending resources ===
+        var corruptionResult = _corruptionService.EvaluateRisk(
+            BerserkrAbilityId.FuryOfTheForlorn,
+            rage.CurrentRage);
+
+        // Deduct AP
+        player.CurrentAP -= FuryOfTheForlornApCost;
+
+        // Spend Rage (atomic)
+        _rageService.SpendRage(player, FuryOfTheForlornRageCost);
+
+        // Roll single attack for all targets
+        var attackRoll = RollD20();
+
+        // Roll damage once (weapon + 3d6), applied to all hit targets
+        var weaponDamage = RollWeaponDamage();
+        var furyDamage = Roll3D6();
+        var totalDamage = weaponDamage + furyDamage;
+
+        // Compare attack roll against each target's defense individually
+        var targetsHit = new List<Guid>();
+        var targetsMissed = new List<Guid>();
+
+        foreach (var (targetId, targetName, defense) in targets)
+        {
+            if (attackRoll >= defense)
+            {
+                targetsHit.Add(targetId);
+                _logger.LogInformation(
+                    "Fury of the Forlorn: {Target} ({TargetId}) HIT " +
+                    "(attack {AttackRoll} ≥ defense {Defense}) — {Damage} damage",
+                    targetName, targetId, attackRoll, defense, totalDamage);
+            }
+            else
+            {
+                targetsMissed.Add(targetId);
+                _logger.LogInformation(
+                    "Fury of the Forlorn: {Target} ({TargetId}) MISSED " +
+                    "(attack {AttackRoll} < defense {Defense})",
+                    targetName, targetId, attackRoll, defense);
+            }
+        }
+
+        // Apply Corruption (always triggered since ability requires 80+ Rage)
+        if (corruptionResult.IsTriggered)
+        {
+            _corruptionService.ApplyCorruption(player.Id, corruptionResult);
+        }
+
+        // Build result
+        var result = new FuryCleavesResult
+        {
+            AttackRoll = attackRoll,
+            TargetsHit = targetsHit,
+            TargetsMissed = targetsMissed,
+            DamageDealt = totalDamage,
+            RageSpent = FuryOfTheForlornRageCost,
+            CorruptionTriggered = corruptionResult.IsTriggered
+        };
+
+        _logger.LogInformation(
+            "Fury of the Forlorn executed: {Player} ({PlayerId}). " +
+            "Attack: {AttackRoll}. Damage: {WeaponDamage} (weapon) + {FuryDamage} (3d6) = {TotalDamage}. " +
+            "Hit: {HitCount}/{TotalTargets} targets. Total damage dealt: {TotalDamageAcross}. " +
+            "Rage spent: {RageSpent}. AP remaining: {RemainingAP}. " +
+            "Corruption: {CorruptionStatus}",
+            player.Name, player.Id,
+            attackRoll, weaponDamage, furyDamage, totalDamage,
+            result.GetHitCount(), targets.Count, result.TotalDamageAcrossTargets,
+            FuryOfTheForlornRageCost, player.CurrentAP,
+            corruptionResult.IsTriggered ? $"+{corruptionResult.CorruptionAmount}" : "none");
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public bool CheckDeathDefiance(Player player, int damageWouldInflict)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBerserkr(player))
+        {
+            _logger.LogInformation(
+                "Death Defiance check skipped: {Player} ({PlayerId}) is not a Berserkr",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBerserkrAbilityUnlocked(BerserkrAbilityId.DeathDefiance))
+        {
+            _logger.LogInformation(
+                "Death Defiance check skipped: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // Validate Death Defiance state exists
+        if (player.DeathDefianceState == null)
+        {
+            _logger.LogWarning(
+                "Death Defiance check failed: {Player} ({PlayerId}) has the ability " +
+                "unlocked but no DeathDefianceState initialized",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // Validate it can still trigger (not already used this combat)
+        if (!player.DeathDefianceState.CanTrigger())
+        {
+            _logger.LogInformation(
+                "Death Defiance already triggered this combat for {Player} ({PlayerId}) — " +
+                "cannot prevent death again",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // Check if player's HP is at 0 (damage already applied via TakeDamage)
+        if (player.Health > 0)
+        {
+            _logger.LogInformation(
+                "Death Defiance not needed: {Player} ({PlayerId}) HP is {Health} (still alive)",
+                player.Name, player.Id, player.Health);
+            return false;
+        }
+
+        // === Death Defiance triggers! ===
+
+        // Record the trigger with damage data
+        player.DeathDefianceState.Trigger(damageWouldInflict);
+
+        // Restore player to 1 HP (from 0)
+        player.Heal(1);
+
+        // Grant Rage from near-death fury
+        _rageService.AddRage(player, DeathDefianceRageGain, "Death Defiance");
+
+        _logger.LogWarning(
+            "DEATH DEFIANCE TRIGGERED: {Player} ({PlayerId}) survived lethal damage! " +
+            "Damage prevented: {DamagePrevented}. HP restored to {Health}. " +
+            "+{RageGain} Rage gained from near-death fury. " +
+            "Death Defiance is now SPENT for this combat",
+            player.Name, player.Id, damageWouldInflict, player.Health,
+            DeathDefianceRageGain);
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public AvatarState? ExecuteAvatarOfDestruction(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBerserkr(player))
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) is not a Berserkr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBerserkrAbilityUnlocked(BerserkrAbilityId.AvatarOfDestruction))
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate Capstone PP requirement
+        if (!CanUnlockCapstone(player))
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) has insufficient PP " +
+                "for Capstone (need {Required}, have {Available})",
+                player.Name, player.Id, CapstonePpRequirement, GetPPInvested(player));
+            return null;
+        }
+
+        // Validate once-per-combat restriction
+        if (player.HasUsedCapstoneThisCombat)
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) has already used " +
+                "the capstone ability this combat",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate not already in Avatar state
+        if (player.IsInAvatarState)
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) is already in " +
+                "Avatar transformation ({TurnsRemaining} turns remaining)",
+                player.Name, player.Id, player.AvatarState!.TurnsRemaining);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < AvatarOfDestructionApCost)
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, AvatarOfDestructionApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate exactly 100 Rage required
+        var rage = _rageService.GetRage(player);
+        if (rage == null || rage.CurrentRage != AvatarOfDestructionRageCost)
+        {
+            _logger.LogWarning(
+                "Avatar of Destruction failed: {Player} ({PlayerId}) requires exactly " +
+                "{Required} Rage (have {Available}). The ultimate fury demands total commitment",
+                player.Name, player.Id, AvatarOfDestructionRageCost, rage?.CurrentRage ?? 0);
+            return null;
+        }
+
+        // === Evaluate Corruption risk BEFORE spending resources (always +2) ===
+        var corruptionResult = _corruptionService.EvaluateRisk(
+            BerserkrAbilityId.AvatarOfDestruction,
+            rage.CurrentRage);
+
+        // Deduct AP
+        player.CurrentAP -= AvatarOfDestructionApCost;
+
+        // Consume ALL Rage (100 → 0)
+        _rageService.SpendRage(player, AvatarOfDestructionRageCost);
+
+        // Create and apply Avatar transformation state
+        var avatarState = AvatarState.Create(player.Id);
+        player.AvatarState = avatarState;
+
+        // Mark capstone as used this combat
+        player.HasUsedCapstoneThisCombat = true;
+
+        // Apply Corruption (always triggered: +2)
+        if (corruptionResult.IsTriggered)
+        {
+            _corruptionService.ApplyCorruption(player.Id, corruptionResult);
+        }
+
+        _logger.LogWarning(
+            "AVATAR OF DESTRUCTION ACTIVATED: {Player} ({PlayerId}) transforms into a living weapon! " +
+            "Duration: {Duration} turns. Damage multiplier: {Multiplier}×. " +
+            "CC immunity: {CCTypes} types. Movement bonus: +{MovementBonus} spaces. " +
+            "All {RageSpent} Rage consumed. AP remaining: {RemainingAP}. " +
+            "Corruption: +{CorruptionAmount} (the price of ultimate power). " +
+            "Exhaustion will follow when Avatar ends",
+            player.Name, player.Id,
+            avatarState.TurnsRemaining, avatarState.DamageMultiplier,
+            avatarState.CCImmunityList.Count, avatarState.MovementBonus,
+            AvatarOfDestructionRageCost, player.CurrentAP,
+            corruptionResult.CorruptionAmount);
+
+        return avatarState;
+    }
+
+    /// <inheritdoc />
+    public DeathDefianceState? GetDeathDefianceState(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        return player.DeathDefianceState;
+    }
+
+    /// <inheritdoc />
+    public AvatarState? GetAvatarState(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        return player.AvatarState;
     }
 
     // ===== Dice Roll Methods (internal virtual for testing) =====
