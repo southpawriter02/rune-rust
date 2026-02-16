@@ -46,6 +46,55 @@
           "abilities": ["word-of-unmaking"]
         }
       ]
+    },
+    {
+      "id": "berserkr",
+      "name": "Berserkr",
+      "displayName": "Berserker",
+      "tagline": "Fury Unleashed",
+      "archetypeId": "warrior",
+      "description": "Savage combatants who channel escalating Rage into devastating attacks. Higher fury unlocks more powerful abilities but risks Corruption through the Heretical Path.",
+      "specialResource": {
+        "id": "rage",
+        "name": "Rage",
+        "maxValue": 100,
+        "startValue": 0,
+        "generationMethod": "combat",
+        "painIsFuelGain": 5,
+        "bloodScentGain": 10,
+        "outOfCombatDecay": 10,
+        "restoreOnRest": false
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 0,
+          "abilities": ["fury-strike", "blood-scent", "pain-is-fuel"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["reckless-assault", "unstoppable", "intimidating-presence"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["fury-of-the-forlorn", "death-defiance"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["avatar-of-destruction"]
+        }
+      ]
     }
   ]
 }

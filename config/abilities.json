@@ -637,6 +637,264 @@
           ]
         }
       ]
+    },
+    {
+      "id": "fury-strike",
+      "name": "Fury Strike",
+      "description": "Channel your Rage into a devastating attack, dealing weapon damage plus 3d6 Fury damage. A natural 20 adds an additional 1d6 critical bonus. Corruption risk at 80+ Rage.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "rage",
+      "costAmount": 20,
+      "apCost": 2,
+      "cooldown": 0,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "tags": [
+        "damage",
+        "melee",
+        "rage",
+        "tier1"
+      ],
+      "effects": [
+        {
+          "type": "Damage",
+          "dice": "weapon + 3d6",
+          "criticalBonus": "1d6",
+          "criticalCondition": "natural20",
+          "scalingStat": "attack"
+        },
+        {
+          "type": "CorruptionRisk",
+          "rageThreshold": 80,
+          "corruptionAmount": 1,
+          "trigger": "FuryStrikeWhileEnraged"
+        }
+      ]
+    },
+    {
+      "id": "blood-scent",
+      "name": "Blood Scent",
+      "description": "Your primal instincts detect weakness. Gain +10 Rage when an enemy becomes bloodied (HP ≤ 50%). Gain +1 Attack against bloodied targets.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "tags": [
+        "passive",
+        "rage-generation",
+        "detection",
+        "tier1"
+      ],
+      "effects": [
+        {
+          "type": "RageGain",
+          "value": 10,
+          "trigger": "EnemyBloodied",
+          "description": "+10 Rage when enemy first reaches ≤50% HP"
+        },
+        {
+          "type": "AttackBonus",
+          "value": 1,
+          "condition": "TargetBloodied",
+          "description": "+1 Attack against bloodied targets"
+        }
+      ]
+    },
+    {
+      "id": "pain-is-fuel",
+      "name": "Pain is Fuel",
+      "description": "Every wound feeds your fury. Gain +5 Rage whenever you take damage. No Corruption risk — pain is a natural fuel for the Berserkr.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "tags": [
+        "passive",
+        "rage-generation",
+        "defensive",
+        "tier1"
+      ],
+      "effects": [
+        {
+          "type": "RageGain",
+          "value": 5,
+          "trigger": "DamageTaken",
+          "description": "+5 Rage per damage instance received"
+        }
+      ]
+    },
+    {
+      "id": "reckless-assault",
+      "name": "Reckless Assault",
+      "description": "Enter a stance of reckless aggression. Gain +4 Attack but suffer -2 Defense. Attack bonus increases by +1 per 20 Rage (maximum +9 at 100 Rage). Each turn at 80+ Rage risks +1 Corruption.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": null,
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "targetType": "Self",
+      "type": "Stance",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "tags": [
+        "stance",
+        "attack",
+        "offense",
+        "tier2"
+      ],
+      "effects": [
+        {
+          "type": "StanceAttackBonus",
+          "baseBonus": 4,
+          "scaling": {
+            "per": 20,
+            "resource": "rage",
+            "bonus": 1,
+            "max": 5
+          }
+        },
+        {
+          "type": "StanceDefensePenalty",
+          "value": -2
+        },
+        {
+          "type": "CorruptionRisk",
+          "rageThreshold": 80,
+          "corruptionAmount": 1,
+          "recurring": true,
+          "trigger": "RecklessAssaultEnraged"
+        }
+      ]
+    },
+    {
+      "id": "unstoppable",
+      "name": "Unstoppable",
+      "description": "Nothing can slow your advance. For 2 turns, ignore all movement penalties including difficult terrain, slow effects, and root attempts. Advantage on saves to resist forced movement.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "rage",
+      "costAmount": 15,
+      "apCost": 1,
+      "cooldown": 0,
+      "targetType": "Self",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "duration": 2,
+      "durationUnit": "Turns",
+      "tags": [
+        "buff",
+        "movement",
+        "utility",
+        "tier2"
+      ],
+      "effects": [
+        {
+          "type": "IgnoreMovementPenalties",
+          "penalties": [
+            "DifficultTerrain",
+            "Slow",
+            "Root",
+            "Water",
+            "Entangle",
+            "ForcedMovement"
+          ]
+        },
+        {
+          "type": "SaveAdvantage",
+          "saveType": "ForcedMovement"
+        },
+        {
+          "type": "CorruptionRisk",
+          "rageThreshold": 80,
+          "corruptionAmount": 1,
+          "trigger": "UnstoppableWhileEnraged"
+        }
+      ]
+    },
+    {
+      "id": "intimidating-presence",
+      "name": "Intimidating Presence",
+      "description": "Your fury terrifies your enemies. All enemies within 4 spaces must make a Will save (DC 12 + Rage/20) or suffer -2 Attack for 3 turns. Enemies that save are immune for 24 hours. +1 Corruption per Coherent target.",
+      "classIds": [
+        "berserkr"
+      ],
+      "costResource": "rage",
+      "costAmount": 10,
+      "apCost": 2,
+      "cooldown": 0,
+      "targetType": "AllEnemies",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 4,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 3,
+      "durationUnit": "Turns",
+      "tags": [
+        "debuff",
+        "fear",
+        "crowd-control",
+        "tier2"
+      ],
+      "effects": [
+        {
+          "type": "ForceSave",
+          "saveType": "Will",
+          "baseDc": 12,
+          "dcScaling": {
+            "per": 20,
+            "resource": "rage",
+            "bonus": 1
+          }
+        },
+        {
+          "type": "OnFailedSave",
+          "effect": "AttackPenalty",
+          "value": -2,
+          "duration": 3
+        },
+        {
+          "type": "OnSuccessfulSave",
+          "effect": "Immunity",
+          "duration": "24h"
+        },
+        {
+          "type": "CorruptionRisk",
+          "condition": "TargetIsCoherent",
+          "corruptionAmount": 1,
+          "trigger": "IntimidatingCoherentTarget"
+        }
+      ],
+      "immunities": [
+        "Mindless",
+        "FearImmune"
+      ]
     }
   ]
 }

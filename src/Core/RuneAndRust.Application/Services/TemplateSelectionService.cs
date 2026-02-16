@@ -74,7 +74,7 @@ public class TemplateSelectionService : ITemplateSelectionService
             .ToList();
 
         _logger.LogDebug(
-            "Found {Count} valid templates for Biome={Biome}, Depth={Depth}",
+            "Found {TemplateCount} valid templates for Biome={BiomeId}, Depth={DepthLevel}",
             templates.Count, context.Biome, context.Depth);
 
         return templates;

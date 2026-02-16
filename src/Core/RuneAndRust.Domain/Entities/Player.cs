@@ -1594,5 +1594,107 @@ public class Player : IEntity
             .Where(t => !t.IsTriggered && !t.IsExpired())
             .ToList();
     }
+
+    // ===== Berserkr Specialization Properties (v0.20.5a) =====
+
+    /// <summary>
+    /// Gets the Berserkr's Rage resource.
+    /// Null for non-Berserkr players or before initialization.
+    /// </summary>
+    public RageResource? Rage { get; private set; }
+
+    /// <summary>
+    /// Gets the set of unlocked Berserkr abilities.
+    /// </summary>
+    private readonly HashSet<BerserkrAbilityId> _unlockedBerserkrAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Berserkr abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<BerserkrAbilityId> UnlockedBerserkrAbilities
+        => _unlockedBerserkrAbilities;
+
+    // ===== Berserkr Tier 2 Properties (v0.20.5b) =====
+
+    /// <summary>
+    /// Gets or sets the active Reckless Assault stance state.
+    /// Null when the player is not in the Reckless Assault stance.
+    /// </summary>
+    public RecklessAssaultState? RecklessAssault { get; set; }
+
+    /// <summary>
+    /// Gets or sets the active Unstoppable effect.
+    /// Null when the Unstoppable effect is not active.
+    /// </summary>
+    public UnstoppableEffect? UnstoppableEffect { get; set; }
+
+    /// <summary>
+    /// Gets whether the player is currently in the Reckless Assault stance.
+    /// </summary>
+    public bool IsInRecklessAssault => RecklessAssault != null;
+
+    /// <summary>
+    /// Gets whether the player currently has the Unstoppable effect active.
+    /// </summary>
+    public bool HasUnstoppableActive => UnstoppableEffect is { TurnsRemaining: > 0 };
+
+    // ===== Berserkr Specialization Methods (v0.20.5a) =====
+
+    /// <summary>
+    /// Initializes the Rage resource for this player at zero Rage.
+    /// </summary>
+    /// <param name="maxRage">Maximum Rage value (default 100).</param>
+    public void InitializeRageResource(int maxRage = RageResource.DefaultMaxRage)
+    {
+        Rage = RageResource.Create(maxRage);
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Berserkr ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasBerserkrAbilityUnlocked(BerserkrAbilityId abilityId)
+    {
+        return _unlockedBerserkrAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Berserkr ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockBerserkrAbility(BerserkrAbilityId abilityId)
+    {
+        _unlockedBerserkrAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Berserkr abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 0 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetBerserkrPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedBerserkrAbilities)
+        {
+            total += ability switch
+            {
+                BerserkrAbilityId.FuryStrike or
+                BerserkrAbilityId.BloodScent or
+                BerserkrAbilityId.PainIsFuel => 0,    // Tier 1: free
+                BerserkrAbilityId.RecklessAssault or
+                BerserkrAbilityId.Unstoppable or
+                BerserkrAbilityId.IntimidatingPresence => 4,  // Tier 2: 4 PP each
+                BerserkrAbilityId.FuryOfTheForlorn or
+                BerserkrAbilityId.DeathDefiance => 5,         // Tier 3: 5 PP each
+                BerserkrAbilityId.AvatarOfDestruction => 6,   // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
 }
 

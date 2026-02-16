@@ -48,6 +48,18 @@ public class GameSession : IEntity
     /// </summary>
     public DateTime LastPlayedAt { get; private set; }
 
+    /// <summary>
+    /// Gets the unique identifier of the room the player was previously in.
+    /// Used for flee mechanics and navigation history.
+    /// </summary>
+    public Guid? PreviousRoomId { get; private set; }
+
+    /// <summary>
+    /// Gets the number of turns that have elapsed in this session.
+    /// </summary>
+    public int TurnCount { get; private set; }
+
+    private readonly HashSet<Guid> _visitedRooms = [];
     private readonly HashSet<string> _revealedSolutionIds = [];
 
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
@@ -183,6 +195,17 @@ public class GameSession : IEntity
     public void UpdateLastPlayed()
     {
         LastPlayedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Advances the game by one turn, incrementing the turn counter and updating the timestamp.
+    /// </summary>
+    /// <returns>The new turn count after advancing.</returns>
+    public int AdvanceTurn()
+    {
+        TurnCount++;
+        UpdateLastPlayed();
+        return TurnCount;
     }
 
     /// <summary>
