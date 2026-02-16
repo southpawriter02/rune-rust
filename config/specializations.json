@@ -95,6 +95,57 @@
           "abilities": ["avatar-of-destruction"]
         }
       ]
+    },
+    {
+      "id": "bone-setter",
+      "name": "Bone-Setter",
+      "displayName": "Bone-Setter",
+      "tagline": "Mender of the Broken",
+      "archetypeId": "adept",
+      "description": "Combat medics who combine battlefield triage with ancient Nordic healing knowledge. The first dedicated healing specialization and the first Coherent (no Corruption) path, using consumable Medical Supplies to mend wounds and cure ailments.",
+      "specialResource": {
+        "id": "medical-supplies",
+        "name": "Medical Supplies",
+        "maxValue": 10,
+        "startValue": 5,
+        "generationMethod": "acquisition",
+        "acquisitionSources": ["salvage", "purchase", "craft", "quest_reward"],
+        "restoreOnRest": false,
+        "qualityRange": {
+          "min": 1,
+          "max": 5
+        }
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 0,
+          "abilities": ["field-dressing", "diagnose", "steady-hands"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["emergency-surgery", "antidote-craft", "triage"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["resuscitate", "preventive-care"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["miracle-worker"]
+        }
+      ]
     }
   ]
 }

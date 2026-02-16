@@ -1729,5 +1729,109 @@ public class Player : IEntity
         }
         return total;
     }
+
+    // ===== Bone-Setter Specialization Properties (v0.20.6a) =====
+
+    /// <summary>
+    /// Gets the Bone-Setter's Medical Supplies resource.
+    /// Null for non-Bone-Setter players or before initialization.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="Rage"/> which is mutable, Medical Supplies use an immutable model.
+    /// All modification operations return new instances and must be swapped via
+    /// <see cref="SetMedicalSupplies"/>.
+    /// </remarks>
+    public MedicalSuppliesResource? MedicalSupplies { get; private set; }
+
+    /// <summary>
+    /// Gets the set of unlocked Bone-Setter abilities.
+    /// </summary>
+    private readonly HashSet<BoneSetterAbilityId> _unlockedBoneSetterAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Bone-Setter abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<BoneSetterAbilityId> UnlockedBoneSetterAbilities
+        => _unlockedBoneSetterAbilities;
+
+    // ===== Bone-Setter Specialization Methods (v0.20.6a) =====
+
+    /// <summary>
+    /// Initializes the Medical Supplies resource for this player with starting supplies.
+    /// </summary>
+    /// <param name="supplies">Initial supply items to include in inventory.</param>
+    /// <param name="maxCapacity">Maximum carry capacity (default 10).</param>
+    public void InitializeMedicalSupplies(
+        IEnumerable<MedicalSupplyItem> supplies,
+        int maxCapacity = MedicalSuppliesResource.DefaultMaxCapacity)
+    {
+        MedicalSupplies = MedicalSuppliesResource.Create(supplies, maxCapacity);
+    }
+
+    /// <summary>
+    /// Initializes an empty Medical Supplies resource for this player.
+    /// </summary>
+    public void InitializeMedicalSupplies()
+    {
+        MedicalSupplies = MedicalSuppliesResource.Create();
+    }
+
+    /// <summary>
+    /// Replaces the current Medical Supplies resource with a new immutable instance.
+    /// Used after spend/add operations that return new resource instances.
+    /// </summary>
+    /// <param name="supplies">The new Medical Supplies resource instance.</param>
+    public void SetMedicalSupplies(MedicalSuppliesResource supplies)
+    {
+        MedicalSupplies = supplies;
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Bone-Setter ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasBoneSetterAbilityUnlocked(BoneSetterAbilityId abilityId)
+    {
+        return _unlockedBoneSetterAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Bone-Setter ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockBoneSetterAbility(BoneSetterAbilityId abilityId)
+    {
+        _unlockedBoneSetterAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Bone-Setter abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 0 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetBoneSetterPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedBoneSetterAbilities)
+        {
+            total += ability switch
+            {
+                BoneSetterAbilityId.FieldDressing or
+                BoneSetterAbilityId.Diagnose or
+                BoneSetterAbilityId.SteadyHands => 0,          // Tier 1: free
+                BoneSetterAbilityId.EmergencySurgery or
+                BoneSetterAbilityId.AntidoteCraft or
+                BoneSetterAbilityId.Triage => 4,               // Tier 2: 4 PP each
+                BoneSetterAbilityId.Resuscitate or
+                BoneSetterAbilityId.PreventiveCare => 5,        // Tier 3: 5 PP each
+                BoneSetterAbilityId.MiracleWorker => 6,         // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
 }
 

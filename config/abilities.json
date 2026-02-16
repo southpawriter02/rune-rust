@@ -1053,6 +1053,122 @@
         "OncePerCombat",
         "ExactRage100"
       ]
+    },
+    {
+      "id": "field-dressing",
+      "name": "Field Dressing",
+      "description": "Apply battlefield medicine to heal an ally's wounds. Heals 2d6 HP plus a bonus based on the quality of the Medical Supply consumed. If Steady Hands is unlocked, adds +2 to the healing total. No Corruption risk — this is the Coherent path of healing.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "medical-supplies",
+      "costAmount": 1,
+      "apCost": 2,
+      "cooldown": 0,
+      "targetType": "SingleAlly",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 1,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "heal",
+        "medical",
+        "support",
+        "coherent",
+        "tier1"
+      ],
+      "effects": [
+        {
+          "type": "Heal",
+          "dice": "2d6",
+          "qualityBonus": "supplyQuality - 1",
+          "qualityRange": "0-4",
+          "passiveBonus": "SteadyHands:+2"
+        }
+      ]
+    },
+    {
+      "id": "diagnose",
+      "name": "Diagnose",
+      "description": "Analyze a target's health status, revealing their current HP, wound severity, active status effects, vulnerabilities, and resistances. Targets any character — ally, enemy, or neutral. No Medical Supply cost. Information persists until the target is defeated or the encounter ends.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "targetType": "SingleAny",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 5,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Encounter",
+      "tags": [
+        "information",
+        "medical",
+        "support",
+        "coherent",
+        "tier1"
+      ],
+      "effects": [
+        {
+          "type": "Diagnose",
+          "reveals": [
+            "CurrentHP",
+            "MaxHP",
+            "WoundSeverity",
+            "StatusEffects",
+            "Vulnerabilities",
+            "Resistances"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "steady-hands",
+      "name": "Steady Hands",
+      "description": "Your practiced hands work with precision under pressure. Adds +2 to all healing roll totals from Bone-Setter abilities. This passive bonus applies automatically whenever a healing ability (Field Dressing, Emergency Surgery, Miracle Worker) is executed.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "type": "Passive",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "tags": [
+        "passive",
+        "medical",
+        "healing-bonus",
+        "coherent",
+        "tier1"
+      ],
+      "effects": [
+        {
+          "type": "HealingBonus",
+          "value": 2,
+          "appliesTo": [
+            "FieldDressing",
+            "EmergencySurgery",
+            "MiracleWorker"
+          ],
+          "description": "+2 to all healing roll totals"
+        }
+      ]
     }
   ]
 }
