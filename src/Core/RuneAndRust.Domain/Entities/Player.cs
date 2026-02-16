@@ -1860,5 +1860,96 @@ public class Player : IEntity
         }
         return total;
     }
+
+    // ===== Veiðimaðr (Hunter) Specialization Properties (v0.20.7a) =====
+
+    /// <summary>
+    /// Gets the Veiðimaðr's Quarry Marks resource for tracking marked targets.
+    /// Null for non-Veiðimaðr players or before initialization.
+    /// </summary>
+    /// <remarks>
+    /// Quarry Marks use a mutable model (like <see cref="Rage"/>) since marks are
+    /// frequently added/removed during combat. Maximum 3 simultaneous marks with
+    /// FIFO replacement when exceeded.
+    /// </remarks>
+    public QuarryMarksResource? QuarryMarks { get; private set; }
+
+    /// <summary>
+    /// Backing store for unlocked Veiðimaðr abilities.
+    /// </summary>
+    private readonly HashSet<VeidimadurAbilityId> _unlockedVeidimadurAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Veiðimaðr abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<VeidimadurAbilityId> UnlockedVeidimadurAbilities
+        => _unlockedVeidimadurAbilities;
+
+    // ===== Veiðimaðr (Hunter) Specialization Methods (v0.20.7a) =====
+
+    /// <summary>
+    /// Initializes the Quarry Marks resource for this player with default settings (max 3 marks).
+    /// </summary>
+    public void InitializeQuarryMarks()
+    {
+        QuarryMarks = QuarryMarksResource.Create();
+    }
+
+    /// <summary>
+    /// Sets the Quarry Marks resource to a specific instance (for state restoration or testing).
+    /// </summary>
+    /// <param name="quarryMarks">The Quarry Marks resource instance to assign.</param>
+    public void SetQuarryMarks(QuarryMarksResource quarryMarks)
+    {
+        QuarryMarks = quarryMarks;
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Veiðimaðr ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasVeidimadurAbilityUnlocked(VeidimadurAbilityId abilityId)
+    {
+        return _unlockedVeidimadurAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Veiðimaðr ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockVeidimadurAbility(VeidimadurAbilityId abilityId)
+    {
+        _unlockedVeidimadurAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Veiðimaðr abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 0 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetVeidimadurPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedVeidimadurAbilities)
+        {
+            total += ability switch
+            {
+                VeidimadurAbilityId.MarkQuarry or
+                VeidimadurAbilityId.KeenSenses or
+                VeidimadurAbilityId.ReadTheSigns => 0,          // Tier 1: free
+                VeidimadurAbilityId.HuntersEye or
+                VeidimadurAbilityId.TrapMastery or
+                VeidimadurAbilityId.PredatorsPatience => 4,     // Tier 2: 4 PP each
+                VeidimadurAbilityId.ApexPredator or
+                VeidimadurAbilityId.CripplingShot => 5,         // Tier 3: 5 PP each
+                VeidimadurAbilityId.ThePerfectHunt => 6,        // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
 }
 

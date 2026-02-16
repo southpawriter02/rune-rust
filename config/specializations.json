@@ -146,6 +146,53 @@
           "abilities": ["miracle-worker"]
         }
       ]
+    },
+    {
+      "id": "veidimadur",
+      "name": "Veiðimaðr",
+      "displayName": "Hunter",
+      "tagline": "Master of the Hunt",
+      "archetypeId": "skirmisher",
+      "description": "Expert trackers and hunters who mark their quarry for precision strikes. The first Coherent path Skirmisher, using discrete target-tracking Quarry Marks with FIFO replacement rather than consumable resources.",
+      "specialResource": {
+        "id": "quarry-marks",
+        "name": "Quarry Marks",
+        "maxValue": 3,
+        "startValue": 0,
+        "generationMethod": "ability",
+        "replacementPolicy": "FIFO",
+        "restoreOnRest": false
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 0,
+          "abilities": ["mark-quarry", "keen-senses", "read-the-signs"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["hunters-eye", "trap-mastery", "predators-patience"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["apex-predator", "crippling-shot"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["the-perfect-hunt"]
+        }
+      ]
     }
   ]
 }

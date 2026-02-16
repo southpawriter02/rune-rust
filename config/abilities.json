@@ -1426,6 +1426,129 @@
       "restrictions": [
         "OncePerLongRest"
       ]
+    },
+    {
+      "id": "mark-quarry",
+      "name": "Mark Quarry",
+      "description": "Designates a visible enemy within 12 spaces as quarry, granting +2 to all attack rolls against that target. The mark persists until the target is defeated, escapes, or is replaced by a newer mark (FIFO policy). Maximum 3 active marks.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "UntilRemoved",
+      "tags": [
+        "targeting",
+        "mark",
+        "coherent",
+        "active",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "Mark",
+          "hitBonus": 2,
+          "maxMarks": 3,
+          "replacementPolicy": "FIFO",
+          "description": "+2 to all attack rolls against marked target"
+        }
+      ]
+    },
+    {
+      "id": "keen-senses",
+      "name": "Keen Senses",
+      "description": "The Veiðimaðr's heightened senses grant +1 to all Perception and Investigation checks. This passive bonus is always active once unlocked and stacks with Read the Signs ability bonus.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "tags": [
+        "passive",
+        "perception",
+        "investigation",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "PassiveBonus",
+          "perceptionBonus": 1,
+          "investigationBonus": 1,
+          "description": "+1 to all Perception and Investigation checks"
+        }
+      ]
+    },
+    {
+      "id": "read-the-signs",
+      "name": "Read the Signs",
+      "description": "Examines creature tracks or remains to reveal information about creatures in the area. Skill check: 1d20 + Read the Signs (+4) + Keen Senses (+1 if unlocked) vs DC determined by track freshness. On success, reveals creature type, count, time passed, direction of travel, and condition.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "TracksOrRemains",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 1,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "investigation",
+        "tracking",
+        "coherent",
+        "active",
+        "hunter",
+        "skill-check"
+      ],
+      "effects": [
+        {
+          "type": "SkillCheck",
+          "abilityBonus": 4,
+          "keenSensesBonus": 1,
+          "dcScaling": {
+            "Fresh": 10,
+            "Recent": 12,
+            "Worn": 15,
+            "Ancient": 18,
+            "Unclear": 20
+          },
+          "description": "Investigate tracks to reveal creature information"
+        }
+      ]
     }
   ]
 }
