@@ -15,6 +15,8 @@ namespace RuneAndRust.Application.UnitTests.Services;
 /// and Steady Hands (passive bonus integration).
 /// Tests Tier 2 abilities: Emergency Surgery (high-impact heal), Antidote Craft
 /// (crafting), and Triage (passive healing bonus).
+/// Tests Tier 3 abilities: Resuscitate (revival), Preventive Care (passive aura).
+/// Tests Capstone ability: Miracle Worker (full heal + condition clear).
 /// </summary>
 [TestFixture]
 public class BoneSetterAbilityServiceTests
@@ -1050,5 +1052,530 @@ public class BoneSetterAbilityServiceTests
 
         // Assert
         pp.Should().Be(12); // 3 × 4 PP (Tier 2 abilities)
+    }
+
+    // ===== Tier 3 Test Helpers (v0.20.6c) =====
+
+    /// <summary>
+    /// Creates a Tier 3 Bone-Setter player with all Tier 1, Tier 2, and Tier 3 abilities unlocked.
+    /// Unlocks: 3 T1 (0 PP each) + 3 T2 (4 PP each = 12 PP) + 2 T3 (5 PP each = 10 PP) → 22 PP total.
+    /// Also initializes with 3 supplies (2 Bandages + 1 Suture) to support Resuscitate's 2-supply cost.
+    /// </summary>
+    private static Player CreateTier3BoneSetter(params BoneSetterAbilityId[] extraAbilities)
+    {
+        var player = new Player("Test Bone-Setter");
+        player.SetSpecialization("bone-setter");
+
+        // Initialize with multiple supplies for Resuscitate testing (needs 2)
+        var supplies = new[]
+        {
+            MedicalSupplyItem.Create(MedicalSupplyType.Bandage, "Bandage", "Basic bandage", 2, "salvage"),
+            MedicalSupplyItem.Create(MedicalSupplyType.Bandage, "Bandage", "Basic bandage", 1, "salvage"),
+            MedicalSupplyItem.Create(MedicalSupplyType.Suture, "Suture", "Quality suture", 3, "craft")
+        };
+        player.InitializeMedicalSupplies(supplies);
+
+        player.CurrentAP = 10;
+
+        // Unlock all T1 + T2 + T3 abilities
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.FieldDressing);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.Diagnose);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.SteadyHands);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.EmergencySurgery);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.AntidoteCraft);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.Triage);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.Resuscitate);
+        player.UnlockBoneSetterAbility(BoneSetterAbilityId.PreventiveCare);
+
+        foreach (var ability in extraAbilities)
+            player.UnlockBoneSetterAbility(ability);
+
+        return player;
+    }
+
+    /// <summary>
+    /// Sets up the mock supplies service for Resuscitate scenarios.
+    /// Resuscitate consumes 2 supplies sequentially (lowest quality first).
+    /// Uses <see cref="MockSequence"/> to ensure correct ordering.
+    /// </summary>
+    /// <param name="player">The player to configure mocks for.</param>
+    private void SetupResuscitateMocks(Player player)
+    {
+        var firstSupply = MedicalSupplyItem.Create(
+            MedicalSupplyType.Bandage, "Bandage", "Basic bandage", 1, "salvage");
+        var secondSupply = MedicalSupplyItem.Create(
+            MedicalSupplyType.Bandage, "Bandage", "Basic bandage", 2, "salvage");
+
+        _mockSuppliesService
+            .SetupSequence(s => s.SpendSupply(player))
+            .Returns(firstSupply)
+            .Returns(secondSupply);
+    }
+
+    // ===== Resuscitate Tests (v0.20.6c) =====
+
+    [Test]
+    public void ExecuteResuscitate_WithValidPrereqs_ReturnsRevivalResult()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+        var targetId = Guid.NewGuid();
+        SetupResuscitateMocks(player);
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, targetId, "Fallen Warrior", 0);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.TargetName.Should().Be("Fallen Warrior");
+        result.TargetId.Should().Be(targetId);
+        result.HpBefore.Should().Be(0);
+        result.HpAfter.Should().Be(1);                       // Always 1 HP
+        result.SuppliesUsed.Should().Be(2);                   // Always 2 supplies
+        result.Method.Should().Be(ResurrectionMethod.SkillBasedResuscitation);
+        result.ResurrectionMessage.Should().NotBeEmpty();
+        player.CurrentAP.Should().Be(6);                      // 10 - 4
+    }
+
+    [Test]
+    public void ExecuteResuscitate_TargetNotAtZeroHp_ReturnsNull()
+    {
+        // Arrange — target at 5 HP (not unconscious)
+        var player = CreateTier3BoneSetter();
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, Guid.NewGuid(), "Fighter", 5);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(10); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteResuscitate_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+        player.CurrentAP = 3; // Need 4
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, Guid.NewGuid(), "Target", 0);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(3); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteResuscitate_InsufficientSupplies_ReturnsNull()
+    {
+        // Arrange — only 1 supply available, need 2
+        var player = CreateBoneSetter(
+            BoneSetterAbilityId.FieldDressing,
+            BoneSetterAbilityId.Diagnose,
+            BoneSetterAbilityId.SteadyHands,
+            BoneSetterAbilityId.EmergencySurgery,
+            BoneSetterAbilityId.AntidoteCraft,
+            BoneSetterAbilityId.Triage,
+            BoneSetterAbilityId.Resuscitate,
+            BoneSetterAbilityId.PreventiveCare);
+
+        // CreateBoneSetter only provides 1 supply — insufficient for Resuscitate
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, Guid.NewGuid(), "Target", 0);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(10); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteResuscitate_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange — Bone-Setter without Resuscitate
+        var player = CreateTier2BoneSetter();
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, Guid.NewGuid(), "Target", 0);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteResuscitate_DeductsCorrectAP()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+        SetupResuscitateMocks(player);
+        player.CurrentAP = 6;
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, Guid.NewGuid(), "Warrior", 0);
+
+        // Assert
+        result.Should().NotBeNull();
+        player.CurrentAP.Should().Be(2); // 6 - 4
+    }
+
+    [Test]
+    public void ExecuteResuscitate_SpendsTwoSupplies()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+        SetupResuscitateMocks(player);
+
+        // Act
+        _service.ExecuteResuscitate(player, Guid.NewGuid(), "Warrior", 0);
+
+        // Assert — SpendSupply called exactly twice
+        _mockSuppliesService.Verify(
+            s => s.SpendSupply(player),
+            Times.Exactly(2));
+    }
+
+    [Test]
+    public void ExecuteResuscitate_WrongSpecialization_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("Test Berserkr");
+        player.SetSpecialization("berserkr");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.ExecuteResuscitate(player, Guid.NewGuid(), "Target", 0);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    // ===== Preventive Care Tests (v0.20.6c) =====
+
+    [Test]
+    public void EvaluatePreventiveCare_WithAllies_ReturnsAura()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+        var allyIds = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+
+        // Act
+        var result = _service.EvaluatePreventiveCare(player, allyIds);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.BoneSetterId.Should().Be(player.Id);
+        result.AuraRadius.Should().Be(5);
+        result.PoisonSaveBonus.Should().Be(1);
+        result.DiseaseSaveBonus.Should().Be(1);
+        result.IsActive.Should().BeTrue();
+        result.AffectedAllyIds.Should().HaveCount(3);
+        result.AffectedAllyIds.Should().BeEquivalentTo(allyIds);
+    }
+
+    [Test]
+    public void EvaluatePreventiveCare_NoAllies_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+
+        // Act
+        var result = _service.EvaluatePreventiveCare(player, []);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void EvaluatePreventiveCare_NullAllies_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+
+        // Act
+        var result = _service.EvaluatePreventiveCare(player, null!);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void EvaluatePreventiveCare_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange — Bone-Setter without Preventive Care
+        var player = CreateTier2BoneSetter();
+        var allyIds = new[] { Guid.NewGuid() };
+
+        // Act
+        var result = _service.EvaluatePreventiveCare(player, allyIds);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void EvaluatePreventiveCare_AuraContainsCorrectAllyIds()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+        var ally1 = Guid.NewGuid();
+        var ally2 = Guid.NewGuid();
+        var allyIds = new[] { ally1, ally2 };
+
+        // Act
+        var result = _service.EvaluatePreventiveCare(player, allyIds);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.AffectedAllyIds.Should().Contain(ally1);
+        result.AffectedAllyIds.Should().Contain(ally2);
+        result.AffectedAllyIds.Should().HaveCount(2);
+    }
+
+    // ===== Miracle Worker Tests (v0.20.6c) =====
+
+    [Test]
+    public void ExecuteMiracleWorker_WithValidPrereqs_FullHeals()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+        var targetId = Guid.NewGuid();
+        var conditions = new[] { "Poisoned", "Blinded" };
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, targetId, "Dying Cleric", 15, 100, conditions);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.TargetName.Should().Be("Dying Cleric");
+        result.TargetId.Should().Be(targetId);
+        result.HpBefore.Should().Be(15);
+        result.HpAfter.Should().Be(100);                     // Full HP restore
+        result.MaxHp.Should().Be(100);
+        result.TotalHealing.Should().Be(85);                  // 100 - 15
+        result.MiracleMessage.Should().NotBeEmpty();
+        player.CurrentAP.Should().Be(5);                      // 10 - 5
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_ClearsConditions()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+        var conditions = new[] { "Poisoned", "Blinded", "Stunned" };
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Fighter", 20, 80, conditions);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.ConditionsCleared.Should().Be(3);
+        result.ClearedConditions.Should().Contain("Poisoned");
+        result.ClearedConditions.Should().Contain("Blinded");
+        result.ClearedConditions.Should().Contain("Stunned");
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+        player.CurrentAP = 4; // Need 5
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Target", 30, 100, []);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(4); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_AlreadyUsedThisRest_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+        player.HasUsedMiracleWorkerThisRestCycle = true; // Already used
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Target", 30, 100, []);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(10); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange — Tier 3 player without capstone
+        var player = CreateTier3BoneSetter();
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Target", 30, 100, []);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_SetsRestCycleCooldown()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+        player.HasUsedMiracleWorkerThisRestCycle.Should().BeFalse(); // Precondition
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Target", 30, 100, []);
+
+        // Assert
+        result.Should().NotBeNull();
+        player.HasUsedMiracleWorkerThisRestCycle.Should().BeTrue(); // Cooldown set
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_NoSupplyCost()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+
+        // Act
+        _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Target", 30, 100, []);
+
+        // Assert — SpendSupply should never be called
+        _mockSuppliesService.Verify(
+            s => s.SpendSupply(It.IsAny<Player>()),
+            Times.Never);
+        _mockSuppliesService.Verify(
+            s => s.SpendSupply(It.IsAny<Player>(), It.IsAny<MedicalSupplyType>()),
+            Times.Never);
+    }
+
+    [Test]
+    public void ExecuteMiracleWorker_EmptyConditions_ReturnsResult()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+
+        // Act
+        var result = _service.ExecuteMiracleWorker(
+            player, Guid.NewGuid(), "Healthy Ranger", 50, 80, []);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.ConditionsCleared.Should().Be(0);
+        result.ClearedConditions.Should().BeEmpty();
+        result.HpAfter.Should().Be(80);
+        result.TotalHealing.Should().Be(30);
+    }
+
+    // ===== Tier 3 Readiness & PP Tests (v0.20.6c) =====
+
+    [Test]
+    public void GetAbilityReadiness_IncludesTier3Abilities()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter();
+
+        _mockSuppliesService
+            .Setup(s => s.ValidateSupplyAvailability(player))
+            .Returns(true);
+        _mockSuppliesService
+            .Setup(s => s.ValidateSupplyAvailability(player, MedicalSupplyType.Herbs))
+            .Returns(true);
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert — Tier 3 abilities
+        readiness.Should().ContainKey(BoneSetterAbilityId.Resuscitate);
+        readiness[BoneSetterAbilityId.Resuscitate].Should().BeTrue();
+
+        readiness.Should().ContainKey(BoneSetterAbilityId.PreventiveCare);
+        readiness[BoneSetterAbilityId.PreventiveCare].Should().BeTrue(); // Passive always ready
+    }
+
+    [Test]
+    public void GetAbilityReadiness_ResuscitateNeedsTwoSupplies()
+    {
+        // Arrange — player with only 1 supply (CreateBoneSetter default)
+        var player = CreateBoneSetter(
+            BoneSetterAbilityId.FieldDressing,
+            BoneSetterAbilityId.Diagnose,
+            BoneSetterAbilityId.SteadyHands,
+            BoneSetterAbilityId.EmergencySurgery,
+            BoneSetterAbilityId.AntidoteCraft,
+            BoneSetterAbilityId.Triage,
+            BoneSetterAbilityId.Resuscitate,
+            BoneSetterAbilityId.PreventiveCare);
+
+        _mockSuppliesService
+            .Setup(s => s.ValidateSupplyAvailability(player))
+            .Returns(true);
+        _mockSuppliesService
+            .Setup(s => s.ValidateSupplyAvailability(player, MedicalSupplyType.Herbs))
+            .Returns(false);
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert — only 1 supply, Resuscitate needs 2
+        readiness.Should().ContainKey(BoneSetterAbilityId.Resuscitate);
+        readiness[BoneSetterAbilityId.Resuscitate].Should().BeFalse();
+    }
+
+    [Test]
+    public void GetAbilityReadiness_MiracleWorkerOnCooldown_ReturnsFalse()
+    {
+        // Arrange
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+        player.HasUsedMiracleWorkerThisRestCycle = true; // Cooldown active
+
+        _mockSuppliesService
+            .Setup(s => s.ValidateSupplyAvailability(player))
+            .Returns(true);
+        _mockSuppliesService
+            .Setup(s => s.ValidateSupplyAvailability(player, MedicalSupplyType.Herbs))
+            .Returns(true);
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert
+        readiness.Should().ContainKey(BoneSetterAbilityId.MiracleWorker);
+        readiness[BoneSetterAbilityId.MiracleWorker].Should().BeFalse();
+    }
+
+    [Test]
+    public void CanUnlockTier3_WithTier3Unlocked_ReturnsTrue()
+    {
+        // Arrange — T3 player has 22 PP invested (3×0 + 3×4 + 2×5 = 22)
+        var player = CreateTier3BoneSetter();
+
+        // Act
+        var canUnlock = _service.CanUnlockTier3(player);
+
+        // Assert
+        canUnlock.Should().BeTrue(); // 22 PP ≥ 16 PP requirement
+    }
+
+    [Test]
+    public void GetPPInvested_WithAllAbilities_ReturnsCorrectTotal()
+    {
+        // Arrange — All 9 abilities: 3 T1 (0) + 3 T2 (12) + 2 T3 (10) + 1 Capstone (6) = 28
+        var player = CreateTier3BoneSetter(BoneSetterAbilityId.MiracleWorker);
+
+        // Act
+        var pp = _service.GetPPInvested(player);
+
+        // Assert
+        pp.Should().Be(28); // 0 + 12 + 10 + 6
     }
 }

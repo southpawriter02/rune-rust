@@ -6,8 +6,9 @@ namespace RuneAndRust.Application.Interfaces;
 
 /// <summary>
 /// Defines the contract for Bone-Setter specialization ability execution.
-/// Handles Tier 1 (Foundation) and Tier 2 (Discipline) ability logic including
-/// healing, diagnosis, crafting, and tactical triage evaluation.
+/// Handles Tier 1 (Foundation), Tier 2 (Discipline), Tier 3 (Mastery),
+/// and Capstone (Ultimate) ability logic including healing, diagnosis,
+/// crafting, tactical triage, revival, aura protection, and miraculous restoration.
 /// </summary>
 /// <remarks>
 /// <para>The Bone-Setter is the first dedicated healing specialization and the first
@@ -24,6 +25,15 @@ namespace RuneAndRust.Application.Interfaces;
 /// <item>Emergency Surgery (Active): 4d6 + quality + recovery bonus healing, costs 3 AP + 1 supply</item>
 /// <item>Antidote Craft (Active): Creates Antidote from Herbs + crafting materials, costs 2 AP</item>
 /// <item>Triage (Passive): +50% healing bonus to most wounded ally within 5-space radius</item>
+/// </list>
+/// <para>Tier 3 abilities (5 PP each, 16 PP invested required):</para>
+/// <list type="bullet">
+/// <item>Resuscitate (Active): Revives unconscious target to 1 HP, costs 4 AP + 2 supplies</item>
+/// <item>Preventive Care (Passive): Aura granting +1 poison/disease saves within 5 spaces</item>
+/// </list>
+/// <para>Capstone ability (6 PP, 24 PP invested required):</para>
+/// <list type="bullet">
+/// <item>Miracle Worker (Active): Full HP restore + clear all conditions, costs 5 AP, once per long rest</item>
 /// </list>
 /// </remarks>
 public interface IBoneSetterAbilityService
@@ -180,6 +190,98 @@ public interface IBoneSetterAbilityService
         Player player,
         TriageTarget[] alliesInRadius,
         int baseHealing);
+
+    // ===== Tier 3 Abilities (v0.20.6c) =====
+
+    /// <summary>
+    /// Executes the Resuscitate active ability to revive an unconscious target to 1 HP.
+    /// Emergency revival that brings a downed ally back to consciousness at minimal health.
+    /// </summary>
+    /// <param name="player">The Bone-Setter player performing the resuscitation.</param>
+    /// <param name="targetId">Unique identifier of the unconscious target.</param>
+    /// <param name="targetName">Display name of the unconscious target.</param>
+    /// <param name="targetCurrentHp">Target's current HP (must be 0 for unconscious).</param>
+    /// <returns>
+    /// A <see cref="ResuscitateResult"/> containing the revival outcome
+    /// if the ability was successfully executed; null if prerequisites were not met.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Bone-Setter specialization, Resuscitate unlocked, 4+ AP,
+    /// at least 2 Medical Supplies available, target must be at 0 HP (unconscious).</para>
+    /// <para>Execution order:</para>
+    /// <list type="number">
+    /// <item>Validate prerequisites (spec, ability, AP, target HP == 0, supplies ≥ 2)</item>
+    /// <item>Spend 4 AP and 2 Medical Supplies (lowest quality first, sequential)</item>
+    /// <item>Set target HP to 1 (barely conscious)</item>
+    /// <item>Return result with revival details</item>
+    /// </list>
+    /// <para>No Corruption risk — Resuscitate follows the Coherent path.</para>
+    /// <para>No cooldown — can be used unlimited times per combat if supplies allow.</para>
+    /// </remarks>
+    ResuscitateResult? ExecuteResuscitate(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetCurrentHp);
+
+    /// <summary>
+    /// Evaluates the Preventive Care passive aura to identify allies receiving protection.
+    /// Pure evaluation with no AP or supply cost — always active when unlocked.
+    /// </summary>
+    /// <param name="player">The Bone-Setter player providing the aura.</param>
+    /// <param name="allyIdsInRadius">Array of ally identifiers within the 5-space aura radius.</param>
+    /// <returns>
+    /// A <see cref="PreventiveCareAura"/> describing the aura's current effect and affected allies;
+    /// null if the ability is not unlocked, player is not a Bone-Setter, or no allies are in radius.
+    /// </returns>
+    /// <remarks>
+    /// <para>Preventive Care is a passive ability — always active when unlocked, no AP or supply cost.</para>
+    /// <para>All allies within 5 spaces receive +1 to saving throws against poison and disease.</para>
+    /// <para>No Corruption risk — Preventive Care follows the Coherent path.</para>
+    /// </remarks>
+    PreventiveCareAura? EvaluatePreventiveCare(
+        Player player,
+        Guid[] allyIdsInRadius);
+
+    // ===== Capstone Ability (v0.20.6c) =====
+
+    /// <summary>
+    /// Executes the Miracle Worker capstone ability for full HP restoration and condition clearing.
+    /// The pinnacle of the Bone-Setter's medical art — a once-per-long-rest miracle.
+    /// </summary>
+    /// <param name="player">The Bone-Setter player performing the miracle.</param>
+    /// <param name="targetId">Unique identifier of the target being healed.</param>
+    /// <param name="targetName">Display name of the target being healed.</param>
+    /// <param name="targetCurrentHp">Target's current HP before miracle.</param>
+    /// <param name="targetMaxHp">Target's maximum HP (restored to this value).</param>
+    /// <param name="activeConditions">Collection of active negative condition names on the target.</param>
+    /// <returns>
+    /// A <see cref="MiracleWorkerResult"/> containing the full restoration outcome
+    /// if the ability was successfully executed; null if prerequisites were not met.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Bone-Setter specialization, Miracle Worker unlocked, 5+ AP,
+    /// not already used this rest cycle (<see cref="Domain.Entities.Player.HasUsedMiracleWorkerThisRestCycle"/>).</para>
+    /// <para>Execution order:</para>
+    /// <list type="number">
+    /// <item>Validate prerequisites (spec, ability, cooldown, AP)</item>
+    /// <item>Spend 5 AP (no supply cost)</item>
+    /// <item>Set rest cycle cooldown flag</item>
+    /// <item>Restore target to full HP and clear all negative conditions</item>
+    /// <item>Return result with complete miracle breakdown</item>
+    /// </list>
+    /// <para>No Corruption risk — Miracle Worker follows the Coherent path.</para>
+    /// <para>No supply cost — the miracle transcends material requirements.</para>
+    /// <para>Cooldown resets on long rest via
+    /// <see cref="Domain.Entities.Player.ResetMiracleWorkerCooldown"/>.</para>
+    /// </remarks>
+    MiracleWorkerResult? ExecuteMiracleWorker(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetCurrentHp,
+        int targetMaxHp,
+        IEnumerable<string> activeConditions);
 
     // ===== Utility Methods =====
 

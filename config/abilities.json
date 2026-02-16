@@ -1301,6 +1301,131 @@
           "description": "+50% healing to most wounded ally within 5 spaces"
         }
       ]
+    },
+    {
+      "id": "resuscitate",
+      "name": "Resuscitate",
+      "description": "Perform emergency resuscitation on an unconscious ally, pulling them back from the brink of death. Revives the target to 1 HP — barely conscious but alive. Consumes 2 Medical Supplies (lowest quality first, sequentially). No cooldown — can be used repeatedly if supplies allow.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "medical-supplies",
+      "costAmount": 2,
+      "apCost": 4,
+      "cooldown": 0,
+      "targetType": "SingleAlly",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 1,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "revival",
+        "medical",
+        "tier3",
+        "active",
+        "coherent"
+      ],
+      "effects": [
+        {
+          "type": "Resurrect",
+          "method": "SkillBasedResuscitation",
+          "targetHpAfter": 1,
+          "requiresTargetHp": 0,
+          "supplySelection": "LowestQuality",
+          "suppliesConsumed": 2,
+          "description": "Revives unconscious target to 1 HP"
+        }
+      ]
+    },
+    {
+      "id": "preventive-care",
+      "name": "Preventive Care",
+      "description": "Your medical vigilance creates a protective aura around you. All allies within 5 spaces gain +1 to saving throws against poison and disease effects. Always active when unlocked — no AP or supply cost. The aura moves with you.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "targetType": "None",
+      "type": "Passive",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 5,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 0,
+      "durationUnit": "Persistent",
+      "tags": [
+        "passive",
+        "medical",
+        "tier3",
+        "aura",
+        "coherent"
+      ],
+      "effects": [
+        {
+          "type": "SavingThrowBonus",
+          "poisonBonus": 1,
+          "diseaseBonus": 1,
+          "radius": 5,
+          "target": "AllAlliesInRadius",
+          "description": "+1 to poison and disease saving throws for allies within 5 spaces"
+        }
+      ]
+    },
+    {
+      "id": "miracle-worker",
+      "name": "Miracle Worker",
+      "description": "The pinnacle of the Bone-Setter's medical art. Fully restores a target to maximum HP and clears all negative conditions (poison, disease, blinded, stunned, etc.). Does NOT clear Corruption (metaphysical, not medical). No Medical Supply cost — the miracle transcends material requirements. Usable once per long rest.",
+      "classIds": [
+        "bone-setter"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 5,
+      "cooldown": 1,
+      "cooldownUnit": "LongRest",
+      "targetType": "SingleAlly",
+      "type": "Active",
+      "unlockLevel": 4,
+      "ppCost": 6,
+      "ppPrerequisite": 24,
+      "range": 1,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "heal",
+        "medical",
+        "capstone",
+        "active",
+        "coherent",
+        "condition-clear"
+      ],
+      "effects": [
+        {
+          "type": "FullHeal",
+          "restoresToMaxHp": true,
+          "clearsConditions": true,
+          "excludedConditions": [
+            "Corruption"
+          ],
+          "noSupplyCost": true,
+          "description": "Full HP restoration and all negative condition clearing"
+        }
+      ],
+      "restrictions": [
+        "OncePerLongRest"
+      ]
     }
   ]
 }

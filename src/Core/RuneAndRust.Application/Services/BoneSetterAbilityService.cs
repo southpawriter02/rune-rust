@@ -8,7 +8,8 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Bone-Setter specialization ability execution.
-/// Implements Tier 1 (Foundation) and Tier 2 (Discipline) abilities.
+/// Implements Tier 1 (Foundation), Tier 2 (Discipline), Tier 3 (Mastery),
+/// and Capstone (Ultimate) abilities.
 /// </summary>
 /// <remarks>
 /// <para>The Bone-Setter is the first dedicated healing specialization and the first Coherent
@@ -16,6 +17,8 @@ namespace RuneAndRust.Application.Services;
 /// service, unlike <see cref="BerserkrAbilityService"/>.</para>
 /// <para>Tier 1 abilities: Field Dressing, Diagnose, Steady Hands (v0.20.6a).</para>
 /// <para>Tier 2 abilities: Emergency Surgery, Antidote Craft, Triage (v0.20.6b).</para>
+/// <para>Tier 3 abilities: Resuscitate, Preventive Care (v0.20.6c).</para>
+/// <para>Capstone ability: Miracle Worker (v0.20.6c).</para>
 /// <para>Key design decisions:</para>
 /// <list type="bullet">
 /// <item>No Corruption evaluation step — all Bone-Setter abilities follow the Coherent path</item>
@@ -25,6 +28,8 @@ namespace RuneAndRust.Application.Services;
 /// <item>Emergency Surgery uses highest-quality supply (opposite of Field Dressing)</item>
 /// <item>Antidote Craft always succeeds — 100% success rate, no DC check</item>
 /// <item>Triage is evaluated by other abilities to apply bonus healing inline</item>
+/// <item>Resuscitate consumes 2 supplies sequentially (lowest quality first)</item>
+/// <item>Miracle Worker uses long-rest cooldown (not per-combat)</item>
 /// </list>
 /// <para>Dice roll methods are marked <c>internal virtual</c> for unit test overriding.
 /// Requires <c>InternalsVisibleTo</c> in the project file to be accessible from test assemblies.</para>
@@ -126,6 +131,38 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
     /// Recipe name for the Basic Antidote crafting recipe.
     /// </summary>
     private const string BasicAntidoteRecipeName = "Basic Antidote";
+
+    // ===== Tier 3 Cost Constants (v0.20.6c) =====
+
+    /// <summary>
+    /// AP cost for the Resuscitate revival ability.
+    /// </summary>
+    private const int ResuscitateApCost = 4;
+
+    /// <summary>
+    /// Number of Medical Supplies consumed by Resuscitate.
+    /// Two supplies are spent sequentially (lowest quality first).
+    /// </summary>
+    private const int ResuscitateSupplyCost = 2;
+
+    /// <summary>
+    /// Radius in spaces for the Preventive Care passive aura.
+    /// All allies within this distance receive saving throw bonuses.
+    /// </summary>
+    private const int PreventiveCareRadius = 5;
+
+    /// <summary>
+    /// Saving throw bonus granted by the Preventive Care aura
+    /// against poison and disease effects.
+    /// </summary>
+    private const int PreventiveCareSaveBonus = 1;
+
+    // ===== Capstone Cost Constants (v0.20.6c) =====
+
+    /// <summary>
+    /// AP cost for the Miracle Worker capstone ability.
+    /// </summary>
+    private const int MiracleWorkerApCost = 5;
 
     // ===== Tier Unlock PP Requirements =====
 
@@ -743,6 +780,279 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
         return result;
     }
 
+    // ===== Tier 3 Ability Methods (v0.20.6c) =====
+
+    /// <inheritdoc />
+    public ResuscitateResult? ExecuteResuscitate(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetCurrentHp)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBoneSetter(player))
+        {
+            _logger.LogWarning(
+                "Resuscitate failed: {Player} ({PlayerId}) is not a Bone-Setter",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.Resuscitate))
+        {
+            _logger.LogWarning(
+                "Resuscitate failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < ResuscitateApCost)
+        {
+            _logger.LogWarning(
+                "Resuscitate failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, ResuscitateApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate target is unconscious (0 HP)
+        if (targetCurrentHp != 0)
+        {
+            _logger.LogWarning(
+                "Resuscitate failed: target {Target} ({TargetId}) is not unconscious " +
+                "(current HP: {CurrentHp}, must be 0)",
+                targetName, targetId, targetCurrentHp);
+            return null;
+        }
+
+        // Validate sufficient Medical Supplies (need 2, not just 1)
+        var totalSupplies = player.MedicalSupplies?.GetTotalSupplyCount() ?? 0;
+        if (totalSupplies < ResuscitateSupplyCost)
+        {
+            _logger.LogWarning(
+                "Resuscitate failed: {Player} ({PlayerId}) has insufficient Medical Supplies " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, ResuscitateSupplyCost, totalSupplies);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Deduct AP
+        player.CurrentAP -= ResuscitateApCost;
+
+        // Spend first Medical Supply (lowest quality first)
+        var firstSupply = _suppliesService.SpendSupply(player);
+        if (firstSupply == null)
+        {
+            // Defensive guard — shouldn't happen after validation
+            _logger.LogWarning(
+                "Resuscitate failed: {Player} ({PlayerId}) first supply spend returned null " +
+                "after validation passed — restoring AP",
+                player.Name, player.Id);
+            player.CurrentAP += ResuscitateApCost;
+            return null;
+        }
+
+        // Spend second Medical Supply (lowest quality first)
+        var secondSupply = _suppliesService.SpendSupply(player);
+        if (secondSupply == null)
+        {
+            // Defensive guard — first supply already consumed, partial spend
+            _logger.LogWarning(
+                "Resuscitate failed: {Player} ({PlayerId}) second supply spend returned null " +
+                "after first supply was already consumed — restoring AP. " +
+                "Warning: first supply ({SupplyType}, Q{Quality}) was already spent.",
+                player.Name, player.Id, firstSupply.SupplyType, firstSupply.Quality);
+            player.CurrentAP += ResuscitateApCost;
+            return null;
+        }
+
+        // Get remaining supplies count for result
+        var suppliesRemaining = player.MedicalSupplies?.GetTotalSupplyCount() ?? 0;
+
+        // Build result — target revived to 1 HP
+        var result = new ResuscitateResult
+        {
+            TargetId = targetId,
+            TargetName = targetName,
+            HpBefore = targetCurrentHp,
+            SuppliesRemaining = suppliesRemaining,
+            Method = ResurrectionMethod.SkillBasedResuscitation,
+            ResurrectionMessage = $"{player.Name} performs emergency resuscitation on {targetName}, " +
+                                  "pulling them back from the brink of death."
+        };
+
+        _logger.LogInformation(
+            "Resuscitate executed: {Player} ({PlayerId}) revived {Target} ({TargetId}). " +
+            "HP: {HpBefore} → {HpAfter}. Method: {Method}. " +
+            "Supplies used: {SuppliesUsed} (1st: {FirstType} Q{FirstQuality}, " +
+            "2nd: {SecondType} Q{SecondQuality}). " +
+            "Supplies remaining: {Remaining}. AP remaining: {RemainingAP}",
+            player.Name, player.Id, targetName, targetId,
+            targetCurrentHp, result.HpAfter, result.Method,
+            ResuscitateSupplyCost,
+            firstSupply.SupplyType, firstSupply.Quality,
+            secondSupply.SupplyType, secondSupply.Quality,
+            suppliesRemaining, player.CurrentAP);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public PreventiveCareAura? EvaluatePreventiveCare(
+        Player player,
+        Guid[] allyIdsInRadius)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBoneSetter(player))
+        {
+            _logger.LogWarning(
+                "Preventive Care evaluation skipped: {Player} ({PlayerId}) is not a Bone-Setter",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.PreventiveCare))
+        {
+            _logger.LogWarning(
+                "Preventive Care evaluation skipped: {Player} ({PlayerId}) has not unlocked " +
+                "the Preventive Care passive",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate allies in radius
+        if (allyIdsInRadius == null || allyIdsInRadius.Length == 0)
+        {
+            _logger.LogWarning(
+                "Preventive Care evaluation skipped: no allies within {Radius}-space radius " +
+                "for {Player} ({PlayerId})",
+                PreventiveCareRadius, player.Name, player.Id);
+            return null;
+        }
+
+        // === No AP cost — passive ability ===
+        // === No supply cost — passive ability ===
+        // === No Corruption evaluation — Coherent path ===
+
+        // Build result
+        var result = new PreventiveCareAura
+        {
+            BoneSetterId = player.Id,
+            AffectedAllyIds = allyIdsInRadius.ToList().AsReadOnly()
+        };
+
+        _logger.LogInformation(
+            "Preventive Care evaluated: {Player} ({PlayerId}) aura active. " +
+            "Radius: {Radius} spaces. Bonus: +{PoisonBonus} poison saves, " +
+            "+{DiseaseBonus} disease saves. Allies affected: {AllyCount}. " +
+            "{AuraSummary}",
+            player.Name, player.Id,
+            result.AuraRadius, result.PoisonSaveBonus,
+            result.DiseaseSaveBonus, allyIdsInRadius.Length,
+            result.GetAuraSummary());
+
+        return result;
+    }
+
+    // ===== Capstone Ability Methods (v0.20.6c) =====
+
+    /// <inheritdoc />
+    public MiracleWorkerResult? ExecuteMiracleWorker(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetCurrentHp,
+        int targetMaxHp,
+        IEnumerable<string> activeConditions)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsBoneSetter(player))
+        {
+            _logger.LogWarning(
+                "Miracle Worker failed: {Player} ({PlayerId}) is not a Bone-Setter",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasBoneSetterAbilityUnlocked(BoneSetterAbilityId.MiracleWorker))
+        {
+            _logger.LogWarning(
+                "Miracle Worker failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate long-rest cooldown
+        if (player.HasUsedMiracleWorkerThisRestCycle)
+        {
+            _logger.LogWarning(
+                "Miracle Worker failed: {Player} ({PlayerId}) has already used Miracle Worker " +
+                "this rest cycle. Next available after long rest.",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < MiracleWorkerApCost)
+        {
+            _logger.LogWarning(
+                "Miracle Worker failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, MiracleWorkerApCost, player.CurrentAP);
+            return null;
+        }
+
+        // === No supply cost — Miracle Worker transcends material requirements ===
+        // === No Corruption evaluation — Coherent path ===
+
+        // Deduct AP
+        player.CurrentAP -= MiracleWorkerApCost;
+
+        // Set long-rest cooldown
+        player.HasUsedMiracleWorkerThisRestCycle = true;
+
+        // Materialize conditions list
+        var conditionsList = activeConditions?.ToList() ?? [];
+
+        // Build result — full HP restoration + condition clearing
+        var result = new MiracleWorkerResult
+        {
+            TargetId = targetId,
+            TargetName = targetName,
+            HpBefore = targetCurrentHp,
+            MaxHp = targetMaxHp,
+            ClearedConditions = conditionsList.AsReadOnly(),
+            MiracleMessage = $"{player.Name} performs a miraculous act of healing on {targetName}, " +
+                             "restoring them to perfect health and cleansing all ailments."
+        };
+
+        _logger.LogInformation(
+            "Miracle Worker executed: {Player} ({PlayerId}) performed miracle on " +
+            "{Target} ({TargetId}). HP: {HpBefore} → {HpAfter}/{MaxHp} " +
+            "(+{TotalHealing} healing). Conditions cleared: {ConditionsCleared} " +
+            "({ClearedList}). No supply cost. Cooldown set — next available after long rest. " +
+            "AP remaining: {RemainingAP}",
+            player.Name, player.Id, targetName, targetId,
+            targetCurrentHp, result.HpAfter, targetMaxHp,
+            result.TotalHealing, result.ConditionsCleared,
+            conditionsList.Count > 0 ? string.Join(", ", conditionsList) : "None",
+            player.CurrentAP);
+
+        return result;
+    }
+
     // ===== Utility Methods =====
 
     /// <inheritdoc />
@@ -782,6 +1092,19 @@ public class BoneSetterAbilityService : IBoneSetterAbilityService
 
                 // Tier 2 passive — always ready when unlocked
                 BoneSetterAbilityId.Triage => true,
+
+                // Tier 3 abilities
+                BoneSetterAbilityId.Resuscitate =>
+                    player.CurrentAP >= ResuscitateApCost &&
+                    (player.MedicalSupplies?.GetTotalSupplyCount() ?? 0) >= ResuscitateSupplyCost,
+
+                // Tier 3 passive — always ready when unlocked
+                BoneSetterAbilityId.PreventiveCare => true,
+
+                // Capstone — requires AP and long-rest cooldown not spent
+                BoneSetterAbilityId.MiracleWorker =>
+                    !player.HasUsedMiracleWorkerThisRestCycle &&
+                    player.CurrentAP >= MiracleWorkerApCost,
 
                 _ => false
             };

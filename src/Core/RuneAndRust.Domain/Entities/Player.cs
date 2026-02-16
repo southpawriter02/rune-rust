@@ -1293,6 +1293,19 @@ public class Player : IEntity
     public bool HasUsedCapstoneThisCombat { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the Miracle Worker capstone has been used this rest cycle.
+    /// Unlike <see cref="HasUsedCapstoneThisCombat"/> which resets per combat,
+    /// this flag persists until a long rest via <see cref="ResetMiracleWorkerCooldown"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Introduced in v0.20.6c for the Bone-Setter Capstone ability.</para>
+    /// <para>Miracle Worker is once per long rest — a much longer cooldown than
+    /// per-combat abilities. This separate flag ensures the cooldown survives
+    /// combat resets.</para>
+    /// </remarks>
+    public bool HasUsedMiracleWorkerThisRestCycle { get; set; }
+
+    /// <summary>
     /// Gets or sets the current action points available this turn.
     /// </summary>
     public int CurrentAP { get; set; }
@@ -1803,6 +1816,20 @@ public class Player : IEntity
     public void UnlockBoneSetterAbility(BoneSetterAbilityId abilityId)
     {
         _unlockedBoneSetterAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Resets the Miracle Worker long-rest cooldown, allowing it to be used again.
+    /// Should be called when the player completes a long rest.
+    /// </summary>
+    /// <remarks>
+    /// <para>Introduced in v0.20.6c for the Bone-Setter Capstone ability.</para>
+    /// <para>This is separate from combat reset logic — Miracle Worker's cooldown
+    /// persists across multiple combats until a long rest occurs.</para>
+    /// </remarks>
+    public void ResetMiracleWorkerCooldown()
+    {
+        HasUsedMiracleWorkerThisRestCycle = false;
     }
 
     /// <summary>
