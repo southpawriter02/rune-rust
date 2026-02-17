@@ -90,10 +90,15 @@ public class SeidkonaCorruptionService : ISeidkonaCorruptionService
             SeidkonaAbilityId.AetherAttunement => SeidkonaCorruptionRiskResult.CreateSafe(
                 "Aether Attunement is a passive ability — no Corruption risk"),
 
-            // === Future T2/T3 abilities: generic high-resonance check ===
+            // === Tier 2 active abilities: generic high-resonance check (v0.20.8b) ===
             SeidkonaAbilityId.FatesThread or
-            SeidkonaAbilityId.WeaveDisruption or
-            SeidkonaAbilityId.ResonanceCascade or
+            SeidkonaAbilityId.WeaveDisruption => EvaluateGenericCastingRisk(currentResonance, abilityId),
+
+            // === Resonance Cascade: always safe — passive ability (v0.20.8b) ===
+            SeidkonaAbilityId.ResonanceCascade => SeidkonaCorruptionRiskResult.CreateSafe(
+                "Resonance Cascade is a passive ability — no Aether channeled, no Corruption risk"),
+
+            // === Future T3 abilities: generic high-resonance check ===
             SeidkonaAbilityId.VolvasVision or
             SeidkonaAbilityId.AetherStorm => EvaluateGenericCastingRisk(currentResonance, abilityId),
 

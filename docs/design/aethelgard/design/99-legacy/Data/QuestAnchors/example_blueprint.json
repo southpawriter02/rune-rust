@@ -1,0 +1,75 @@
+{
+  "Seed": 42,
+  "TargetRoomCount": 7,
+  "BiomeId": "the_roots",
+  "QuestId": "find_iron_heart_schematics",
+  "NarrativeContext": "The Dvergr Conclave has tasked you with retrieving Pre-Glitch Iron Heart schematics from a sealed archive deep in [The Roots]. The data is encrypted and requires a Jötun-Reader terminal to decode. Automated security systems remain active after 800 years.",
+  "RequiredAnchors": [
+    {
+      "AnchorId": "quest_archive",
+      "Name": "[Jötun-Reader Archive]",
+      "Description": "Quest objective location - contains the Iron Heart schematics",
+      "PreferredArchetype": "Chamber",
+      "PreferredNodeType": "Main",
+      "IsMandatory": true,
+      "HandcraftedRoomId": "jotun_reader_archive",
+      "QuestId": "find_iron_heart_schematics",
+      "Purpose": "QuestObjective",
+      "Constraints": {
+        "MinDepth": 3,
+        "MaxDepth": 5,
+        "MustBeOnMainPath": true,
+        "CanBeOnBranchPath": false,
+        "CanBeSecret": false,
+        "NeverAsStartRoom": true,
+        "NeverAsBossRoom": true,
+        "MustAppearBefore": [],
+        "MustAppearAfter": []
+      }
+    },
+    {
+      "AnchorId": "servitor_overseer_boss",
+      "Name": "[Servitor Command Node]",
+      "Description": "Boss encounter - Servitor Overseer guards the deeper levels",
+      "PreferredArchetype": "BossArena",
+      "PreferredNodeType": "Boss",
+      "IsMandatory": true,
+      "HandcraftedRoomId": "servitor_command_node",
+      "QuestId": "find_iron_heart_schematics",
+      "Purpose": "BossEncounter",
+      "Constraints": {
+        "MinDepth": 6,
+        "MaxDepth": 7,
+        "MustBeOnMainPath": true,
+        "CanBeOnBranchPath": false,
+        "CanBeSecret": false,
+        "NeverAsStartRoom": true,
+        "NeverAsBossRoom": false,
+        "MustAppearBefore": [],
+        "MustAppearAfter": ["quest_archive"]
+      }
+    },
+    {
+      "AnchorId": "tinkerer_workshop",
+      "Name": "[Abandoned Workshop]",
+      "Description": "NPC encounter - Grelda Ironbraid offers services",
+      "PreferredArchetype": "Chamber",
+      "PreferredNodeType": "Branch",
+      "IsMandatory": false,
+      "HandcraftedRoomId": "abandoned_workshop",
+      "QuestId": null,
+      "Purpose": "NPCEncounter",
+      "Constraints": {
+        "MinDepth": 2,
+        "MaxDepth": 4,
+        "MustBeOnMainPath": false,
+        "CanBeOnBranchPath": true,
+        "CanBeSecret": false,
+        "NeverAsStartRoom": true,
+        "NeverAsBossRoom": true,
+        "MustAppearBefore": [],
+        "MustAppearAfter": []
+      }
+    }
+  ]
+}

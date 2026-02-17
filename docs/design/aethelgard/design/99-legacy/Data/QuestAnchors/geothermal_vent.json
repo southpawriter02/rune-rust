@@ -1,0 +1,41 @@
+{
+  "RoomId": "geothermal_vent",
+  "Name": "[The Geothermal Vent]",
+  "Description": "Superheated water erupts from ancient pipes with rhythmic violence. The air shimmers with heat. This deep, [The Roots] taps into geothermal energy - valuable, dangerous, and still flowing after 800 years. The floor is flooded with scalding runoff.",
+  "Archetype": "Chamber",
+  "SuggestedNodeType": "Branch",
+  "NarrativeText": "Pre-Glitch engineers harnessed geothermal power to keep the facility running for millennia. The systems are degraded now, unpredictable - but still functional. If you can navigate the hazards, the power here is yours to claim.",
+  "FlavorText": "Steam hisses from ruptured valves. Pressure gauges redline. Geothermal cells glow with stored energy in containment racks. Warning klaxons flash silently (the speakers failed centuries ago). The heat is almost unbearable.",
+  "EnemyIds": [
+    "ArcWelderUnit",
+    "ArcWelderUnit"
+  ],
+  "HazardIds": [
+    "steam_vent",
+    "steam_vent",
+    "steam_vent",
+    "scalding_water_floor"
+  ],
+  "TerrainIds": [
+    "geothermal_pipes",
+    "power_cell_racks"
+  ],
+  "LootIds": [
+    "geothermal_cells",
+    "rare_minerals",
+    "power_cores"
+  ],
+  "ConditionIds": [
+    "extreme_heat",
+    "flooded"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": false,
+  "IsBossArena": false,
+  "HasQuestObjective": false,
+  "QuestObjectiveId": null,
+  "PreferredExits": {
+    "East": "Corridor",
+    "West": "Corridor"
+  }
+}

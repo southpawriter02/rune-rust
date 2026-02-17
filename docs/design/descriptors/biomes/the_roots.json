@@ -1,0 +1,335 @@
+{
+  "BiomeId": "the_roots",
+  "Name": "[The Roots]",
+  "Description": "The lower maintenance levels of Aethelgard, where 800 years of decay have transformed functional infrastructure into rusted, claustrophobic passages. Geothermal pumping stations hiss with escaping steam. Condensation drips from corroded pipes. The air tastes of ozone and rust.",
+  "AvailableTemplates": [
+    "collapsed_entry_hall",
+    "maintenance_access",
+    "loading_dock",
+    "rust_choked_corridor",
+    "pipe_gallery",
+    "data_spine",
+    "maintenance_tunnel",
+    "geothermal_passage",
+    "observation_walkway",
+    "salvage_bay",
+    "pump_station",
+    "research_lab",
+    "training_hall",
+    "power_substation",
+    "operations_nexus",
+    "transit_hub",
+    "vault_chamber",
+    "reactor_core",
+    "hidden_cache",
+    "maintenance_crawlspace"
+  ],
+  "DescriptorCategories": {
+    "Adjectives": [
+      "Corroded",
+      "Decaying",
+      "Twisted",
+      "Shattered",
+      "Rusted",
+      "Collapsed",
+      "Warped",
+      "Crumbling",
+      "Oxidized",
+      "Fractured"
+    ],
+    "Details": [
+      "Runic glyphs flicker weakly on the walls, their light stuttering",
+      "A massive crack runs along the eastern wall, exposing conduits beneath",
+      "Condensation drips steadily from corroded pipes overhead",
+      "Pools of iridescent sludge collect in the low points of the floor",
+      "The ceiling sags under centuries of accumulated stress",
+      "Fragments of shattered Data-Slates litter the debris",
+      "Ancient warning symbols are barely visible through layers of rust",
+      "Emergency lighting strips provide dim, flickering illumination",
+      "The walls are scarred by blast marks from a long-forgotten conflict",
+      "Graffiti in Old Aetheric script marks this as a worker's route"
+    ],
+    "Sounds": [
+      "hissing steam escaping from fractured pipes",
+      "groaning metal under unseen strain",
+      "dripping water echoing in the distance",
+      "the whir of failing servos",
+      "grinding gears struggling against corrosion",
+      "creaking support structures settling",
+      "electrical arcing from exposed conduits",
+      "distant rumbling from geothermal systems"
+    ],
+    "Smells": [
+      "ozone from arcing power conduits",
+      "metallic tang of rust",
+      "sweet decay of organic matter",
+      "damp earth and mildew",
+      "acrid chemical residue",
+      "burnt insulation",
+      "stale, recycled air"
+    ]
+  },
+  "MinRoomCount": 5,
+  "MaxRoomCount": 7,
+  "BranchingProbability": 0.4,
+  "SecretRoomProbability": 0.2,
+  "Elements": {
+    "Elements": [
+      {
+        "ElementName": "Rust-Horror",
+        "ElementType": "DormantProcess",
+        "Weight": 0.20,
+        "SpawnCost": 1,
+        "AssociatedDataId": "rust_horror",
+        "SpawnRules": {
+          "NeverInEntryHall": true,
+          "NeverInBossArena": true
+        }
+      },
+      {
+        "ElementName": "Rusted Servitor",
+        "ElementType": "DormantProcess",
+        "Weight": 0.25,
+        "SpawnCost": 1,
+        "AssociatedDataId": "rusted_servitor",
+        "SpawnRules": {
+          "NeverInBossArena": true
+        }
+      },
+      {
+        "ElementName": "Corroded Maintenance Drone",
+        "ElementType": "DormantProcess",
+        "Weight": 0.20,
+        "SpawnCost": 1,
+        "AssociatedDataId": "corroded_drone",
+        "SpawnRules": {
+          "NeverInEntryHall": true,
+          "NeverInBossArena": true
+        }
+      },
+      {
+        "ElementName": "Blight-Rat Swarm",
+        "ElementType": "DormantProcess",
+        "Weight": 0.15,
+        "SpawnCost": 2,
+        "AssociatedDataId": "blight_rat_swarm",
+        "SpawnRules": {
+          "NeverInBossArena": true
+        }
+      },
+      {
+        "ElementName": "Construction Hauler",
+        "ElementType": "DormantProcess",
+        "Weight": 0.10,
+        "SpawnCost": 3,
+        "AssociatedDataId": "construction_hauler",
+        "SpawnRules": {
+          "OnlyInLargeRooms": true,
+          "NeverInEntryHall": true,
+          "NeverInBossArena": true
+        }
+      },
+      {
+        "ElementName": "Husk Enforcer",
+        "ElementType": "DormantProcess",
+        "Weight": 0.05,
+        "SpawnCost": 4,
+        "AssociatedDataId": "husk_enforcer",
+        "SpawnRules": {
+          "OnlyInLargeRooms": true,
+          "NeverInEntryHall": true,
+          "NeverInBossArena": true
+        }
+      },
+      {
+        "ElementName": "Servitor Overseer",
+        "ElementType": "DormantProcess",
+        "Weight": 1.0,
+        "SpawnCost": 0,
+        "AssociatedDataId": "servitor_overseer",
+        "SpawnRules": {
+          "RequiredArchetype": "BossArena"
+        }
+      },
+      {
+        "ElementName": "Steam Vent",
+        "ElementType": "DynamicHazard",
+        "Weight": 0.30,
+        "AssociatedDataId": "steam_vent",
+        "SpawnRules": {
+          "RequiresRoomNameContains": ["Geothermal", "Pumping", "Maintenance"]
+        }
+      },
+      {
+        "ElementName": "Live Power Conduit",
+        "ElementType": "DynamicHazard",
+        "Weight": 0.15,
+        "AssociatedDataId": "live_power_conduit",
+        "SpawnRules": {
+          "RequiresRoomNameContains": ["Power", "Maintenance", "Operations"]
+        }
+      },
+      {
+        "ElementName": "Unstable Ceiling",
+        "ElementType": "DynamicHazard",
+        "Weight": 0.10,
+        "AssociatedDataId": "unstable_ceiling",
+        "SpawnRules": {
+          "NeverInEntryHall": true
+        }
+      },
+      {
+        "ElementName": "Toxic Spore Cloud",
+        "ElementType": "DynamicHazard",
+        "Weight": 0.12,
+        "AssociatedDataId": "toxic_spore_cloud",
+        "SpawnRules": {
+          "RequiresEnemyType": "RustHorror"
+        }
+      },
+      {
+        "ElementName": "Corroded Grating",
+        "ElementType": "DynamicHazard",
+        "Weight": 0.20,
+        "AssociatedDataId": "corroded_grating",
+        "SpawnRules": {}
+      },
+      {
+        "ElementName": "Leaking Coolant",
+        "ElementType": "DynamicHazard",
+        "Weight": 0.08,
+        "AssociatedDataId": "leaking_coolant",
+        "SpawnRules": {
+          "RequiresRoomNameContains": ["Reactor", "Power", "Operations"]
+        }
+      },
+      {
+        "ElementName": "Collapsed Pillar",
+        "ElementType": "StaticTerrain",
+        "Weight": 0.30,
+        "AssociatedDataId": "collapsed_pillar",
+        "SpawnRules": {
+          "OnlyInLargeRooms": true
+        }
+      },
+      {
+        "ElementName": "Rubble Pile",
+        "ElementType": "StaticTerrain",
+        "Weight": 0.25,
+        "AssociatedDataId": "rubble_pile",
+        "SpawnRules": {
+          "RequiresHazardType": "UnstableCeiling"
+        }
+      },
+      {
+        "ElementName": "Rusted Bulkhead",
+        "ElementType": "StaticTerrain",
+        "Weight": 0.20,
+        "AssociatedDataId": "rusted_bulkhead",
+        "SpawnRules": {}
+      },
+      {
+        "ElementName": "Chasm",
+        "ElementType": "StaticTerrain",
+        "Weight": 0.10,
+        "AssociatedDataId": "chasm",
+        "SpawnRules": {
+          "OnlyInLargeRooms": true,
+          "NeverInEntryHall": true
+        }
+      },
+      {
+        "ElementName": "Elevated Platform",
+        "ElementType": "StaticTerrain",
+        "Weight": 0.15,
+        "AssociatedDataId": "elevated_platform",
+        "SpawnRules": {
+          "OnlyInLargeRooms": true
+        }
+      },
+      {
+        "ElementName": "Ore Vein",
+        "ElementType": "LootNode",
+        "Weight": 0.08,
+        "AssociatedDataId": "ore_vein",
+        "SpawnRules": {
+          "RequiresRoomNameContains": ["Salvage", "Maintenance", "Loading"]
+        }
+      },
+      {
+        "ElementName": "Salvageable Wreckage",
+        "ElementType": "LootNode",
+        "Weight": 0.12,
+        "AssociatedDataId": "salvageable_wreckage",
+        "SpawnRules": {}
+      },
+      {
+        "ElementName": "Hidden Container",
+        "ElementType": "LootNode",
+        "Weight": 0.05,
+        "AssociatedDataId": "hidden_container",
+        "SpawnRules": {
+          "HigherWeightInSecretRooms": true,
+          "SecretRoomWeightMultiplier": 4.0
+        }
+      },
+      {
+        "ElementName": "Corrupted Data-Slate",
+        "ElementType": "LootNode",
+        "Weight": 0.02,
+        "AssociatedDataId": "corrupted_data_slate",
+        "SpawnRules": {
+          "RequiresRoomNameContains": ["Operations", "Research", "Training"]
+        }
+      },
+      {
+        "ElementName": "Resource Cache",
+        "ElementType": "LootNode",
+        "Weight": 0.06,
+        "AssociatedDataId": "resource_cache",
+        "SpawnRules": {}
+      },
+      {
+        "ElementName": "Psychic Resonance",
+        "ElementType": "AmbientCondition",
+        "Weight": 0.05,
+        "AssociatedDataId": "psychic_resonance",
+        "SpawnRules": {
+          "NeverInEntryHall": true
+        }
+      },
+      {
+        "ElementName": "Runic Instability",
+        "ElementType": "AmbientCondition",
+        "Weight": 0.03,
+        "AssociatedDataId": "runic_instability",
+        "SpawnRules": {
+          "NeverInEntryHall": true
+        }
+      },
+      {
+        "ElementName": "Flooded",
+        "ElementType": "AmbientCondition",
+        "Weight": 0.08,
+        "AssociatedDataId": "flooded",
+        "SpawnRules": {
+          "RequiresRoomNameContains": ["Pumping", "Maintenance", "Loading"]
+        }
+      },
+      {
+        "ElementName": "Corroded Atmosphere",
+        "ElementType": "AmbientCondition",
+        "Weight": 0.06,
+        "AssociatedDataId": "corroded_atmosphere",
+        "SpawnRules": {}
+      },
+      {
+        "ElementName": "Dim Lighting",
+        "ElementType": "AmbientCondition",
+        "Weight": 0.08,
+        "AssociatedDataId": "dim_lighting",
+        "SpawnRules": {}
+      }
+    ]
+  }
+}

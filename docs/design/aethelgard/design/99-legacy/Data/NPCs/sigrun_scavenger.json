@@ -1,0 +1,18 @@
+{
+  "Id": "sigrun_scavenger",
+  "Name": "Sigrun the Scavenger",
+  "Description": "A weathered woman in patched scavenger gear, her eyes sharp and calculating. She wears the makeshift insignia of the Midgard Combine on her shoulder.",
+  "InitialGreeting": "Another scavenger in these ruins? You look capable enough.",
+  "Archetype": "Raider",
+  "Subtype": "Scavenger",
+  "RoomId": 2,
+  "IsHostile": false,
+  "Faction": "MidgardCombine",
+  "BaseDisposition": 20,
+  "CurrentDisposition": 20,
+  "RootDialogueId": "sigrun_greeting",
+  "EncounteredTopics": [],
+  "HasBeenMet": false,
+  "IsAlive": true,
+  "QuestFlags": {}
+}

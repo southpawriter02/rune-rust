@@ -1,0 +1,117 @@
+[
+  {
+    "Id": "astrid_greeting",
+    "Text": "Ah, another soul drawn to these ancient halls. Do you seek knowledge, or just loot?",
+    "Options": [
+      {
+        "Text": "Knowledge. What can you teach me?",
+        "NextNodeId": "astrid_lore",
+        "Outcome": null
+      },
+      {
+        "Text": "Bit of both, honestly.",
+        "NextNodeId": "astrid_practical",
+        "Outcome": null
+      },
+      {
+        "Text": "Do you need any help?",
+        "NextNodeId": "astrid_quest",
+        "Outcome": null
+      },
+      {
+        "Text": "Just passing through.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "astrid_lore",
+    "Text": "The Jötun-Forged built wonders before the Glitch. This facility was one of their nexuses—a hub for... something. The records are fragmentary. Some say weapons research. Others, attempts to understand the fundamental nature of reality.",
+    "Options": [
+      {
+        "Text": "Fascinating.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "ReputationChange",
+          "Data": "Showed interest in knowledge",
+          "ReputationChange": 5,
+          "AffectedFaction": "Independents"
+        }
+      },
+      {
+        "Text": "What caused the Glitch?",
+        "NextNodeId": "astrid_glitch_theory",
+        "Outcome": null
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "astrid_glitch_theory",
+    "Text": "No one knows for certain. My theory? They succeeded. Whatever they were researching—it worked. And it broke the world.",
+    "Options": [
+      {
+        "Text": "A sobering thought.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "astrid_practical",
+    "Text": "An honest answer. I respect that. Knowledge and survival go hand in hand in the wasteland.",
+    "Options": [
+      {
+        "Text": "Exactly.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 3,
+          "AffectedFaction": "Independents"
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "astrid_quest",
+    "Text": "Actually, yes. I need someone to deliver a message to Kjartan the Rust-Smith. He's usually in the workshop a few chambers back. Can you do that?",
+    "Options": [
+      {
+        "Text": "Sure, I can do that.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "QuestGiven",
+          "Data": "quest_diplomatic_errand",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      },
+      {
+        "Text": "Not right now.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  }
+]

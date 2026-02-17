@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/capture-template.schema.json",
+  "category": "field-guide-triggers",
+  "version": "1.0.0",
+  "description": "Templates for Field Guide entry discoveries. These are triggered by specific gameplay events.",
+  "matchKeywords": ["guide", "manual", "wisdom"],
+  "templates": [
+    {
+      "id": "guide-psychic-stress",
+      "type": "OralHistory",
+      "fragmentContent": "The veterans speak of Psychic Stress in hushed tones: 'The Blight doesn't just corrupt flesh. It seeps into your thoughts, twists your perceptions. Keep your mind anchored, or lose it entirely.'",
+      "source": "Veteran's warning",
+      "matchKeywords": ["psychic", "stress", "mental"],
+      "quality": 15,
+      "tags": ["psychic", "blight", "mental", "warning"]
+    },
+    {
+      "id": "guide-combat-training",
+      "type": "TextFragment",
+      "fragmentContent": "A training manual, dog-eared and stained: 'Combat in the wastes is not about honor. It is about survival. Strike fast, strike true, and know when to flee.'",
+      "source": "Combat manual",
+      "matchKeywords": ["combat", "fighting", "battle"],
+      "quality": 15,
+      "tags": ["combat", "training", "survival"]
+    },
+    {
+      "id": "guide-encumbrance",
+      "type": "OralHistory",
+      "fragmentContent": "The pack-master's wisdom: 'Every gram matters out there. I've seen Scavengers die because they couldn't run fast enough, weighed down by treasure they'd never spend.'",
+      "source": "Pack-master's lesson",
+      "matchKeywords": ["burden", "weight", "carrying", "inventory"],
+      "quality": 15,
+      "tags": ["encumbrance", "weight", "inventory", "wisdom"]
+    }
+  ]
+}

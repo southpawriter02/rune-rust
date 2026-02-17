@@ -1,0 +1,42 @@
+{
+  "TemplateId": "collapsed_entry_hall",
+  "Biome": "the_roots",
+  "Size": "Medium",
+  "Archetype": "EntryHall",
+  "NameTemplates": [
+    "The {Adjective} Entry Hall",
+    "The {Adjective} Threshold",
+    "The {Adjective} Entrance Chamber"
+  ],
+  "Adjectives": [
+    "Collapsed",
+    "Shattered",
+    "Twisted",
+    "Broken",
+    "Corroded"
+  ],
+  "DescriptionTemplates": [
+    "You stand at the {Adjective} threshold of a pre-Glitch facility. Twisted metal frames what was once a grand entrance. {Detail}. The air hums with residual energy.",
+    "A {Adjective} entrance hall stretches before you. {Detail}. Runic glyphs flicker weakly along the walls, their light stuttering like a dying heartbeat.",
+    "This was once an impressive entryway. Now {Adjective} girders sag under centuries of decay. {Detail}. The floor is littered with debris."
+  ],
+  "Details": [
+    "Condensation drips steadily from corroded pipes overhead",
+    "A massive crack runs along the eastern wall, exposing ancient conduits beneath",
+    "Rusted maintenance equipment lies scattered across the floor",
+    "Fragments of shattered Data-Slates crunch underfoot",
+    "The ceiling sags under accumulated stress, groaning softly"
+  ],
+  "MinConnectionPoints": 1,
+  "MaxConnectionPoints": 2,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber"
+  ],
+  "Difficulty": "Easy",
+  "Tags": [
+    "Entry",
+    "Safe",
+    "Start"
+  ]
+}

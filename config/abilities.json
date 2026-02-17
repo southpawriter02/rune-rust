@@ -1923,6 +1923,129 @@
           "description": "+10% AP regeneration rate"
         }
       ]
+    },
+    {
+      "id": "fates-thread",
+      "name": "Fate's Thread",
+      "description": "Weave your perception through the Wyrd to glimpse your foe's next action. Grants divination insight into the target's upcoming move. Builds +2 Aether Resonance per cast (higher than Tier 1). Subject to probability-based Corruption check at Resonance 5+ (Heretical path). AP cost reduced by 1 when Resonance Cascade is active at Resonance 5+.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 2,
+      "apCostWithCascade": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 0,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 1,
+      "durationUnit": "Actions",
+      "tags": [
+        "divination",
+        "precognition",
+        "mystic",
+        "resonance-build",
+        "tier-2"
+      ],
+      "effects": [
+        {
+          "type": "Divination",
+          "resonanceGain": 2,
+          "revealTarget": true,
+          "description": "Glimpse target's next action, +2 Resonance"
+        }
+      ]
+    },
+    {
+      "id": "weave-disruption",
+      "name": "Weave Disruption",
+      "description": "Unravel magical effects with a gesture, disrupting enemy spellwork. Rolls d20 + current Resonance as a dispel check against effect DCs. Builds +1 Aether Resonance per cast. Subject to probability-based Corruption check at Resonance 5+ (Heretical path). AP cost reduced by 1 when Resonance Cascade is active at Resonance 5+.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 3,
+      "apCostWithCascade": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 0,
+      "range": 10,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "dispel",
+        "counterspell",
+        "mystic",
+        "resonance-build",
+        "tier-2"
+      ],
+      "effects": [
+        {
+          "type": "Dispel",
+          "dice": "1d20",
+          "resonanceBonus": true,
+          "resonanceGain": 1,
+          "description": "d20 + Resonance vs effect DC, +1 Resonance"
+        }
+      ]
+    },
+    {
+      "id": "resonance-cascade",
+      "name": "Resonance Cascade",
+      "description": "Channel the power of accumulated Resonance to optimize your casting. When Aether Resonance reaches 5 or higher, all Seiðkona ability AP costs are reduced by 1 (minimum 1). This passive modifier creates a feedback loop: higher Resonance enables cheaper abilities, more casts per turn, and faster Resonance buildup — but also escalating Corruption risk. Does not affect the Unraveling capstone. Does not build Resonance (passive). No Corruption risk.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 0,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "cascadeTrigger": {
+        "resonanceThreshold": 5,
+        "apCostReduction": 1,
+        "minimumApCost": 1
+      },
+      "tags": [
+        "passive",
+        "modifier",
+        "mystic",
+        "no-resonance",
+        "tier-2"
+      ],
+      "effects": [
+        {
+          "type": "PassiveModifier",
+          "apCostReduction": 1,
+          "minimumApCost": 1,
+          "resonanceThreshold": 5,
+          "description": "Reduce all Seiðkona ability AP costs by 1 (min 1) at Resonance 5+"
+        }
+      ]
     }
   ]
 }

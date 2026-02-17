@@ -6,11 +6,10 @@ namespace RuneAndRust.Application.Interfaces;
 
 /// <summary>
 /// Defines the contract for Seiðkona specialization ability execution.
-/// Handles Tier 1 (Foundation) ability logic including Seiðr Bolt (damage + Resonance build),
-/// Wyrd Sight (detection), and Aether Attunement (passive AP regen).
+/// Handles Tier 1 (Foundation) and Tier 2 (Discipline) ability logic.
 /// </summary>
 /// <remarks>
-/// <para>Tier 1 abilities (0 PP required):</para>
+/// <para>Tier 1 abilities (0 PP required, v0.20.8a):</para>
 /// <list type="bullet">
 /// <item>Seiðr Bolt (Active): 2d6 Aetheric damage, +1 Resonance, +1 Accumulated Damage, costs 1 AP.
 ///   Subject to probability-based Corruption check at Resonance 5+ (Heretical path).</item>
@@ -18,11 +17,20 @@ namespace RuneAndRust.Application.Interfaces;
 ///   Does NOT build Resonance, does NOT trigger Corruption checks.</item>
 /// <item>Aether Attunement (Passive): +10% AP regeneration rate. Always active, no Resonance or Corruption.</item>
 /// </list>
-/// <para>This interface will be extended in v0.20.8b with Tier 2 ability methods
-/// following the same pattern as <see cref="IBerserkrAbilityService"/>.</para>
+/// <para>Tier 2 abilities (4 PP each, v0.20.8b):</para>
+/// <list type="bullet">
+/// <item>Fate's Thread (Active): Divination/precognition, +2 Resonance, costs 2 AP (1 with Cascade).
+///   Subject to probability-based Corruption check at Resonance 5+. No damage, no Accumulated Damage.</item>
+/// <item>Weave Disruption (Active): Dispel/counterspell, d20 + Resonance vs effect DC, +1 Resonance,
+///   costs 3 AP (2 with Cascade). Subject to Corruption check. No direct damage.</item>
+/// <item>Resonance Cascade (Passive): Reduces all Seiðkona ability AP costs by 1 (min 1) when
+///   Resonance is 5+. No Resonance gain, no Corruption risk. Does NOT affect Unraveling capstone.</item>
+/// </list>
 /// </remarks>
 public interface ISeidkonaAbilityService
 {
+    // ===== Tier 1 Abilities (v0.20.8a) =====
+
     /// <summary>
     /// Executes the Seiðr Bolt active ability against a target.
     /// </summary>
@@ -81,9 +89,96 @@ public interface ISeidkonaAbilityService
     /// </returns>
     int GetAetherAttunementBonus(Player player);
 
+    // ===== Tier 2 Abilities (v0.20.8b) =====
+
+    /// <summary>
+    /// Executes the Fate's Thread active divination ability against a target.
+    /// Glimpses the target's next action through the Wyrd.
+    /// </summary>
+    /// <param name="player">The Seiðkona player casting the divination.</param>
+    /// <param name="targetId">Unique identifier of the target being observed.</param>
+    /// <returns>
+    /// A <see cref="FatesThreadResult"/> containing Resonance changes, Corruption status,
+    /// and AP cost details if the ability was successfully cast; null if prerequisites were not met.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Seiðkona specialization, Fate's Thread unlocked, sufficient AP
+    /// (2 AP base, 1 AP with Resonance Cascade active at Resonance 5+).</para>
+    /// <para>Execution order:</para>
+    /// <list type="number">
+    /// <item>Validate prerequisites (spec, ability, AP with Cascade consideration)</item>
+    /// <item>Evaluate Corruption risk BEFORE spending resources (uses current Resonance)</item>
+    /// <item>Spend AP (2 base or 1 with Cascade)</item>
+    /// <item>Build +2 Resonance (higher than Tier 1's +1)</item>
+    /// <item>Apply Corruption if triggered</item>
+    /// <item>Return complete result</item>
+    /// </list>
+    /// <para>Important: Fate's Thread does NOT deal damage and does NOT add to the
+    /// Accumulated Aetheric Damage tracker. The +2 Resonance gain represents significant
+    /// escalation risk.</para>
+    /// </remarks>
+    FatesThreadResult? ExecuteFatesThread(Player player, Guid targetId);
+
+    /// <summary>
+    /// Executes the Weave Disruption active dispel ability against a target.
+    /// Attempts to unravel magical effects using d20 + Resonance vs effect DC.
+    /// </summary>
+    /// <param name="player">The Seiðkona player casting the dispel.</param>
+    /// <param name="targetId">Unique identifier of the target whose effects are being disrupted.</param>
+    /// <returns>
+    /// A <see cref="WeaveDisruptionResult"/> containing the dispel roll, Resonance changes,
+    /// Corruption status, and AP cost details if the ability was successfully cast;
+    /// null if prerequisites were not met.
+    /// </returns>
+    /// <remarks>
+    /// <para>Prerequisites: Seiðkona specialization, Weave Disruption unlocked, sufficient AP
+    /// (3 AP base, 2 AP with Resonance Cascade active at Resonance 5+).</para>
+    /// <para>Execution order:</para>
+    /// <list type="number">
+    /// <item>Validate prerequisites (spec, ability, AP with Cascade consideration)</item>
+    /// <item>Evaluate Corruption risk BEFORE spending resources (uses current Resonance)</item>
+    /// <item>Spend AP (3 base or 2 with Cascade)</item>
+    /// <item>Roll d20 for dispel attempt (stored in result for combat system resolution)</item>
+    /// <item>Build +1 Resonance</item>
+    /// <item>Apply Corruption if triggered</item>
+    /// <item>Return complete result</item>
+    /// </list>
+    /// <para>Important: Weave Disruption does NOT deal direct damage and does NOT add to the
+    /// Accumulated Aetheric Damage tracker. The d20 + Resonance bonus dispel roll is stored
+    /// for the combat system to resolve against effect DCs.</para>
+    /// </remarks>
+    WeaveDisruptionResult? ExecuteWeaveDisruption(Player player, Guid targetId);
+
+    /// <summary>
+    /// Gets the current Resonance Cascade passive ability state.
+    /// Returns whether the Cascade is active, its cost reduction, and current Resonance.
+    /// </summary>
+    /// <param name="player">The Seiðkona player to evaluate.</param>
+    /// <returns>
+    /// A <see cref="ResonanceCascadeState"/> reflecting the current Cascade status.
+    /// Cascade is active when the ability is unlocked AND Resonance is 5+.
+    /// </returns>
+    ResonanceCascadeState GetResonanceCascadeState(Player player);
+
+    /// <summary>
+    /// Gets the effective AP cost for a Seiðkona ability, accounting for Resonance Cascade reduction.
+    /// Used for UI display and AP validation.
+    /// </summary>
+    /// <param name="player">The Seiðkona player to evaluate.</param>
+    /// <param name="abilityId">The ability to check the effective cost for.</param>
+    /// <returns>
+    /// The effective AP cost after Cascade reduction (min 1) if Cascade is active;
+    /// the base AP cost if Cascade is not active or not unlocked.
+    /// Returns 0 for passive abilities (Aether Attunement, Resonance Cascade).
+    /// </returns>
+    int GetEffectiveApCost(Player player, SeidkonaAbilityId abilityId);
+
+    // ===== Utility Methods =====
+
     /// <summary>
     /// Gets a readiness summary for all Seiðkona abilities for the specified player.
     /// Used for UI display to show which abilities are available.
+    /// Tier 2 ability readiness accounts for Resonance Cascade AP cost reduction.
     /// </summary>
     /// <param name="player">The Seiðkona player to check.</param>
     /// <returns>
