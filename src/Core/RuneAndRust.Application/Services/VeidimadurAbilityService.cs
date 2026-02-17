@@ -8,29 +8,35 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Veiðimaðr (Hunter) specialization ability execution.
-/// Implements Tier 1 (Foundation) and Tier 2 (Discipline) abilities including quarry marking,
-/// perception bonuses, track investigation, cover bypass, traps, and stance management.
+/// Implements all four tiers: Tier 1 (Foundation), Tier 2 (Discipline), Tier 3 (Mastery),
+/// and Capstone (Ultimate) abilities including quarry marking, perception bonuses,
+/// track investigation, cover bypass, traps, stance management, concealment denial,
+/// crippling shots, and the devastating Perfect Hunt.
 /// </summary>
 /// <remarks>
 /// <para>The Veiðimaðr is a Coherent path Skirmisher with zero Corruption risk.
 /// This service does NOT depend on a corruption service, following the same pattern
 /// as <see cref="BoneSetterAbilityService"/>.</para>
 /// <para>Tier 1 abilities: Mark Quarry, Keen Senses, Read the Signs (v0.20.7a).</para>
+/// <para>Tier 2 abilities: Hunter's Eye, Trap Mastery, Predator's Patience (v0.20.7b).</para>
+/// <para>Tier 3 abilities: Apex Predator, Crippling Shot (v0.20.7c).</para>
+/// <para>Capstone ability: The Perfect Hunt (v0.20.7c).</para>
 /// <para>Key design decisions:</para>
 /// <list type="bullet">
 /// <item>No Corruption evaluation step — all Veiðimaðr abilities follow the Coherent path</item>
 /// <item>Quarry Marks are mutable — marks are added/removed in-place via
 /// <see cref="IVeidimadurQuarryMarksService"/></item>
-/// <item>Guard-clause chain: null → spec → ability unlocked → AP → execute</item>
+/// <item>Guard-clause chain: null → spec → ability unlocked → (cooldown) → AP → (resource) → execute</item>
 /// <item>Read the Signs uses a skill check: 1d20 + ability bonus (+4) + Keen Senses (+1 if unlocked) vs DC</item>
 /// <item>DC scaling determined by <see cref="CreatureTrackType"/>: Fresh=10, Recent=12, Worn=15, Ancient=18, Unclear=20</item>
 /// <item>Mark Quarry has no skill check — automatic success on valid target</item>
-/// <item>Keen Senses is a passive — no AP cost, no execution method, just a bonus query</item>
+/// <item>Keen Senses and Apex Predator are passives — no AP cost, evaluated per-attack</item>
+/// <item>Crippling Shot consumes 1 Quarry Mark — guaranteed effect, no attack roll</item>
+/// <item>The Perfect Hunt: cooldown checked BEFORE AP to avoid deducting AP for a locked ability</item>
 /// </list>
 /// <para>Dice roll methods are marked <c>internal virtual</c> for unit test overriding.
 /// Requires <c>InternalsVisibleTo</c> in the project file to be accessible from test assemblies.</para>
-/// <para>Introduced in v0.20.7a as part of the Veiðimaðr specialization framework.
-/// Tier 2 abilities will be added in v0.20.7b, Tier 3 and Capstone in v0.20.7c.</para>
+/// <para>Introduced in v0.20.7a. Tier 2 added in v0.20.7b. Tier 3 and Capstone added in v0.20.7c.</para>
 /// </remarks>
 public class VeidimadurAbilityService : IVeidimadurAbilityService
 {
@@ -163,6 +169,35 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
     /// Hit bonus granted by the Predator's Patience stance when active and unmoved.
     /// </summary>
     private const int PredatorsPatienceHitBonus = 3;
+
+    // ===== Tier 3 Cost Constants (v0.20.7c) =====
+
+    /// <summary>
+    /// AP cost for the Crippling Shot movement-debuff ability.
+    /// </summary>
+    private const int CripplingShotApCost = 1;
+
+    /// <summary>
+    /// Number of turns the Crippling Shot movement reduction lasts.
+    /// </summary>
+    private const int CripplingShotDurationTurns = 2;
+
+    /// <summary>
+    /// Divisor applied to the target's movement speed by Crippling Shot (halves movement).
+    /// </summary>
+    private const int CripplingShotMovementDivisor = 2;
+
+    // ===== Capstone Cost Constants (v0.20.7c) =====
+
+    /// <summary>
+    /// AP cost for The Perfect Hunt capstone ability.
+    /// </summary>
+    private const int ThePerfectHuntApCost = 3;
+
+    /// <summary>
+    /// Critical damage multiplier for The Perfect Hunt (doubles base damage).
+    /// </summary>
+    private const int ThePerfectHuntCriticalMultiplier = 2;
 
     private readonly IVeidimadurQuarryMarksService _quarryMarksService;
     private readonly ILogger<VeidimadurAbilityService> _logger;
@@ -806,6 +841,273 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
         return state.GetCurrentBonus();
     }
 
+    // ===== Tier 3 Ability Methods (v0.20.7c) =====
+
+    /// <inheritdoc />
+    public ApexPredatorResult? EvaluateApexPredator(
+        Player player,
+        Guid targetId,
+        string targetName,
+        ConcealmentType concealmentType)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Apex Predator failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.ApexPredator))
+        {
+            _logger.LogWarning(
+                "Apex Predator failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // === No AP cost — Apex Predator is a passive ability ===
+        // === No Corruption evaluation — Coherent path ===
+
+        // Check whether the target is marked as quarry
+        var isMarked = _quarryMarksService.HasActiveMark(player, targetId);
+
+        // Evaluate concealment denial via the domain value object's static logic
+        var concealmentDenied = ApexPredatorResult.ShouldDenyConcealment(concealmentType, isMarked);
+
+        // Determine whether the target was originally concealed (any non-None type)
+        var wasConcealed = concealmentType != ConcealmentType.None;
+
+        // Build result — always non-null when prerequisites are met
+        var result = new ApexPredatorResult
+        {
+            HunterId = player.Id,
+            TargetId = targetId,
+            TargetName = targetName,
+            WasConcealed = wasConcealed,
+            ConcealmentType = concealmentType,
+            ConcealmentDenied = concealmentDenied,
+            TargetWasMarked = isMarked
+        };
+
+        // Log based on outcome
+        if (concealmentDenied)
+        {
+            _logger.LogInformation(
+                "Apex Predator evaluated: {Player} ({PlayerId}) DENIES {ConcealmentType} " +
+                "concealment on marked quarry {Target} ({TargetId}). " +
+                "The quarry cannot hide from the apex predator",
+                player.Name, player.Id,
+                concealmentType, targetName, targetId);
+        }
+        else if (!isMarked)
+        {
+            _logger.LogWarning(
+                "Apex Predator evaluated: {Player} ({PlayerId}) cannot deny concealment on " +
+                "{Target} ({TargetId}) — target is NOT a marked quarry. " +
+                "Concealment type: {ConcealmentType}",
+                player.Name, player.Id,
+                targetName, targetId, concealmentType);
+        }
+        else
+        {
+            // Marked but no concealment to deny (ConcealmentType.None)
+            _logger.LogInformation(
+                "Apex Predator evaluated: {Player} ({PlayerId}) checked {Target} ({TargetId}) " +
+                "— target is marked quarry but has no concealment ({ConcealmentType})",
+                player.Name, player.Id,
+                targetName, targetId, concealmentType);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public CripplingShotResult? ExecuteCripplingShot(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetMovementSpeed)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Crippling Shot failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.CripplingShot))
+        {
+            _logger.LogWarning(
+                "Crippling Shot failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < CripplingShotApCost)
+        {
+            _logger.LogWarning(
+                "Crippling Shot failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, CripplingShotApCost, player.CurrentAP);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Validate that the target is a marked quarry
+        if (!_quarryMarksService.HasActiveMark(player, targetId))
+        {
+            _logger.LogWarning(
+                "Crippling Shot failed: {Player} ({PlayerId}) attempted to cripple " +
+                "{Target} ({TargetId}) but target is not a marked quarry",
+                player.Name, player.Id, targetName, targetId);
+            return null;
+        }
+
+        // Deduct AP
+        player.CurrentAP -= CripplingShotApCost;
+
+        // Consume the Quarry Mark on the target
+        _quarryMarksService.RemoveMark(player, targetId);
+
+        // Build result with movement reduction
+        var result = new CripplingShotResult
+        {
+            HunterId = player.Id,
+            TargetId = targetId,
+            TargetName = targetName,
+            OriginalMovementSpeed = targetMovementSpeed,
+            MarkConsumed = true
+        };
+
+        _logger.LogInformation(
+            "Crippling Shot executed: {Player} ({PlayerId}) cripples {Target} ({TargetId}). " +
+            "Movement reduced: {Original} → {Reduced} spaces for {Duration} turns. " +
+            "Quarry Mark consumed. AP remaining: {RemainingAP}",
+            player.Name, player.Id,
+            targetName, targetId,
+            targetMovementSpeed, result.ReducedMovementSpeed,
+            CripplingShotDurationTurns,
+            player.CurrentAP);
+
+        return result;
+    }
+
+    // ===== Capstone Ability Method (v0.20.7c) =====
+
+    /// <inheritdoc />
+    public PerfectHuntResult? ExecuteThePerfectHunt(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int baseDamageRoll)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "The Perfect Hunt failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.ThePerfectHunt))
+        {
+            _logger.LogWarning(
+                "The Perfect Hunt failed: {Player} ({PlayerId}) has not unlocked the capstone ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate cooldown BEFORE AP check — avoids deducting AP for a locked ability
+        if (player.HasUsedThePerfectHuntThisRestCycle)
+        {
+            _logger.LogWarning(
+                "The Perfect Hunt failed: {Player} ({PlayerId}) has already used The Perfect Hunt " +
+                "this rest cycle. Available after next long rest",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < ThePerfectHuntApCost)
+        {
+            _logger.LogWarning(
+                "The Perfect Hunt failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, ThePerfectHuntApCost, player.CurrentAP);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Validate that the target is a marked quarry
+        if (!_quarryMarksService.HasActiveMark(player, targetId))
+        {
+            _logger.LogWarning(
+                "The Perfect Hunt failed: {Player} ({PlayerId}) attempted to strike " +
+                "{Target} ({TargetId}) but target is not a marked quarry",
+                player.Name, player.Id, targetName, targetId);
+            return null;
+        }
+
+        // Deduct AP
+        player.CurrentAP -= ThePerfectHuntApCost;
+
+        // Set the once-per-long-rest cooldown
+        player.HasUsedThePerfectHuntThisRestCycle = true;
+
+        // Consume the Quarry Mark on the target
+        _quarryMarksService.RemoveMark(player, targetId);
+
+        // Calculate total damage: base damage × critical multiplier
+        var totalDamage = baseDamageRoll * ThePerfectHuntCriticalMultiplier;
+
+        // Build narrative description for the devastating strike
+        var narrative = $"The hunter's patience culminates in a single, perfect strike. " +
+                        $"{targetName} is struck with devastating precision — " +
+                        $"an automatic critical hit dealing {totalDamage} damage " +
+                        $"({baseDamageRoll} × {ThePerfectHuntCriticalMultiplier}).";
+
+        // Build result
+        var result = new PerfectHuntResult
+        {
+            HunterId = player.Id,
+            TargetId = targetId,
+            TargetName = targetName,
+            BaseDamageRoll = baseDamageRoll,
+            MarkConsumed = true,
+            CapstoneUsed = true,
+            NarrativeDescription = narrative
+        };
+
+        _logger.LogInformation(
+            "THE PERFECT HUNT executed: {Player} ({PlayerId}) devastates {Target} ({TargetId}). " +
+            "AUTO-CRIT: {BaseDamage} × {Multiplier} = {TotalDamage} total damage. " +
+            "Quarry Mark consumed. Capstone cooldown set (next available after long rest). " +
+            "AP remaining: {RemainingAP}",
+            player.Name, player.Id,
+            targetName, targetId,
+            baseDamageRoll, ThePerfectHuntCriticalMultiplier, totalDamage,
+            player.CurrentAP);
+
+        return result;
+    }
+
     // ===== Utility Methods =====
 
     /// <inheritdoc />
@@ -845,7 +1147,18 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
                 VeidimadurAbilityId.PredatorsPatience =>
                     player.CurrentAP >= PredatorsPatienceApCost,
 
-                // Future tier abilities will be added in v0.20.7c
+                // Tier 3 passive — always ready when unlocked (no AP cost)
+                VeidimadurAbilityId.ApexPredator => true,
+
+                // Tier 3 active — requires AP and consumes a quarry mark
+                VeidimadurAbilityId.CripplingShot =>
+                    player.CurrentAP >= CripplingShotApCost,
+
+                // Capstone — requires AP, mark, and rest-cycle cooldown not used
+                VeidimadurAbilityId.ThePerfectHunt =>
+                    !player.HasUsedThePerfectHuntThisRestCycle &&
+                    player.CurrentAP >= ThePerfectHuntApCost,
+
                 _ => false
             };
 

@@ -23,7 +23,7 @@ namespace RuneAndRust.Application.Interfaces;
 /// <para>Methods return null when prerequisites are not met (wrong specialization,
 /// ability not unlocked, insufficient AP). Non-null results indicate successful execution.</para>
 /// <para>Introduced in v0.20.7a (Tier 1). Tier 2 abilities added in v0.20.7b.
-/// Tier 3 and Capstone will be added in v0.20.7c.</para>
+/// Tier 3 abilities and Capstone added in v0.20.7c.</para>
 /// </remarks>
 public interface IVeidimadurAbilityService
 {
@@ -172,6 +172,88 @@ public interface IVeidimadurAbilityService
     /// <param name="player">The player to check.</param>
     /// <returns>The current hit bonus from the stance (0 or +3).</returns>
     int GetPredatorsPatienceBonus(Player player);
+
+    // ===== Tier 3 Abilities (v0.20.7c) =====
+
+    /// <summary>
+    /// Evaluates the Apex Predator passive ability: determines whether a marked quarry's
+    /// concealment should be denied. A marked target cannot benefit from any concealment type
+    /// (Light Obscurement, Invisibility, Magical Camo, Hidden).
+    /// </summary>
+    /// <param name="player">The Veiðimaðr player evaluating concealment.</param>
+    /// <param name="targetId">Unique identifier of the target to evaluate.</param>
+    /// <param name="targetName">Display name of the target.</param>
+    /// <param name="concealmentType">The concealment type the target currently has.</param>
+    /// <returns>
+    /// An <see cref="ApexPredatorResult"/> indicating whether concealment was denied,
+    /// or null if prerequisites are not met (wrong spec, ability not unlocked).
+    /// Returns a non-null result even for unmarked targets (with <c>ConcealmentDenied=false</c>).
+    /// </returns>
+    /// <remarks>
+    /// Apex Predator is a passive ability — no AP cost. The method evaluates
+    /// whether the target's concealment should be stripped based on Quarry Mark status.
+    /// Unlike guard-clause null returns, this returns a result for unmarked targets
+    /// to allow the combat system to differentiate "unavailable" vs "evaluated, no effect."
+    /// </remarks>
+    ApexPredatorResult? EvaluateApexPredator(
+        Player player,
+        Guid targetId,
+        string targetName,
+        ConcealmentType concealmentType);
+
+    /// <summary>
+    /// Executes the Crippling Shot ability: fires a precision shot that halves a marked
+    /// quarry's movement speed for 2 turns. Costs 1 AP and consumes 1 Quarry Mark.
+    /// </summary>
+    /// <param name="player">The Veiðimaðr player executing the ability.</param>
+    /// <param name="targetId">Unique identifier of the marked quarry to cripple.</param>
+    /// <param name="targetName">Display name of the target.</param>
+    /// <param name="targetMovementSpeed">The target's current movement speed (in spaces).</param>
+    /// <returns>
+    /// A <see cref="CripplingShotResult"/> containing movement reduction details,
+    /// or null if prerequisites are not met (wrong spec, ability not unlocked,
+    /// insufficient AP, target not marked).
+    /// </returns>
+    /// <remarks>
+    /// Crippling Shot is a guaranteed effect — no attack roll required.
+    /// The mark must exist on the target for the ability to execute.
+    /// Movement is halved via integer division (7 → 3).
+    /// </remarks>
+    CripplingShotResult? ExecuteCripplingShot(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int targetMovementSpeed);
+
+    // ===== Capstone Ability (v0.20.7c) =====
+
+    /// <summary>
+    /// Executes The Perfect Hunt capstone ability: declares an unstoppable strike against a
+    /// marked quarry, dealing an automatic critical hit with doubled base damage.
+    /// Costs 3 AP, consumes 1 Quarry Mark, and is usable once per long rest.
+    /// </summary>
+    /// <param name="player">The Veiðimaðr player executing the capstone.</param>
+    /// <param name="targetId">Unique identifier of the marked quarry to devastate.</param>
+    /// <param name="targetName">Display name of the target.</param>
+    /// <param name="baseDamageRoll">Pre-rolled weapon base damage (before critical multiplication).</param>
+    /// <returns>
+    /// A <see cref="PerfectHuntResult"/> containing the auto-crit damage breakdown,
+    /// or null if prerequisites are not met (wrong spec, ability not unlocked,
+    /// already used this rest cycle, insufficient AP, target not marked).
+    /// </returns>
+    /// <remarks>
+    /// <para>The Perfect Hunt is the culmination of the Veiðimaðr's hunting mastery.
+    /// Guard-clause order: null → spec → ability unlocked → cooldown → AP → mark → execute.</para>
+    /// <para>Cooldown is checked BEFORE AP to avoid deducting AP for an ability
+    /// that can't fire due to rest-cycle limitation.</para>
+    /// <para>Base damage is provided by the caller (pre-rolled weapon dice).
+    /// The service applies the 2× critical multiplier.</para>
+    /// </remarks>
+    PerfectHuntResult? ExecuteThePerfectHunt(
+        Player player,
+        Guid targetId,
+        string targetName,
+        int baseDamageRoll);
 
     // ===== Utility Methods =====
 

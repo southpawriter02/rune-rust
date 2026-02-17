@@ -8,9 +8,9 @@ namespace RuneAndRust.Domain.Enums;
 /// <para>The Veiðimaðr specialization has 9 abilities across 4 tiers:</para>
 /// <list type="bullet">
 /// <item>Tier 1 (Foundation, 0 PP): MarkQuarry, KeenSenses, ReadTheSigns — Introduced in v0.20.7a</item>
-/// <item>Tier 2 (Discipline, 8+ PP): HuntersEye, TrapMastery, PredatorsPatience — Planned v0.20.7b</item>
-/// <item>Tier 3 (Mastery, 16+ PP): ApexPredator, CripplingShot — Planned v0.20.7c</item>
-/// <item>Capstone (Pinnacle, 24+ PP): ThePerfectHunt — Planned v0.20.7c</item>
+/// <item>Tier 2 (Discipline, 8+ PP): HuntersEye, TrapMastery, PredatorsPatience — Introduced in v0.20.7b</item>
+/// <item>Tier 3 (Mastery, 16+ PP): ApexPredator, CripplingShot — Introduced in v0.20.7c</item>
+/// <item>Capstone (Pinnacle, 24+ PP): ThePerfectHunt — Introduced in v0.20.7c</item>
 /// </list>
 /// <para>The Veiðimaðr is the first Coherent path Skirmisher specialization in the v0.20.x series,
 /// providing a deliberate contrast to the Heretical Myrk-gengr (v0.20.4). As a Coherent path
@@ -47,49 +47,48 @@ public enum VeidimadurAbilityId
     ReadTheSigns = 702,
 
     /// <summary>
-    /// Tier 2 — Active ability: ranged attacks ignore partial cover for 3 turns or until
-    /// a ranged attack is made. Costs 1 AP, 4 PP to unlock, requires 8 PP invested.
-    /// No Corruption risk (Coherent path). Planned for v0.20.7b.
+    /// Tier 2 — Passive ability: ranged attacks ignore partial cover (+2 AC penalty negated).
+    /// No AP cost (evaluated per attack). 4 PP to unlock, requires 8 PP invested.
+    /// No Corruption risk (Coherent path). Introduced in v0.20.7b.
     /// </summary>
     HuntersEye = 703,
 
     /// <summary>
-    /// Tier 2 — Active ability: place hunting traps (3 AP, 1d8 damage + immobilize) or
-    /// detect traps within 6 spaces (1 AP, +5 bonus). Maximum 2 active traps.
+    /// Tier 2 — Active ability: place hunting traps (2 AP, 1d8 damage + immobilize) or
+    /// detect traps within scan range (2 AP, +3 bonus + Keen Senses). Maximum 2 active traps.
     /// Costs 4 PP to unlock, requires 8 PP invested.
-    /// No Corruption risk (Coherent path). Planned for v0.20.7b.
+    /// No Corruption risk (Coherent path). Introduced in v0.20.7b.
     /// </summary>
     TrapMastery = 704,
 
     /// <summary>
     /// Tier 2 — Stance ability: while in stance and stationary, gain +3 to hit on all attacks.
-    /// Movement of any kind breaks the bonus. Toggle on/off as free action (0 AP).
+    /// Costs 1 AP to enter, 0 AP to exit. Movement of any kind breaks the stance.
     /// Stacks with Quarry Mark (+2) for +5 total. Costs 4 PP to unlock, requires 8 PP invested.
-    /// No Corruption risk (Coherent path). Planned for v0.20.7b.
+    /// No Corruption risk (Coherent path). Introduced in v0.20.7b.
     /// </summary>
     PredatorsPatience = 705,
 
     /// <summary>
     /// Tier 3 — Passive ability: marked Quarry cannot benefit from concealment against the hunter.
-    /// Applies to darkness, invisibility, fog, and magical obscurement. Does not affect cover.
+    /// Applies to light obscurement, invisibility, magical camouflage, and stealth. Does not affect cover.
     /// Costs 5 PP to unlock, requires 16 PP invested.
-    /// No Corruption risk (Coherent path). Planned for v0.20.7c.
+    /// No Corruption risk (Coherent path). Introduced in v0.20.7c.
     /// </summary>
     ApexPredator = 706,
 
     /// <summary>
-    /// Tier 3 — Attack ability: ranged weapon attack that halves target's movement speed for 2 turns
-    /// on hit. Deals normal weapon damage. Costs 3 AP, 5 PP to unlock, requires 16 PP invested.
-    /// No Corruption risk (Coherent path). Planned for v0.20.7c.
+    /// Tier 3 — Attack ability: consumes 1 Quarry Mark to halve the target's movement speed
+    /// for 2 turns. Guaranteed effect (no attack roll). Costs 1 AP, 5 PP to unlock,
+    /// requires 16 PP invested. No Corruption risk (Coherent path). Introduced in v0.20.7c.
     /// </summary>
     CripplingShot = 707,
 
     /// <summary>
     /// Capstone — Ultimate ability: declare a Perfect Hunt against one marked Quarry.
-    /// Next attack against that target is an automatic critical hit, doubling all damage dice.
-    /// Must attack declared target next. Costs 2 AP, usable once per long rest.
-    /// Costs 6 PP to unlock, requires 24 PP invested.
-    /// No Corruption risk (Coherent path). Planned for v0.20.7c.
+    /// Automatic critical hit doubling all base damage. Consumes 1 Quarry Mark.
+    /// Costs 3 AP, usable once per long rest. 6 PP to unlock, requires 24 PP invested.
+    /// No Corruption risk (Coherent path). Introduced in v0.20.7c.
     /// </summary>
     ThePerfectHunt = 708
 }

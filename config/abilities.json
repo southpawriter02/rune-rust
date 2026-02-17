@@ -1678,6 +1678,133 @@
           "description": "Gain +3 to hit while stationary"
         }
       ]
+    },
+    {
+      "id": "apex-predator",
+      "name": "Apex Predator",
+      "description": "The apex predator's presence strips concealment from marked quarry. When evaluating a marked target, any concealment type (Light Obscurement, Invisibility, Magical Camo, Hidden) is denied — the quarry cannot hide from the ultimate hunter. Passive ability — no AP cost.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 0,
+      "rangeUnit": "None",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Persistent",
+      "tags": [
+        "passive",
+        "concealment-denial",
+        "tier3",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "ConcealmentDenial",
+          "requiresQuarryMark": true,
+          "deniedConcealmentTypes": [
+            "LightObscurement",
+            "Invisibility",
+            "MagicalCamo",
+            "Hidden"
+          ],
+          "description": "Marked quarry cannot benefit from any concealment"
+        }
+      ]
+    },
+    {
+      "id": "crippling-shot",
+      "name": "Crippling Shot",
+      "description": "Fires a precision shot at a marked quarry's legs, halving their movement speed for 2 turns. Costs 1 AP and consumes 1 Quarry Mark. Guaranteed effect — no attack roll required. The mark must exist on the target.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "quarry-mark",
+      "costAmount": 1,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 2,
+      "durationUnit": "Turns",
+      "tags": [
+        "attack",
+        "movement-debuff",
+        "tier3",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "MovementDebuff",
+          "movementDivisor": 2,
+          "durationTurns": 2,
+          "requiresQuarryMark": true,
+          "consumesMark": true,
+          "guaranteedEffect": true,
+          "description": "Halves target movement speed for 2 turns"
+        }
+      ]
+    },
+    {
+      "id": "the-perfect-hunt",
+      "name": "The Perfect Hunt",
+      "description": "The culmination of the Veiðimaðr's hunting mastery. Declares an unstoppable strike against a marked quarry — automatic critical hit with all base damage doubled. Costs 3 AP, consumes 1 Quarry Mark. Usable once per long rest.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "quarry-mark",
+      "costAmount": 1,
+      "apCost": 3,
+      "cooldown": 1,
+      "cooldownUnit": "LongRest",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 4,
+      "ppCost": 6,
+      "ppPrerequisite": 24,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "attack",
+        "capstone",
+        "auto-crit",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "AutoCritical",
+          "criticalMultiplier": 2,
+          "requiresQuarryMark": true,
+          "consumesMark": true,
+          "autoCrit": true,
+          "description": "Automatic critical hit — base damage doubled"
+        }
+      ],
+      "restrictions": [
+        "OncePerLongRest"
+      ]
     }
   ]
 }

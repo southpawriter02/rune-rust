@@ -2039,5 +2039,35 @@ public class Player : IEntity
     {
         _huntingTraps.Clear();
     }
+
+    // ===== Veiðimaðr (Hunter) Tier 3 / Capstone Properties (v0.20.7c) =====
+
+    /// <summary>
+    /// Gets or sets whether The Perfect Hunt capstone has been used this long rest cycle.
+    /// When true, The Perfect Hunt cannot be executed again until a long rest occurs.
+    /// Resets to false on long rest via <see cref="ResetPerfectHuntCooldown"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Introduced in v0.20.7c for the Veiðimaðr Capstone ability.</para>
+    /// <para>The Perfect Hunt is limited to once per long rest (8-hour cooldown).
+    /// This flag persists across multiple combats until a long rest occurs.</para>
+    /// <para>Mirrors the <see cref="HasUsedMiracleWorkerThisRestCycle"/> pattern
+    /// established by the Bone-Setter capstone (v0.20.6c).</para>
+    /// </remarks>
+    public bool HasUsedThePerfectHuntThisRestCycle { get; set; }
+
+    /// <summary>
+    /// Resets The Perfect Hunt long-rest cooldown, allowing it to be used again.
+    /// Should be called when the player completes a long rest (8 hours).
+    /// </summary>
+    /// <remarks>
+    /// <para>Introduced in v0.20.7c for the Veiðimaðr Capstone ability.</para>
+    /// <para>Mirrors the <see cref="ResetMiracleWorkerCooldown"/> pattern
+    /// established by the Bone-Setter capstone (v0.20.6c).</para>
+    /// </remarks>
+    public void ResetPerfectHuntCooldown()
+    {
+        HasUsedThePerfectHuntThisRestCycle = false;
+    }
 }
 
