@@ -1549,6 +1549,135 @@
           "description": "Investigate tracks to reveal creature information"
         }
       ]
+    },
+    {
+      "id": "hunters-eye",
+      "name": "Hunter's Eye",
+      "description": "Passive ability that evaluates ranged attacks against targets with cover. Ignores Partial cover penalties (+2 AC negated), but cannot bypass Full cover. No AP cost — applied automatically when making ranged attacks.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 0,
+      "rangeUnit": "None",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "tags": [
+        "passive",
+        "cover-negation",
+        "ranged-attack",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "IgnoreCover",
+          "coverTypesIgnored": [
+            "Partial"
+          ],
+          "partialCoverPenaltyNegated": 2,
+          "description": "Ignore partial cover on ranged attacks"
+        }
+      ]
+    },
+    {
+      "id": "trap-mastery",
+      "name": "Trap Mastery",
+      "description": "Place hunting traps (2 AP) or detect enemy traps (2 AP). Placement: creates an armed trap at a location (max 2 active). Detection: Perception check 1d20 + Trap Mastery (+3) + Keen Senses (+1 if unlocked) vs DC 13. Traps deal 1d8 piercing damage and immobilize for 1 turn.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Location",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 5,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "active",
+        "tactical",
+        "battlefield-control",
+        "detection",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "TrapPlacement",
+          "maxActiveTraps": 2,
+          "trapDamage": "1d8",
+          "trapDamageType": "piercing",
+          "immobilizeTurns": 1,
+          "trapDetectionDc": 13,
+          "description": "Place a hunting trap at a location"
+        },
+        {
+          "type": "TrapDetection",
+          "perceptionBonus": 3,
+          "keenSensesBonus": 1,
+          "detectionDc": 13,
+          "description": "Scan the area for enemy traps"
+        }
+      ]
+    },
+    {
+      "id": "predators-patience",
+      "name": "Predator's Patience",
+      "description": "Activates a patient hunter stance (1 AP). While active and stationary, the hunter gains +3 to all attack rolls. Movement immediately breaks the stance. No AP cost to deactivate.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Stance",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 0,
+      "rangeUnit": "None",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "UntilBroken",
+      "tags": [
+        "stance",
+        "hit-bonus",
+        "tactical-patience",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "StanceBuff",
+          "hitBonus": 3,
+          "breakConditions": [
+            "Movement"
+          ],
+          "description": "Gain +3 to hit while stationary"
+        }
+      ]
     }
   ]
 }

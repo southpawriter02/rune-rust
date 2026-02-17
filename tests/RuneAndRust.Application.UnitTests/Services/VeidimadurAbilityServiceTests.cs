@@ -12,16 +12,19 @@ namespace RuneAndRust.Application.UnitTests.Services;
 /// <summary>
 /// Unit tests for <see cref="VeidimadurAbilityService"/>.
 /// Tests Tier 1 abilities: Mark Quarry (active targeting), Keen Senses (passive bonus),
-/// and Read the Signs (active investigation with skill check).
+/// Read the Signs (active investigation with skill check); and Tier 2 abilities:
+/// Hunter's Eye (passive cover bypass), Trap Mastery (place/detect traps),
+/// and Predator's Patience (stationary hit bonus stance).
 /// </summary>
 /// <remarks>
 /// <para>Follows the test subclass pattern established by
 /// <see cref="BoneSetterAbilityServiceTests"/>. The <see cref="TestVeidimadurAbilityService"/>
-/// overrides the <c>internal virtual Roll1D20()</c> method for deterministic testing.</para>
+/// overrides the <c>internal virtual Roll1D20()</c> and <c>Roll1D8()</c> methods
+/// for deterministic testing.</para>
 /// <para>The <see cref="IVeidimadurQuarryMarksService"/> is mocked via Moq. All Quarry Marks
 /// state is managed through mock setups rather than real Player state, ensuring these are
 /// true unit tests with no cross-service dependencies.</para>
-/// <para>Introduced in v0.20.7a.</para>
+/// <para>Tier 1 tests introduced in v0.20.7a. Tier 2 tests added in v0.20.7b.</para>
 /// </remarks>
 [TestFixture]
 public class VeidimadurAbilityServiceTests
@@ -39,12 +42,14 @@ public class VeidimadurAbilityServiceTests
     }
 
     /// <summary>
-    /// Test subclass that overrides the dice method for deterministic testing.
-    /// Provides <see cref="Fixed1D20"/> for Read the Signs skill checks.
+    /// Test subclass that overrides dice methods for deterministic testing.
+    /// Provides <see cref="Fixed1D20"/> for skill checks and <see cref="Fixed1D8"/>
+    /// for trap damage calculations.
     /// </summary>
     private class TestVeidimadurAbilityService : VeidimadurAbilityService
     {
         public int Fixed1D20 { get; set; } = 10;
+        public int Fixed1D8 { get; set; } = 5;
 
         public TestVeidimadurAbilityService(
             IVeidimadurQuarryMarksService quarryMarksService,
@@ -52,6 +57,7 @@ public class VeidimadurAbilityServiceTests
             : base(quarryMarksService, logger) { }
 
         internal override int Roll1D20() => Fixed1D20;
+        internal override int Roll1D8() => Fixed1D8;
     }
 
     /// <summary>
@@ -527,5 +533,535 @@ public class VeidimadurAbilityServiceTests
 
         // Assert
         canUnlock.Should().BeFalse(); // Need 24 PP
+    }
+
+    // ===== Tier 2 Helper =====
+
+    /// <summary>
+    /// Creates a Veiðimaðr player with all Tier 1 and Tier 2 abilities unlocked,
+    /// plus any additional abilities specified.
+    /// </summary>
+    /// <param name="extraAbilities">Additional abilities beyond the standard T1+T2 set.</param>
+    /// <returns>A configured Veiðimaðr player ready for Tier 2 testing.</returns>
+    private static Player CreateTier2Veidimadur(params VeidimadurAbilityId[] extraAbilities)
+    {
+        var player = CreateVeidimadur(
+            VeidimadurAbilityId.MarkQuarry,
+            VeidimadurAbilityId.KeenSenses,
+            VeidimadurAbilityId.ReadTheSigns,
+            VeidimadurAbilityId.HuntersEye,
+            VeidimadurAbilityId.TrapMastery,
+            VeidimadurAbilityId.PredatorsPatience);
+        foreach (var ability in extraAbilities)
+            player.UnlockVeidimadurAbility(ability);
+        return player;
+    }
+
+    // ===== Hunter's Eye Tests (v0.20.7b) =====
+
+    [Test]
+    public void ExecuteHuntersEye_PartialCover_IgnoresCoverReturnsBonus()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        var targetId = Guid.NewGuid();
+
+        // Act
+        var result = _service.ExecuteHuntersEye(
+            player, targetId, "Draugr Archer", CoverType.Partial, 8);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CoverIgnored.Should().BeTrue();
+        result.BonusFromCoverIgnored.Should().Be(2);
+        result.OriginalCoverType.Should().Be(CoverType.Partial);
+        result.TargetName.Should().Be("Draugr Archer");
+        result.TargetId.Should().Be(targetId);
+        result.HunterId.Should().Be(player.Id);
+        result.Distance.Should().Be(8);
+        result.WasCoverIgnored().Should().BeTrue();
+    }
+
+    [Test]
+    public void ExecuteHuntersEye_FullCover_DoesNotIgnore()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Act
+        var result = _service.ExecuteHuntersEye(
+            player, Guid.NewGuid(), "Troll Warden", CoverType.Full, 5);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CoverIgnored.Should().BeFalse();
+        result.BonusFromCoverIgnored.Should().Be(0);
+        result.OriginalCoverType.Should().Be(CoverType.Full);
+        result.WasCoverIgnored().Should().BeFalse();
+    }
+
+    [Test]
+    public void ExecuteHuntersEye_NoCover_NoEffectReturnsResult()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Act
+        var result = _service.ExecuteHuntersEye(
+            player, Guid.NewGuid(), "Corrupted Wolf", CoverType.None, 6);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CoverIgnored.Should().BeFalse();
+        result.BonusFromCoverIgnored.Should().Be(0);
+        result.OriginalCoverType.Should().Be(CoverType.None);
+    }
+
+    [Test]
+    public void ExecuteHuntersEye_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange — only Tier 1 abilities
+        var player = CreateVeidimadur(
+            VeidimadurAbilityId.MarkQuarry,
+            VeidimadurAbilityId.KeenSenses,
+            VeidimadurAbilityId.ReadTheSigns);
+
+        // Act
+        var result = _service.ExecuteHuntersEye(
+            player, Guid.NewGuid(), "Target", CoverType.Partial, 5);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteHuntersEye_WrongSpec_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("Test Berserkr");
+        player.SetSpecialization("berserkr");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.ExecuteHuntersEye(
+            player, Guid.NewGuid(), "Target", CoverType.Partial, 5);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteHuntersEye_NoAPCost_APUnchanged()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        var initialAP = player.CurrentAP;
+
+        // Act
+        _service.ExecuteHuntersEye(
+            player, Guid.NewGuid(), "Target", CoverType.Partial, 5);
+
+        // Assert
+        player.CurrentAP.Should().Be(initialAP,
+            "Hunter's Eye is a passive ability — no AP cost");
+    }
+
+    // ===== Trap Mastery Place Tests (v0.20.7b) =====
+
+    [Test]
+    public void ExecutePlaceTrap_ValidPrereqs_ReturnsSuccessResult()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Act
+        var result = _service.ExecutePlaceTrap(player, 5, 3, TrapType.Spike);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Type.Should().Be(TrapMasteryResult.ResultType.TrapPlaced);
+        result.PlacedTrap.Should().NotBeNull();
+        result.PlacedTrap!.Type.Should().Be(TrapType.Spike);
+        result.PlacedTrap.X.Should().Be(5);
+        result.PlacedTrap.Y.Should().Be(3);
+        result.PlacedTrap.PlacedBy.Should().Be(player.Id);
+        result.PlacedTrap.Status.Should().Be(TrapStatus.Armed);
+        result.LocationX.Should().Be(5);
+        result.LocationY.Should().Be(3);
+        player.CurrentAP.Should().Be(8); // 10 - 2
+        player.HuntingTraps.Should().HaveCount(1);
+    }
+
+    [Test]
+    public void ExecutePlaceTrap_AtMaxTraps_ReturnsFailure()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Place 2 traps (the max)
+        _service.ExecutePlaceTrap(player, 0, 0, TrapType.Net);
+        _service.ExecutePlaceTrap(player, 1, 1, TrapType.Snare);
+        player.GetArmedHuntingTraps().Should().HaveCount(2);
+        player.CurrentAP = 10; // Reset AP for the test
+
+        // Act — try to place a 3rd
+        var result = _service.ExecutePlaceTrap(player, 2, 2, TrapType.PitFall);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        result.Message.Should().Contain("Maximum active traps");
+        player.HuntingTraps.Should().HaveCount(2); // Still 2
+        player.CurrentAP.Should().Be(10); // AP not deducted on failure
+    }
+
+    [Test]
+    public void ExecutePlaceTrap_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        player.CurrentAP = 1; // Need 2
+
+        // Act
+        var result = _service.ExecutePlaceTrap(player, 0, 0, TrapType.Spike);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(1); // Unchanged
+    }
+
+    [Test]
+    public void ExecutePlaceTrap_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateVeidimadur(
+            VeidimadurAbilityId.MarkQuarry,
+            VeidimadurAbilityId.KeenSenses,
+            VeidimadurAbilityId.ReadTheSigns);
+
+        // Act
+        var result = _service.ExecutePlaceTrap(player, 0, 0, TrapType.Spike);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecutePlaceTrap_MultipleTrapTypes_AllSucceed()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        player.CurrentAP = 20; // Plenty of AP
+
+        // Act — place two different trap types
+        var spikeResult = _service.ExecutePlaceTrap(player, 1, 1, TrapType.Spike);
+        var netResult = _service.ExecutePlaceTrap(player, 2, 2, TrapType.Net);
+
+        // Assert
+        spikeResult.Should().NotBeNull();
+        spikeResult!.PlacedTrap!.Type.Should().Be(TrapType.Spike);
+        netResult.Should().NotBeNull();
+        netResult!.PlacedTrap!.Type.Should().Be(TrapType.Net);
+        player.HuntingTraps.Should().HaveCount(2);
+    }
+
+    // ===== Trap Mastery Detect Tests (v0.20.7b) =====
+
+    [Test]
+    public void ExecuteDetectTraps_HighRoll_ReturnsSuccess()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        _service.Fixed1D20 = 15; // 15 + 3 (trap bonus) + 1 (keen senses) = 19 vs DC 13
+
+        // Act
+        var result = _service.ExecuteDetectTraps(player, 5, 5);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Type.Should().Be(TrapMasteryResult.ResultType.TrapsDetected);
+        result.PerceptionRoll.Should().Be(19); // 15 + 3 + 1
+        result.PerceptionDc.Should().Be(13);
+        result.PerceptionBonus.Should().Be(4); // 3 (trap) + 1 (keen senses)
+        player.CurrentAP.Should().Be(8); // 10 - 2
+    }
+
+    [Test]
+    public void ExecuteDetectTraps_LowRoll_ReturnsFailure()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        _service.Fixed1D20 = 2; // 2 + 3 + 1 = 6 vs DC 13
+
+        // Act
+        var result = _service.ExecuteDetectTraps(player, 5, 5);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        result.PerceptionRoll.Should().Be(6); // 2 + 3 + 1
+        result.PerceptionDc.Should().Be(13);
+        result.PerceptionBonus.Should().Be(4); // 3 + 1
+        result.DetectedTrapsCount.Should().Be(0);
+        player.CurrentAP.Should().Be(8); // 10 - 2 (AP spent even on failure)
+    }
+
+    [Test]
+    public void ExecuteDetectTraps_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        player.CurrentAP = 1; // Need 2
+
+        // Act
+        var result = _service.ExecuteDetectTraps(player, 0, 0);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(1); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteDetectTraps_WithoutKeenSenses_LowerBonus()
+    {
+        // Arrange — T2 abilities but NO Keen Senses
+        var player = CreateVeidimadur(
+            VeidimadurAbilityId.MarkQuarry,
+            VeidimadurAbilityId.ReadTheSigns,
+            VeidimadurAbilityId.HuntersEye,
+            VeidimadurAbilityId.TrapMastery,
+            VeidimadurAbilityId.PredatorsPatience);
+        _service.Fixed1D20 = 10; // 10 + 3 + 0 = 13 vs DC 13 (exact match = success)
+
+        // Act
+        var result = _service.ExecuteDetectTraps(player, 3, 3);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.PerceptionBonus.Should().Be(3); // Only trap bonus, no Keen Senses
+        result.PerceptionRoll.Should().Be(13); // 10 + 3
+    }
+
+    // ===== Predator's Patience Tests (v0.20.7b) =====
+
+    [Test]
+    public void ActivatePredatorsPatience_ValidPrereqs_ReturnsActiveState()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Act
+        var result = _service.ActivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsActive.Should().BeTrue();
+        result.HunterId.Should().Be(player.Id);
+        result.HitBonus.Should().Be(3);
+        result.HasMovedThisTurn.Should().BeFalse();
+        result.GetCurrentBonus().Should().Be(3);
+        player.CurrentAP.Should().Be(9); // 10 - 1
+        player.PredatorsPatience.Should().NotBeNull();
+        player.PredatorsPatience!.IsActive.Should().BeTrue();
+    }
+
+    [Test]
+    public void ActivatePredatorsPatience_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        player.CurrentAP = 0;
+
+        // Act
+        var result = _service.ActivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(0);
+    }
+
+    [Test]
+    public void ActivatePredatorsPatience_WrongSpec_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("Test Berserkr");
+        player.SetSpecialization("berserkr");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.ActivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ActivatePredatorsPatience_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateVeidimadur(
+            VeidimadurAbilityId.MarkQuarry,
+            VeidimadurAbilityId.KeenSenses,
+            VeidimadurAbilityId.ReadTheSigns);
+
+        // Act
+        var result = _service.ActivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void DeactivatePredatorsPatience_ActiveStance_ReturnsTrue()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        _service.ActivatePredatorsPatience(player); // Activate first
+        player.PredatorsPatience!.IsActive.Should().BeTrue(); // Precondition
+
+        // Act
+        var result = _service.DeactivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().BeTrue();
+        player.PredatorsPatience!.IsActive.Should().BeFalse();
+    }
+
+    [Test]
+    public void DeactivatePredatorsPatience_NotActive_ReturnsFalse()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        // Don't activate the stance
+
+        // Act
+        var result = _service.DeactivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Test]
+    public void DeactivatePredatorsPatience_WrongSpec_ReturnsFalse()
+    {
+        // Arrange
+        var player = new Player("Test Bone-Setter");
+        player.SetSpecialization("bone-setter");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.DeactivatePredatorsPatience(player);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Test]
+    public void GetPredatorsPatienceBonus_ActiveNoMovement_Returns3()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        _service.ActivatePredatorsPatience(player);
+
+        // Act
+        var bonus = _service.GetPredatorsPatienceBonus(player);
+
+        // Assert
+        bonus.Should().Be(3);
+    }
+
+    [Test]
+    public void GetPredatorsPatienceBonus_NotActive_Returns0()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        // Stance not activated
+
+        // Act
+        var bonus = _service.GetPredatorsPatienceBonus(player);
+
+        // Assert
+        bonus.Should().Be(0);
+    }
+
+    [Test]
+    public void GetPredatorsPatienceBonus_AfterMovement_Returns0()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        _service.ActivatePredatorsPatience(player);
+        player.PredatorsPatience!.RecordMovement(); // Movement breaks stance
+
+        // Act
+        var bonus = _service.GetPredatorsPatienceBonus(player);
+
+        // Assert
+        bonus.Should().Be(0);
+    }
+
+    // ===== Tier 2 Readiness & PP Tests (v0.20.7b) =====
+
+    [Test]
+    public void GetAbilityReadiness_IncludesTier2Abilities()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        player.CurrentAP = 2; // Enough for all T2 actives
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert
+        readiness.Should().ContainKey(VeidimadurAbilityId.HuntersEye)
+            .WhoseValue.Should().BeTrue(); // Passive — always ready
+        readiness.Should().ContainKey(VeidimadurAbilityId.TrapMastery)
+            .WhoseValue.Should().BeTrue(); // 2 AP available
+        readiness.Should().ContainKey(VeidimadurAbilityId.PredatorsPatience)
+            .WhoseValue.Should().BeTrue(); // 1 AP available (2 >= 1)
+    }
+
+    [Test]
+    public void GetAbilityReadiness_Tier2InsufficientAP_ActiveAbilitiesNotReady()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+        player.CurrentAP = 0;
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert
+        readiness[VeidimadurAbilityId.HuntersEye].Should().BeTrue(); // Passive
+        readiness[VeidimadurAbilityId.TrapMastery].Should().BeFalse(); // Needs 2 AP
+        readiness[VeidimadurAbilityId.PredatorsPatience].Should().BeFalse(); // Needs 1 AP
+    }
+
+    [Test]
+    public void GetPPInvested_WithTier2Abilities_Returns12()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Act
+        var ppInvested = _service.GetPPInvested(player);
+
+        // Assert
+        ppInvested.Should().Be(12); // T1: 3×0 = 0, T2: 3×4 = 12 → total 12
+    }
+
+    [Test]
+    public void CanUnlockTier2_WithAllTier2_ReturnsTrue()
+    {
+        // Arrange
+        var player = CreateTier2Veidimadur();
+
+        // Act
+        var canUnlock = _service.CanUnlockTier2(player);
+
+        // Assert
+        canUnlock.Should().BeTrue(); // 12 PP >= 8 PP requirement
     }
 }

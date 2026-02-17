@@ -8,8 +8,8 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Veiðimaðr (Hunter) specialization ability execution.
-/// Implements Tier 1 (Foundation) abilities including quarry marking,
-/// perception bonuses, and track investigation.
+/// Implements Tier 1 (Foundation) and Tier 2 (Discipline) abilities including quarry marking,
+/// perception bonuses, track investigation, cover bypass, traps, and stance management.
 /// </summary>
 /// <remarks>
 /// <para>The Veiðimaðr is a Coherent path Skirmisher with zero Corruption risk.
@@ -121,6 +121,48 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
     /// The specialization ID string for Veiðimaðr (Hunter).
     /// </summary>
     private const string VeidimadurSpecId = "veidimadur";
+
+    // ===== Tier 2 Cost Constants (v0.20.7b) =====
+
+    /// <summary>
+    /// The AC penalty normally applied by partial cover, which Hunter's Eye negates.
+    /// </summary>
+    private const int HuntersEyePartialCoverPenalty = 2;
+
+    /// <summary>
+    /// AP cost for placing a hunting trap via Trap Mastery.
+    /// </summary>
+    private const int TrapMasteryPlaceApCost = 2;
+
+    /// <summary>
+    /// AP cost for detecting enemy traps via Trap Mastery.
+    /// </summary>
+    private const int TrapMasteryDetectApCost = 2;
+
+    /// <summary>
+    /// Difficulty Class for the Trap Mastery detection perception check.
+    /// </summary>
+    private const int TrapMasteryDetectionDc = 13;
+
+    /// <summary>
+    /// Bonus applied to the Trap Mastery detection perception check (before Keen Senses).
+    /// </summary>
+    private const int TrapMasteryDetectionBonus = 3;
+
+    /// <summary>
+    /// Maximum number of armed hunting traps a Veiðimaðr may have active simultaneously.
+    /// </summary>
+    private const int TrapMasteryMaxActiveTraps = 2;
+
+    /// <summary>
+    /// AP cost for activating the Predator's Patience stance.
+    /// </summary>
+    private const int PredatorsPatienceApCost = 1;
+
+    /// <summary>
+    /// Hit bonus granted by the Predator's Patience stance when active and unmoved.
+    /// </summary>
+    private const int PredatorsPatienceHitBonus = 3;
 
     private readonly IVeidimadurQuarryMarksService _quarryMarksService;
     private readonly ILogger<VeidimadurAbilityService> _logger;
@@ -377,6 +419,393 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
         return KeenSensesPerceptionBonus;
     }
 
+    // ===== Tier 2 Ability Methods (v0.20.7b) =====
+
+    /// <inheritdoc />
+    public HuntersEyeResult? ExecuteHuntersEye(
+        Player player,
+        Guid targetId,
+        string targetName,
+        CoverType targetCover,
+        int distance)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Hunter's Eye failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.HuntersEye))
+        {
+            _logger.LogWarning(
+                "Hunter's Eye failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // === No AP cost — Hunter's Eye is a passive ability ===
+        // === No Corruption evaluation — Coherent path ===
+
+        // Evaluate whether the target's cover should be ignored
+        var coverIgnored = HuntersEyeResult.ShouldIgnoreCover(targetCover);
+
+        // Calculate the effective bonus from ignoring cover
+        var bonusFromCoverIgnored = coverIgnored ? HuntersEyePartialCoverPenalty : 0;
+
+        // Build result
+        var result = new HuntersEyeResult
+        {
+            HunterId = player.Id,
+            TargetId = targetId,
+            TargetName = targetName,
+            OriginalCoverType = targetCover,
+            CoverIgnored = coverIgnored,
+            BonusFromCoverIgnored = bonusFromCoverIgnored,
+            Distance = distance
+        };
+
+        if (coverIgnored)
+        {
+            _logger.LogInformation(
+                "Hunter's Eye evaluated: {Player} ({PlayerId}) ignores {CoverType} cover on " +
+                "{Target} ({TargetId}) at {Distance} spaces. Effective bonus: +{Bonus} " +
+                "(negated cover AC penalty)",
+                player.Name, player.Id,
+                targetCover, targetName, targetId,
+                distance, bonusFromCoverIgnored);
+        }
+        else if (targetCover == CoverType.Full)
+        {
+            _logger.LogWarning(
+                "Hunter's Eye evaluated: {Player} ({PlayerId}) cannot ignore {CoverType} cover on " +
+                "{Target} ({TargetId}) at {Distance} spaces — full cover cannot be bypassed",
+                player.Name, player.Id,
+                targetCover, targetName, targetId, distance);
+        }
+        else
+        {
+            _logger.LogInformation(
+                "Hunter's Eye evaluated: {Player} ({PlayerId}) attacking {Target} ({TargetId}) " +
+                "at {Distance} spaces — no cover to ignore ({CoverType})",
+                player.Name, player.Id,
+                targetName, targetId, distance, targetCover);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public TrapMasteryResult? ExecutePlaceTrap(
+        Player player,
+        int x,
+        int y,
+        TrapType trapType)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Place) failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.TrapMastery))
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Place) failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < TrapMasteryPlaceApCost)
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Place) failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, TrapMasteryPlaceApCost, player.CurrentAP);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Check maximum active traps constraint
+        var armedTraps = player.GetArmedHuntingTraps();
+        if (armedTraps.Count >= TrapMasteryMaxActiveTraps)
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Place) failed: {Player} ({PlayerId}) already has {Current}/{Max} " +
+                "armed traps. Must disarm or wait for a trap to trigger before placing another",
+                player.Name, player.Id, armedTraps.Count, TrapMasteryMaxActiveTraps);
+            return TrapMasteryResult.CreatePlacementFailure(x, y,
+                $"Maximum active traps reached ({TrapMasteryMaxActiveTraps}). " +
+                "Disarm or wait for a trap to trigger before placing another.");
+        }
+
+        // Deduct AP
+        player.CurrentAP -= TrapMasteryPlaceApCost;
+
+        // Create the trap instance
+        var trap = TrapInstance.Create(player.Id, x, y, trapType);
+
+        // Add trap to player's hunting traps
+        player.AddHuntingTrap(trap);
+
+        // Build success result
+        var result = TrapMasteryResult.CreatePlacementSuccess(trap, x, y);
+
+        _logger.LogInformation(
+            "Trap Mastery (Place) executed: {Player} ({PlayerId}) placed a {TrapType} trap " +
+            "at ({X}, {Y}). Trap ID: {TrapId}. Damage: {DamageRoll} + {ImmobilizeTurns}-turn " +
+            "immobilize. Detection DC: {DetectionDc}. Armed traps: {ArmedCount}/{MaxTraps}. " +
+            "AP remaining: {RemainingAP}",
+            player.Name, player.Id,
+            trapType, x, y,
+            trap.TrapId, trap.DamageRoll, trap.ImmobilizeTurns,
+            trap.DetectionDc,
+            player.GetArmedHuntingTraps().Count, TrapMasteryMaxActiveTraps,
+            player.CurrentAP);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public TrapMasteryResult? ExecuteDetectTraps(
+        Player player,
+        int centerX,
+        int centerY)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Detect) failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.TrapMastery))
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Detect) failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < TrapMasteryDetectApCost)
+        {
+            _logger.LogWarning(
+                "Trap Mastery (Detect) failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, TrapMasteryDetectApCost, player.CurrentAP);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Deduct AP
+        player.CurrentAP -= TrapMasteryDetectApCost;
+
+        // Calculate total perception bonus: Trap Mastery bonus + Keen Senses (if unlocked)
+        var keenSensesBonus = GetKeenSensesBonus(player);
+        var totalBonus = TrapMasteryDetectionBonus + keenSensesBonus;
+
+        // Roll perception check: 1d20 + total bonus
+        var diceRoll = Roll1D20();
+        var totalRoll = diceRoll + totalBonus;
+
+        // Compare vs DC
+        var success = totalRoll >= TrapMasteryDetectionDc;
+
+        TrapMasteryResult result;
+
+        if (success)
+        {
+            // Detection succeeds — in this implementation, the number of traps
+            // detected is determined by the caller/game state. We report the
+            // successful check and let the encounter system populate detected traps.
+            // For the base success, we report 0 traps as a "passed check" indicator.
+            var descriptions = new List<string>
+            {
+                "Your trained senses sweep the area, searching for hidden dangers."
+            };
+
+            result = TrapMasteryResult.CreateDetectionSuccess(
+                count: 0,
+                descriptions: descriptions,
+                roll: totalRoll,
+                dc: TrapMasteryDetectionDc,
+                bonus: totalBonus);
+
+            _logger.LogInformation(
+                "Trap Mastery (Detect) executed: {Player} ({PlayerId}) scanned area around " +
+                "({CenterX}, {CenterY}). Roll: {DiceRoll} + {Bonus} = {TotalRoll} vs DC {DC} " +
+                "(SUCCESS). Keen Senses bonus: +{KeenSensesBonus}. AP remaining: {RemainingAP}",
+                player.Name, player.Id,
+                centerX, centerY,
+                diceRoll, totalBonus, totalRoll, TrapMasteryDetectionDc,
+                keenSensesBonus,
+                player.CurrentAP);
+        }
+        else
+        {
+            result = TrapMasteryResult.CreateDetectionFailure(
+                roll: totalRoll,
+                dc: TrapMasteryDetectionDc,
+                bonus: totalBonus);
+
+            _logger.LogInformation(
+                "Trap Mastery (Detect) executed: {Player} ({PlayerId}) scanned area around " +
+                "({CenterX}, {CenterY}). Roll: {DiceRoll} + {Bonus} = {TotalRoll} vs DC {DC} " +
+                "(FAILURE). Keen Senses bonus: +{KeenSensesBonus}. AP remaining: {RemainingAP}",
+                player.Name, player.Id,
+                centerX, centerY,
+                diceRoll, totalBonus, totalRoll, TrapMasteryDetectionDc,
+                keenSensesBonus,
+                player.CurrentAP);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public PredatorsPatienceState? ActivatePredatorsPatience(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Predator's Patience (Activate) failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.PredatorsPatience))
+        {
+            _logger.LogWarning(
+                "Predator's Patience (Activate) failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost
+        if (player.CurrentAP < PredatorsPatienceApCost)
+        {
+            _logger.LogWarning(
+                "Predator's Patience (Activate) failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}, have {Available})",
+                player.Name, player.Id, PredatorsPatienceApCost, player.CurrentAP);
+            return null;
+        }
+
+        // === No Corruption evaluation — Coherent path ===
+
+        // Deduct AP
+        player.CurrentAP -= PredatorsPatienceApCost;
+
+        // Create or retrieve stance state, then activate
+        var state = player.PredatorsPatience ?? PredatorsPatienceState.Create(player.Id);
+        state.Activate();
+
+        // Store the state on the player
+        player.SetPredatorsPatience(state);
+
+        _logger.LogInformation(
+            "Predator's Patience activated: {Player} ({PlayerId}) enters the patient hunter " +
+            "stance. Hit bonus: +{HitBonus} while stationary. Movement will break the stance. " +
+            "AP remaining: {RemainingAP}",
+            player.Name, player.Id,
+            PredatorsPatienceHitBonus,
+            player.CurrentAP);
+
+        return state;
+    }
+
+    /// <inheritdoc />
+    public bool DeactivatePredatorsPatience(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsVeidimadur(player))
+        {
+            _logger.LogWarning(
+                "Predator's Patience (Deactivate) failed: {Player} ({PlayerId}) is not a Veiðimaðr",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // Validate ability unlock
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.PredatorsPatience))
+        {
+            _logger.LogWarning(
+                "Predator's Patience (Deactivate) failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // === No AP cost to deactivate ===
+
+        // Check if stance is actually active
+        var state = player.PredatorsPatience;
+        if (state == null || !state.IsActive)
+        {
+            _logger.LogWarning(
+                "Predator's Patience (Deactivate) failed: {Player} ({PlayerId}) does not " +
+                "have an active Predator's Patience stance to deactivate",
+                player.Name, player.Id);
+            return false;
+        }
+
+        // Deactivate the stance
+        state.Deactivate();
+        player.SetPredatorsPatience(state);
+
+        _logger.LogInformation(
+            "Predator's Patience deactivated: {Player} ({PlayerId}) exits the patient hunter " +
+            "stance. Turns held: {TurnsInStance}",
+            player.Name, player.Id,
+            state.TurnsInStance);
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public int GetPredatorsPatienceBonus(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Predator's Patience is a stance — bonus only applies while active and unmoved
+        if (!IsVeidimadur(player))
+            return 0;
+
+        if (!player.HasVeidimadurAbilityUnlocked(VeidimadurAbilityId.PredatorsPatience))
+            return 0;
+
+        var state = player.PredatorsPatience;
+        if (state == null)
+            return 0;
+
+        return state.GetCurrentBonus();
+    }
+
     // ===== Utility Methods =====
 
     /// <inheritdoc />
@@ -405,7 +834,18 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
                 VeidimadurAbilityId.ReadTheSigns =>
                     player.CurrentAP >= ReadTheSignsApCost,
 
-                // Future tier abilities will be added in v0.20.7b/c
+                // Tier 2 passive — always ready when unlocked (no AP cost)
+                VeidimadurAbilityId.HuntersEye => true,
+
+                // Tier 2 active — requires AP for placement or detection
+                VeidimadurAbilityId.TrapMastery =>
+                    player.CurrentAP >= TrapMasteryPlaceApCost,
+
+                // Tier 2 stance — requires AP to activate
+                VeidimadurAbilityId.PredatorsPatience =>
+                    player.CurrentAP >= PredatorsPatienceApCost,
+
+                // Future tier abilities will be added in v0.20.7c
                 _ => false
             };
 
@@ -471,6 +911,19 @@ public class VeidimadurAbilityService : IVeidimadurAbilityService
     internal virtual int Roll1D20()
     {
         return Random.Shared.Next(1, 21);
+    }
+
+    /// <summary>
+    /// Rolls 1d8 for trap damage calculations.
+    /// </summary>
+    /// <returns>A value between 1 and 8 inclusive.</returns>
+    /// <remarks>
+    /// Marked <c>internal virtual</c> to allow test subclasses to provide deterministic values.
+    /// Used by Trap Mastery for calculating trap damage when triggered.
+    /// </remarks>
+    internal virtual int Roll1D8()
+    {
+        return Random.Shared.Next(1, 9);
     }
 
     // ===== Private Helper Methods =====

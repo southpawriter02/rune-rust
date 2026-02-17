@@ -1951,5 +1951,93 @@ public class Player : IEntity
         }
         return total;
     }
+
+    // ===== Veiðimaðr (Hunter) Tier 2 Properties (v0.20.7b) =====
+
+    /// <summary>
+    /// Gets the Veiðimaðr's Predator's Patience stance state.
+    /// Null for non-Veiðimaðr players or before initialization.
+    /// </summary>
+    /// <remarks>
+    /// Predator's Patience is a Tier 2 stance granting +3 to hit while stationary.
+    /// Any movement breaks the stance and removes the bonus.
+    /// </remarks>
+    public PredatorsPatienceState? PredatorsPatience { get; private set; }
+
+    /// <summary>
+    /// Backing field for the Veiðimaðr's active hunting traps.
+    /// </summary>
+    private readonly List<TrapInstance> _huntingTraps = [];
+
+    /// <summary>
+    /// Gets the Veiðimaðr's active hunting traps as a read-only list.
+    /// </summary>
+    /// <remarks>
+    /// Maximum 2 active traps per Veiðimaðr. Traps are single-use: once triggered or
+    /// disarmed, they are destroyed. Distinct from Rúnasmiðr's runic traps
+    /// (<see cref="ActiveTraps"/>).
+    /// </remarks>
+    public IReadOnlyList<TrapInstance> HuntingTraps => _huntingTraps;
+
+    // ===== Veiðimaðr (Hunter) Tier 2 Methods (v0.20.7b) =====
+
+    /// <summary>
+    /// Sets the Predator's Patience stance state for this player.
+    /// </summary>
+    /// <param name="state">The stance state to assign, or null to clear.</param>
+    public void SetPredatorsPatience(PredatorsPatienceState? state)
+    {
+        PredatorsPatience = state;
+    }
+
+    /// <summary>
+    /// Initializes the Predator's Patience stance state with default (inactive) settings.
+    /// </summary>
+    public void InitializePredatorsPatience()
+    {
+        PredatorsPatience = PredatorsPatienceState.Create(Id);
+    }
+
+    /// <summary>
+    /// Adds a hunting trap to the player's active traps collection.
+    /// </summary>
+    /// <param name="trap">The trap to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="trap"/> is null.</exception>
+    public void AddHuntingTrap(TrapInstance trap)
+    {
+        ArgumentNullException.ThrowIfNull(trap);
+        _huntingTraps.Add(trap);
+    }
+
+    /// <summary>
+    /// Removes a specific hunting trap by its ID.
+    /// </summary>
+    /// <param name="trapId">The trap ID to remove.</param>
+    /// <returns>True if the trap was found and removed.</returns>
+    public bool RemoveHuntingTrap(Guid trapId)
+    {
+        return _huntingTraps.RemoveAll(t => t.TrapId == trapId) > 0;
+    }
+
+    /// <summary>
+    /// Gets only the armed (ready to trigger) hunting traps.
+    /// Filters out triggered, disarmed, and destroyed traps.
+    /// </summary>
+    /// <returns>Read-only list of armed hunting traps.</returns>
+    public IReadOnlyList<TrapInstance> GetArmedHuntingTraps()
+    {
+        return _huntingTraps
+            .Where(t => t.Status == Enums.TrapStatus.Armed)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Removes all hunting traps from this player's collection.
+    /// Called at encounter end to clean up traps.
+    /// </summary>
+    public void ClearAllHuntingTraps()
+    {
+        _huntingTraps.Clear();
+    }
 }
 
