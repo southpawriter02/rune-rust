@@ -1805,6 +1805,124 @@
       "restrictions": [
         "OncePerLongRest"
       ]
+    },
+    {
+      "id": "seidr-bolt",
+      "name": "Seiðr Bolt",
+      "description": "Launch a bolt of raw Aetheric energy at a target, dealing 2d6 Aetheric damage. Each cast builds +1 Aether Resonance and adds the damage to the Accumulated Aetheric Damage tracker for the Unraveling capstone. Subject to probability-based Corruption check at Resonance 5+ (Heretical path).",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "damage",
+        "aetheric",
+        "ranged",
+        "heretical",
+        "active",
+        "mystic",
+        "resonance-build"
+      ],
+      "effects": [
+        {
+          "type": "Damage",
+          "dice": "2d6",
+          "damageType": "aetheric",
+          "resonanceGain": 1,
+          "accumulatesDamage": true,
+          "description": "2d6 Aetheric damage, +1 Resonance, damage accumulated for Unraveling"
+        }
+      ]
+    },
+    {
+      "id": "wyrd-sight",
+      "name": "Wyrd Sight",
+      "description": "Open the Wyrd Sight to perceive hidden truths. Detects invisible creatures, magic auras, and Corruption sources within a 10-space radius for 3 turns. Does NOT build Resonance and does NOT trigger Corruption checks — pure detection has no Aetheric cost.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 10,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 3,
+      "durationUnit": "Turns",
+      "tags": [
+        "detection",
+        "utility",
+        "active",
+        "mystic",
+        "no-resonance"
+      ],
+      "effects": [
+        {
+          "type": "Detection",
+          "detectsInvisible": true,
+          "detectsMagic": true,
+          "detectsCorruption": true,
+          "radius": 10,
+          "description": "Detect invisible creatures, magic auras, and Corruption sources within 10 spaces"
+        }
+      ]
+    },
+    {
+      "id": "aether-attunement",
+      "name": "Aether Attunement",
+      "description": "Attunement to the Aether enhances natural recovery, granting +10% AP regeneration rate. Always active while conscious. Does not build Resonance (passive abilities do not channel Aether). No Corruption risk.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "tags": [
+        "passive",
+        "regeneration",
+        "mystic",
+        "no-resonance"
+      ],
+      "effects": [
+        {
+          "type": "PassiveBonus",
+          "apRegenBonus": 10,
+          "description": "+10% AP regeneration rate"
+        }
+      ]
     }
   ]
 }

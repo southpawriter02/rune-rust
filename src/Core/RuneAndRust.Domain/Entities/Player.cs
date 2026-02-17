@@ -2069,5 +2069,138 @@ public class Player : IEntity
     {
         HasUsedThePerfectHuntThisRestCycle = false;
     }
+
+    // ===== Seiðkona (Seeress) Specialization Properties (v0.20.8a) =====
+
+    /// <summary>
+    /// Gets the Seiðkona's Aether Resonance resource state.
+    /// Null for non-Seiðkona players or before initialization.
+    /// </summary>
+    /// <remarks>
+    /// <para>Aether Resonance builds through casting (primarily Seiðr Bolt) and is NOT consumed
+    /// except by the Unraveling capstone (v0.20.8c). Higher Resonance increases Corruption
+    /// probability: 0% at 0–4, 5% at 5–7, 15% at 8–9, 25% at 10.</para>
+    /// <para>Uses mutable <c>private set</c> pattern (like <see cref="RageResource"/>)
+    /// for frequent in-combat updates.</para>
+    /// </remarks>
+    public AetherResonanceResource? AetherResonance { get; private set; }
+
+    /// <summary>
+    /// Gets the Seiðkona's Accumulated Aetheric Damage tracker.
+    /// Null for non-Seiðkona players or before initialization.
+    /// </summary>
+    /// <remarks>
+    /// Tracks total Aetheric damage dealt across casts for the Unraveling capstone (v0.20.8c).
+    /// Uses immutable pattern — modifications return new instances.
+    /// </remarks>
+    public AccumulatedAethericDamage? AccumulatedAethericDamage { get; private set; }
+
+    /// <summary>
+    /// Gets the Seiðkona's active Wyrd Sight effect state.
+    /// Null when Wyrd Sight is not active or for non-Seiðkona players.
+    /// </summary>
+    /// <remarks>
+    /// Wyrd Sight lasts 3 turns, detecting invisible creatures, magic auras, and Corruption
+    /// sources within 10 spaces. Does NOT build Resonance or trigger Corruption checks.
+    /// </remarks>
+    public WyrdSightResult? WyrdSight { get; private set; }
+
+    /// <summary>
+    /// Backing store for unlocked Seiðkona abilities.
+    /// </summary>
+    private readonly HashSet<SeidkonaAbilityId> _unlockedSeidkonaAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Seiðkona abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<SeidkonaAbilityId> UnlockedSeidkonaAbilities
+        => _unlockedSeidkonaAbilities;
+
+    // ===== Seiðkona (Seeress) Specialization Methods (v0.20.8a) =====
+
+    /// <summary>
+    /// Initializes the Aether Resonance resource for this player with default settings (max 10).
+    /// Also initializes the Accumulated Aetheric Damage tracker.
+    /// </summary>
+    public void InitializeAetherResonance()
+    {
+        AetherResonance = AetherResonanceResource.Create();
+        AccumulatedAethericDamage = AccumulatedAethericDamage.Create();
+    }
+
+    /// <summary>
+    /// Sets the Aether Resonance resource to a specific instance (for state restoration or testing).
+    /// </summary>
+    /// <param name="aetherResonance">The Aether Resonance resource instance to assign.</param>
+    public void SetAetherResonance(AetherResonanceResource aetherResonance)
+    {
+        AetherResonance = aetherResonance;
+    }
+
+    /// <summary>
+    /// Sets the Accumulated Aetheric Damage tracker to a specific instance (for state restoration or testing).
+    /// </summary>
+    /// <param name="accumulatedDamage">The accumulated damage instance to assign.</param>
+    public void SetAccumulatedAethericDamage(AccumulatedAethericDamage accumulatedDamage)
+    {
+        AccumulatedAethericDamage = accumulatedDamage;
+    }
+
+    /// <summary>
+    /// Sets the Wyrd Sight effect state (for activation, turn decrement, or clearing).
+    /// </summary>
+    /// <param name="wyrdSight">The Wyrd Sight state to assign, or null to clear the effect.</param>
+    public void SetWyrdSight(WyrdSightResult? wyrdSight)
+    {
+        WyrdSight = wyrdSight;
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Seiðkona ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasSeidkonaAbilityUnlocked(SeidkonaAbilityId abilityId)
+    {
+        return _unlockedSeidkonaAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Seiðkona ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockSeidkonaAbility(SeidkonaAbilityId abilityId)
+    {
+        _unlockedSeidkonaAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Seiðkona abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 0 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetSeidkonaPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedSeidkonaAbilities)
+        {
+            total += ability switch
+            {
+                SeidkonaAbilityId.SeidrBolt or
+                SeidkonaAbilityId.WyrdSight or
+                SeidkonaAbilityId.AetherAttunement => 0,          // Tier 1: free
+                SeidkonaAbilityId.FatesThread or
+                SeidkonaAbilityId.WeaveDisruption or
+                SeidkonaAbilityId.ResonanceCascade => 4,           // Tier 2: 4 PP each
+                SeidkonaAbilityId.VolvasVision or
+                SeidkonaAbilityId.AetherStorm => 5,                // Tier 3: 5 PP each
+                SeidkonaAbilityId.Unraveling => 6,                 // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
 }
 

@@ -193,6 +193,65 @@
           "abilities": ["the-perfect-hunt"]
         }
       ]
+    },
+    {
+      "id": "seidkona",
+      "name": "Seiðkona",
+      "displayName": "Seeress",
+      "tagline": "Weaver of the Wyrd",
+      "archetypeId": "mystic",
+      "description": "Masters of raw Aether manipulation who channel the Wyrd-force itself. The only Mystic archetype and the final Heretical path, the Seiðkona accumulates Aether Resonance through casting, unlocking devastating power at the cost of escalating Corruption risk.",
+      "specialResource": {
+        "id": "aether-resonance",
+        "name": "Aether Resonance",
+        "maxValue": 10,
+        "startValue": 0,
+        "generationMethod": "casting",
+        "buildPerCast": 1,
+        "consumedByAbilities": false,
+        "consumedByCapstone": true,
+        "corruptionRisk": {
+          "type": "probability",
+          "safeRange": [0, 4],
+          "riskyRange": [5, 7],
+          "riskyPercent": 5,
+          "dangerousRange": [8, 9],
+          "dangerousPercent": 15,
+          "criticalValue": 10,
+          "criticalPercent": 25
+        },
+        "restoreOnRest": false
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 0,
+          "abilities": ["seidr-bolt", "wyrd-sight", "aether-attunement"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["fates-thread", "weave-disruption", "resonance-cascade"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["volvas-vision", "aether-storm"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["unraveling"]
+        }
+      ]
     }
   ]
 }
