@@ -84,7 +84,7 @@ public static class RoomTemplateSeeder
             "Armory",
             RoomArchetype.Chamber,
             Biome.Citadel,
-            "This {ADJ_SIZE} room once stored weapons and armor. The walls are lined with empty weapon mounts. A {ADJ_CONDITION} anvil suggests repairs were made here.",
+            "This {ADJ_SIZE} room once stored weapons and armor. The walls are lined with empty weapon mounts. A {ADJ_CONDITION} anvil suggests mending was done here.",
             minExits: 1, maxExits: 2, weight: 2);
         chamber3.AddTags(["Military", "Storage"]);
         chamber3.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "weapon_crate", 0.5));
@@ -204,7 +204,7 @@ public static class RoomTemplateSeeder
             "Machine Graveyard",
             RoomArchetype.Chamber,
             Biome.TheRoots,
-            "Broken machines litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' devices, making them part of the living earth.",
+            "Shattered iron-husks litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' artifacts, making them part of the living earth.",
             minExits: 2, maxExits: 3, weight: 2);
         chamber2.AddTags(["Salvage", "Organic", "Machine"]);
         chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "rusted_terminal", 0.4));
