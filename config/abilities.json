@@ -2046,6 +2046,144 @@
           "description": "Reduce all Seiðkona ability AP costs by 1 (min 1) at Resonance 5+"
         }
       ]
+    },
+    {
+      "id": "volvas-vision",
+      "name": "Völva's Vision",
+      "description": "Channel the sight of the ancient völur to reveal all hidden, invisible, and concealed enemies within a 15-space radius. This mass-detection ability is the enhanced version of Wyrd Sight, offering area revelation instead of individual detection. Each cast builds +2 Aether Resonance — a significant escalation representing the magnitude of Aetheric channeling required for mass revelation. Subject to probability-based Corruption check at Resonance 5+. Does NOT deal damage and does NOT add to Accumulated Aetheric Damage.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 3,
+      "apCostWithCascade": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 15,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "detection",
+        "revelation",
+        "heretical",
+        "active",
+        "mystic",
+        "resonance-build",
+        "tier-3"
+      ],
+      "effects": [
+        {
+          "type": "Detection",
+          "revealRadius": 15,
+          "detects": ["hidden", "invisible", "concealed"],
+          "resonanceGain": 2,
+          "accumulatesDamage": false,
+          "description": "Reveals all hidden/invisible/concealed enemies in 15-space radius, +2 Resonance"
+        }
+      ]
+    },
+    {
+      "id": "aether-storm",
+      "name": "Aether Storm",
+      "description": "Unleash a devastating cone of raw Aetheric energy, dealing 4d6 Aetheric damage to all enemies in the area. The highest single-ability damage source in the Seiðkona arsenal before the Unraveling capstone. Each cast builds +2 Aether Resonance and adds the full damage to the Accumulated Aetheric Damage tracker. With Resonance Cascade active, the 5 AP cost reduces to 4 AP, enabling more aggressive usage at the expense of increased Corruption risk. Subject to probability-based Corruption check at Resonance 5+.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 5,
+      "apCostWithCascade": 4,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Cone",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 8,
+      "rangeUnit": "Spaces",
+      "areaType": "Cone",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "damage",
+        "aetheric",
+        "aoe",
+        "cone",
+        "heretical",
+        "active",
+        "mystic",
+        "resonance-build",
+        "tier-3"
+      ],
+      "effects": [
+        {
+          "type": "Damage",
+          "dice": "4d6",
+          "damageType": "aetheric",
+          "resonanceGain": 2,
+          "accumulatesDamage": true,
+          "description": "4d6 Aetheric damage (cone AoE), +2 Resonance, damage accumulated for Unraveling"
+        }
+      ]
+    },
+    {
+      "id": "unraveling",
+      "name": "The Unraveling",
+      "description": "The ultimate expression of Aetheric power. Releases 100% of Accumulated Aetheric Damage as a single devastating burst, consuming the entire Resonance cycle. Requires Resonance at maximum (10) and Accumulated Aetheric Damage greater than 0. Resets Resonance from 10 to 0 and clears the Accumulated Damage tracker. Immune to Resonance Cascade AP reduction — always costs exactly 5 AP. Guaranteed 20% Corruption check (lower than standard 25% at Resonance 10, rewarding bold capstone use) but triggers +2 Corruption if activated (elevated from standard +1). Once per combat encounter.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 5,
+      "cooldown": 1,
+      "cooldownUnit": "Combat",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 4,
+      "ppCost": 6,
+      "ppPrerequisite": 24,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "cascadeImmune": true,
+      "requirements": {
+        "resonance": 10,
+        "accumulatedDamageGreaterThan": 0,
+        "oncePerCombat": true
+      },
+      "tags": [
+        "damage",
+        "aetheric",
+        "capstone",
+        "heretical",
+        "active",
+        "mystic",
+        "cascade-immune",
+        "once-per-combat"
+      ],
+      "effects": [
+        {
+          "type": "AccumulatedDamageRelease",
+          "damageType": "aetheric",
+          "releasesAllAccumulated": true,
+          "resetsResonance": true,
+          "corruptionRiskPercent": 20,
+          "corruptionAmount": 2,
+          "description": "Releases 100% of Accumulated Aetheric Damage, resets Resonance to 0, guaranteed 20% Corruption check (+2)"
+        }
+      ]
     }
   ]
 }

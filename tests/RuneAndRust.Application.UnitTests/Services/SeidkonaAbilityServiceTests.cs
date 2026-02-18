@@ -13,6 +13,8 @@ namespace RuneAndRust.Application.UnitTests.Services;
 /// Unit tests for <see cref="SeidkonaAbilityService"/>.
 /// Covers Tier 1 abilities (Seiðr Bolt, Wyrd Sight, Aether Attunement),
 /// Tier 2 abilities (Fate's Thread, Weave Disruption, Resonance Cascade),
+/// Tier 3 abilities (Völva's Vision, Aether Storm),
+/// Capstone ability (The Unraveling),
 /// including probability-based Corruption checks, Resonance building,
 /// Cascade AP cost reduction, and guard-clause validation.
 /// </summary>
@@ -45,6 +47,9 @@ public class SeidkonaAbilityServiceTests
         /// <summary>Fixed d20 roll result for Weave Disruption dispel checks.</summary>
         public int FixedD20 { get; set; } = 14;
 
+        /// <summary>Fixed 4d6 roll result for Aether Storm damage.</summary>
+        public int Fixed4D6 { get; set; } = 16;
+
         public TestSeidkonaAbilityService(
             ISeidkonaResonanceService resonanceService,
             ISeidkonaCorruptionService corruptionService,
@@ -53,6 +58,7 @@ public class SeidkonaAbilityServiceTests
 
         internal override int Roll2D6() => Fixed2D6;
         internal override int RollD20() => FixedD20;
+        internal override int Roll4D6() => Fixed4D6;
     }
 
     /// <summary>
@@ -1292,5 +1298,875 @@ public class SeidkonaAbilityServiceTests
         // Assert
         result.IsTriggered.Should().BeFalse();
         result.RollResult.Should().Be(0); // No roll performed
+    }
+
+    // ===== Völva's Vision Tests (v0.20.8c) =====
+
+    [Test]
+    public void ExecuteVolvasVision_WithValidPrereqs_ReturnsResult()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.VolvasVision);
+        var resonance = AetherResonanceResource.CreateAt(3, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Völva's Vision cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 3))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Below risk threshold"));
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.RevealRadius.Should().Be(15);
+        result.ResonanceBefore.Should().Be(3);
+        result.ResonanceGained.Should().Be(2);
+        result.CorruptionTriggered.Should().BeFalse();
+        result.ApCostPaid.Should().Be(3); // Base cost, no Cascade
+        result.CascadeApplied.Should().BeFalse();
+        player.CurrentAP.Should().Be(7); // 10 - 3
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.VolvasVision);
+        player.CurrentAP = 2; // Need 3
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(2); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_WrongSpecialization_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("Test Warrior");
+        player.SetSpecialization("berserkr");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateSeidkona(); // No abilities unlocked
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_BuildsResonancePlusTwo()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.VolvasVision);
+        var resonance = AetherResonanceResource.CreateAt(2, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Völva's Vision cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 2))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Safe"));
+
+        // Act
+        _service.ExecuteVolvasVision(player);
+
+        // Assert — BuildResonance should be called with +2
+        _mockResonanceService.Verify(
+            s => s.BuildResonance(player, 2, "Völva's Vision cast"),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_DoesNotAccumulateDamage()
+    {
+        // Arrange — Völva's Vision is detection, NOT damage
+        var player = CreateSeidkona(SeidkonaAbilityId.VolvasVision);
+        var resonance = AetherResonanceResource.CreateAt(0, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Völva's Vision cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 0))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Safe"));
+
+        // Act
+        _service.ExecuteVolvasVision(player);
+
+        // Assert — AddAccumulatedDamage should NOT be called (no damage dealt)
+        _mockResonanceService.Verify(
+            s => s.AddAccumulatedDamage(It.IsAny<Player>(), It.IsAny<int>()),
+            Times.Never);
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_LowResonance_NoCorruptionCheck()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.VolvasVision);
+        var resonance = AetherResonanceResource.CreateAt(3, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Völva's Vision cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 3))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Below threshold"));
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionTriggered.Should().BeFalse();
+        result.CorruptionCheckPerformed.Should().BeFalse();
+
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(It.IsAny<Guid>(), It.IsAny<SeidkonaCorruptionRiskResult>()),
+            Times.Never);
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_MidResonance_CorruptionTriggered()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.VolvasVision);
+        var resonance = AetherResonanceResource.CreateAt(6, 10);
+        player.SetAetherResonance(resonance);
+
+        var triggeredResult = SeidkonaCorruptionRiskResult.CreateTriggered(
+            1,
+            SeidkonaCorruptionTrigger.CastingAtHighResonance,
+            "VolvasVision at Resonance 6 — Corruption triggered",
+            3, 5);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Völva's Vision cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 6))
+            .Returns(triggeredResult);
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionTriggered.Should().BeTrue();
+
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(player.Id, triggeredResult),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteVolvasVision_WithCascadeActive_ReducesApCost()
+    {
+        // Arrange — Cascade requires ResonanceCascade unlocked AND Resonance ≥ 5
+        var player = CreateSeidkona(
+            SeidkonaAbilityId.VolvasVision,
+            SeidkonaAbilityId.ResonanceCascade);
+        var resonance = AetherResonanceResource.CreateAt(6, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Völva's Vision cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 6))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Safe"));
+
+        // Act
+        var result = _service.ExecuteVolvasVision(player);
+
+        // Assert — Cascade reduces 3 AP → 2 AP
+        result.Should().NotBeNull();
+        result!.ApCostPaid.Should().Be(2); // Reduced from base 3
+        result.CascadeApplied.Should().BeTrue();
+        player.CurrentAP.Should().Be(8); // 10 - 2 (Cascade reduced)
+    }
+
+    // ===== Aether Storm Tests (v0.20.8c) =====
+
+    [Test]
+    public void ExecuteAetherStorm_WithValidPrereqs_ReturnsResult()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        var resonance = AetherResonanceResource.CreateAt(3, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 3))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Below risk threshold"));
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.DamageRoll.Should().Be(16); // Fixed4D6
+        result.TotalDamage.Should().Be(16);
+        result.ResonanceBefore.Should().Be(3);
+        result.ResonanceGained.Should().Be(2);
+        result.CorruptionTriggered.Should().BeFalse();
+        result.ApCostPaid.Should().Be(5); // Base cost, no Cascade
+        result.CascadeApplied.Should().BeFalse();
+        player.CurrentAP.Should().Be(5); // 10 - 5
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        player.CurrentAP = 4; // Need 5
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(4); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_WrongSpecialization_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("Test Warrior");
+        player.SetSpecialization("berserkr");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateSeidkona(); // No abilities unlocked
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_BuildsResonancePlusTwo()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        var resonance = AetherResonanceResource.CreateAt(2, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 2))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Safe"));
+
+        // Act
+        _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        _mockResonanceService.Verify(
+            s => s.BuildResonance(player, 2, "Aether Storm cast"),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_AccumulatesDamage()
+    {
+        // Arrange — Aether Storm DOES accumulate damage
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        var resonance = AetherResonanceResource.CreateAt(0, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 0))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Safe"));
+
+        // Act
+        _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert — AddAccumulatedDamage SHOULD be called with Fixed4D6 (16)
+        _mockResonanceService.Verify(
+            s => s.AddAccumulatedDamage(player, 16),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_LowResonance_NoCorruptionCheck()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        var resonance = AetherResonanceResource.CreateAt(3, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 3))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Below threshold"));
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionTriggered.Should().BeFalse();
+        result.CorruptionCheckPerformed.Should().BeFalse();
+
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(It.IsAny<Guid>(), It.IsAny<SeidkonaCorruptionRiskResult>()),
+            Times.Never);
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_HighResonance_CorruptionTriggered()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        var resonance = AetherResonanceResource.CreateAt(8, 10);
+        player.SetAetherResonance(resonance);
+
+        var triggeredResult = SeidkonaCorruptionRiskResult.CreateTriggered(
+            1,
+            SeidkonaCorruptionTrigger.CastingAtHighResonance,
+            "AetherStorm at Resonance 8 — Corruption triggered",
+            10, 15);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 8))
+            .Returns(triggeredResult);
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionTriggered.Should().BeTrue();
+
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(player.Id, triggeredResult),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_HighResonance_CorruptionSafeWithRoll()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.AetherStorm);
+        var resonance = AetherResonanceResource.CreateAt(8, 10);
+        player.SetAetherResonance(resonance);
+
+        var safeWithRoll = SeidkonaCorruptionRiskResult.CreateSafeWithRoll(
+            "Safe — will holds", 85, 15);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 8))
+            .Returns(safeWithRoll);
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionTriggered.Should().BeFalse();
+        result.CorruptionCheckPerformed.Should().BeTrue();
+        result.CorruptionRoll.Should().Be(85);
+        result.CorruptionRiskPercent.Should().Be(15);
+    }
+
+    [Test]
+    public void ExecuteAetherStorm_WithCascadeActive_ReducesApCost()
+    {
+        // Arrange — Cascade requires ResonanceCascade unlocked AND Resonance ≥ 5
+        var player = CreateSeidkona(
+            SeidkonaAbilityId.AetherStorm,
+            SeidkonaAbilityId.ResonanceCascade);
+        var resonance = AetherResonanceResource.CreateAt(6, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService
+            .Setup(s => s.BuildResonance(player, 2, "Aether Storm cast"))
+            .Returns(2);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.AetherStorm, 6))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafe("Safe"));
+
+        // Act
+        var result = _service.ExecuteAetherStorm(player, Guid.NewGuid());
+
+        // Assert — Cascade reduces 5 AP → 4 AP
+        result.Should().NotBeNull();
+        result!.ApCostPaid.Should().Be(4); // Reduced from base 5
+        result.CascadeApplied.Should().BeTrue();
+        player.CurrentAP.Should().Be(6); // 10 - 4 (Cascade reduced)
+    }
+
+    // ===== The Unraveling Tests (v0.20.8c Capstone) =====
+
+    [Test]
+    public void ExecuteUnraveling_WithValidPrereqs_ReturnsResult()
+    {
+        // Arrange — Resonance = 10, Accumulated Damage > 0, not used this combat
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(42);
+        player.SetAccumulatedAethericDamage(accumulated);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafeWithRoll(
+                "Unraveling safe", 55, 20));
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.AccumulatedDamageConsumed.Should().Be(42);
+        result.TotalDamage.Should().Be(42);
+        result.ResonanceBefore.Should().Be(10);
+        result.ResonanceAfter.Should().Be(0);
+        result.CorruptionCheckPerformed.Should().BeTrue();
+        result.CorruptionTriggered.Should().BeFalse();
+        result.CorruptionRoll.Should().Be(55);
+        result.CorruptionRiskPercent.Should().Be(20);
+        result.ApCostPaid.Should().Be(5);
+        result.CooldownActivated.Should().BeTrue();
+        player.CurrentAP.Should().Be(5); // 10 - 5
+        player.HasUsedUnravelingThisCombat.Should().BeTrue();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_InsufficientAP_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        player.CurrentAP = 4; // Need 5
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().BeNull();
+        player.CurrentAP.Should().Be(4); // Unchanged
+    }
+
+    [Test]
+    public void ExecuteUnraveling_WrongSpecialization_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("Test Warrior");
+        player.SetSpecialization("berserkr");
+        player.CurrentAP = 10;
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_AbilityNotUnlocked_ReturnsNull()
+    {
+        // Arrange
+        var player = CreateSeidkona(); // No abilities unlocked
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_ResonanceNotTen_ReturnsNull()
+    {
+        // Arrange — Resonance is 8, not 10
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(8, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_NoAccumulatedDamage_ReturnsNull()
+    {
+        // Arrange — Resonance 10 but no accumulated damage
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create(); // TotalDamage = 0
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_AlreadyUsedThisCombat_ReturnsNull()
+    {
+        // Arrange — Already used this combat
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        player.HasUsedUnravelingThisCombat = true;
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_ResetsResonanceToZero()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(30);
+        player.SetAccumulatedAethericDamage(accumulated);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafeWithRoll("Safe", 55, 20));
+
+        // Act
+        _service.ExecuteUnraveling(player);
+
+        // Assert — ResetResonance should be called
+        _mockResonanceService.Verify(
+            s => s.ResetResonance(player, "Unraveling capstone"),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteUnraveling_ResetsAccumulatedDamage()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(30);
+        player.SetAccumulatedAethericDamage(accumulated);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafeWithRoll("Safe", 55, 20));
+
+        // Act
+        _service.ExecuteUnraveling(player);
+
+        // Assert — ResetAccumulatedDamage should be called
+        _mockResonanceService.Verify(
+            s => s.ResetAccumulatedDamage(player),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteUnraveling_SetsCooldownFlag()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(30);
+        player.SetAccumulatedAethericDamage(accumulated);
+
+        player.HasUsedUnravelingThisCombat.Should().BeFalse(); // Before
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafeWithRoll("Safe", 55, 20));
+
+        // Act
+        _service.ExecuteUnraveling(player);
+
+        // Assert
+        player.HasUsedUnravelingThisCombat.Should().BeTrue();
+    }
+
+    [Test]
+    public void ExecuteUnraveling_GuaranteedCorruptionCheck()
+    {
+        // Arrange
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(30);
+        player.SetAccumulatedAethericDamage(accumulated);
+
+        var triggeredResult = SeidkonaCorruptionRiskResult.CreateTriggered(
+            2,
+            SeidkonaCorruptionTrigger.CapstoneActivation,
+            "The Unraveling tears at the fabric of reality",
+            15, 20);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10))
+            .Returns(triggeredResult);
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CorruptionCheckPerformed.Should().BeTrue();
+        result.CorruptionTriggered.Should().BeTrue();
+
+        _mockCorruptionService.Verify(
+            s => s.ApplyCorruption(player.Id, triggeredResult),
+            Times.Once);
+    }
+
+    [Test]
+    public void ExecuteUnraveling_NoCascadeReduction_AlwaysFiveAP()
+    {
+        // Arrange — Even with Cascade unlocked and Resonance at 10, Unraveling costs 5 AP
+        var player = CreateSeidkona(
+            SeidkonaAbilityId.Unraveling,
+            SeidkonaAbilityId.ResonanceCascade);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(30);
+        player.SetAccumulatedAethericDamage(accumulated);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+        _mockCorruptionService
+            .Setup(s => s.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10))
+            .Returns(SeidkonaCorruptionRiskResult.CreateSafeWithRoll("Safe", 55, 20));
+
+        // Act
+        var result = _service.ExecuteUnraveling(player);
+
+        // Assert — Always 5 AP, Cascade does NOT reduce
+        result.Should().NotBeNull();
+        result!.ApCostPaid.Should().Be(5);
+        player.CurrentAP.Should().Be(5); // 10 - 5 (not 10 - 4)
+    }
+
+    // ===== Corruption Service — T3/Capstone Direct Tests (v0.20.8c) =====
+
+    [Test]
+    public void CorruptionService_Unraveling_RollUnderTwenty_Triggers()
+    {
+        // Arrange — d100 = 15, threshold 20% → triggered
+        var corruptionService = new TestSeidkonaCorruptionService(
+            Mock.Of<ILogger<SeidkonaCorruptionService>>())
+        { FixedD100 = 15 };
+
+        // Act
+        var result = corruptionService.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10);
+
+        // Assert
+        result.IsTriggered.Should().BeTrue();
+        result.CorruptionAmount.Should().Be(2); // Capstone = +2 Corruption
+        result.Trigger.Should().Be(SeidkonaCorruptionTrigger.CapstoneActivation);
+        result.RollResult.Should().Be(15);
+        result.RiskPercent.Should().Be(20);
+    }
+
+    [Test]
+    public void CorruptionService_Unraveling_RollOverTwenty_Safe()
+    {
+        // Arrange — d100 = 55, threshold 20% → safe
+        var corruptionService = new TestSeidkonaCorruptionService(
+            Mock.Of<ILogger<SeidkonaCorruptionService>>())
+        { FixedD100 = 55 };
+
+        // Act
+        var result = corruptionService.EvaluateRisk(SeidkonaAbilityId.Unraveling, 10);
+
+        // Assert
+        result.IsTriggered.Should().BeFalse();
+        result.RollResult.Should().Be(55);
+        result.RiskPercent.Should().Be(20);
+    }
+
+    [Test]
+    public void CorruptionService_VolvasVision_AtHighResonance_TriggersCheck()
+    {
+        // Arrange — Völva's Vision at Resonance 6 uses CastingAtHighResonance trigger
+        var corruptionService = new TestSeidkonaCorruptionService(
+            Mock.Of<ILogger<SeidkonaCorruptionService>>())
+        { FixedD100 = 3 }; // 3 ≤ 5% → triggered
+
+        // Act
+        var result = corruptionService.EvaluateRisk(SeidkonaAbilityId.VolvasVision, 6);
+
+        // Assert
+        result.IsTriggered.Should().BeTrue();
+        result.Trigger.Should().Be(SeidkonaCorruptionTrigger.CastingAtHighResonance);
+        result.CorruptionAmount.Should().Be(1);
+        result.RiskPercent.Should().Be(5);
+    }
+
+    // ===== GetEffectiveApCost — T3/Capstone Tests (v0.20.8c) =====
+
+    [Test]
+    public void GetEffectiveApCost_Unraveling_IgnoresCascade()
+    {
+        // Arrange — Cascade is active (unlocked + Resonance 10), but Unraveling is immune
+        var player = CreateSeidkona(
+            SeidkonaAbilityId.Unraveling,
+            SeidkonaAbilityId.ResonanceCascade);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+
+        // Act
+        var cost = _service.GetEffectiveApCost(player, SeidkonaAbilityId.Unraveling);
+
+        // Assert — Always 5, never reduced by Cascade
+        cost.Should().Be(5);
+    }
+
+    [Test]
+    public void GetEffectiveApCost_AetherStormWithCascade_ReducesBy1()
+    {
+        // Arrange
+        var player = CreateSeidkona(
+            SeidkonaAbilityId.AetherStorm,
+            SeidkonaAbilityId.ResonanceCascade);
+        var resonance = AetherResonanceResource.CreateAt(7, 10);
+        player.SetAetherResonance(resonance);
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+
+        // Act
+        var cost = _service.GetEffectiveApCost(player, SeidkonaAbilityId.AetherStorm);
+
+        // Assert — 5 AP → 4 AP
+        cost.Should().Be(4);
+    }
+
+    // ===== GetAbilityReadiness — T3/Capstone Tests (v0.20.8c) =====
+
+    [Test]
+    public void GetAbilityReadiness_WithTier3Abilities_IncludesThem()
+    {
+        // Arrange
+        var player = CreateSeidkona(
+            SeidkonaAbilityId.VolvasVision,
+            SeidkonaAbilityId.AetherStorm);
+        player.CurrentAP = 4; // Enough for VolvasVision (3), NOT for AetherStorm (5)
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert
+        readiness.Should().ContainKey(SeidkonaAbilityId.VolvasVision);
+        readiness[SeidkonaAbilityId.VolvasVision].Should().BeTrue(); // 4 AP ≥ 3 needed
+        readiness.Should().ContainKey(SeidkonaAbilityId.AetherStorm);
+        readiness[SeidkonaAbilityId.AetherStorm].Should().BeFalse(); // 4 AP < 5 needed
+    }
+
+    [Test]
+    public void GetAbilityReadiness_Unraveling_ChecksAllPreconditions()
+    {
+        // Arrange — Resonance 10, Accumulated > 0, not used, enough AP
+        var player = CreateSeidkona(SeidkonaAbilityId.Unraveling);
+        var resonance = AetherResonanceResource.CreateAt(10, 10);
+        player.SetAetherResonance(resonance);
+        var accumulated = AccumulatedAethericDamage.Create().AddDamage(30);
+        player.SetAccumulatedAethericDamage(accumulated);
+        player.CurrentAP = 5;
+
+        _mockResonanceService.Setup(s => s.GetResonance(player)).Returns(resonance);
+        _mockResonanceService.Setup(s => s.GetAccumulatedDamage(player)).Returns(accumulated);
+
+        // Act
+        var readiness = _service.GetAbilityReadiness(player);
+
+        // Assert — All preconditions met
+        readiness.Should().ContainKey(SeidkonaAbilityId.Unraveling);
+        readiness[SeidkonaAbilityId.Unraveling].Should().BeTrue();
     }
 }

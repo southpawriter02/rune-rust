@@ -8,7 +8,8 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Service handling Seiðkona specialization ability execution.
-/// Implements Tier 1 (Foundation) and Tier 2 (Discipline) ability logic.
+/// Implements Tier 1 (Foundation), Tier 2 (Discipline), Tier 3 (Mastery),
+/// and Capstone (Ultimate) ability logic.
 /// </summary>
 /// <remarks>
 /// <para>Tier 1 abilities (v0.20.8a):</para>
@@ -27,6 +28,19 @@ namespace RuneAndRust.Application.Services;
 ///   costs 3 AP (2 with Cascade). Subject to Corruption check. No direct damage.</item>
 /// <item>Resonance Cascade (Passive): Reduces all Seiðkona ability AP costs by 1 (min 1) at
 ///   Resonance 5+. No Resonance gain, no Corruption risk. Does NOT affect Unraveling capstone.</item>
+/// </list>
+/// <para>Tier 3 abilities (v0.20.8c):</para>
+/// <list type="bullet">
+/// <item>Völva's Vision (Active): Mass detection revealing all hidden/invisible/concealed enemies
+///   within 15 spaces, +2 Resonance, costs 3 AP (2 with Cascade). No damage, no Accumulated Damage.</item>
+/// <item>Aether Storm (Active): 4d6 Aetheric damage (cone AoE), +2 Resonance, costs 5 AP
+///   (4 with Cascade). Adds damage to Accumulated Aetheric Damage tracker.</item>
+/// </list>
+/// <para>Capstone ability (v0.20.8c):</para>
+/// <list type="bullet">
+/// <item>The Unraveling (Active): Releases 100% of Accumulated Aetheric Damage, costs 5 AP
+///   (immune to Cascade), requires Resonance 10 and Accumulated Damage &gt; 0. Guaranteed 20%
+///   Corruption check (+2). Once per combat.</item>
 /// </list>
 /// <para>Critical design principle: Corruption risk is evaluated BEFORE resources are spent.
 /// For all active abilities, the evaluation uses the current Resonance (before any gain from the cast).
@@ -95,6 +109,51 @@ public class SeidkonaAbilityService : ISeidkonaAbilityService
     /// Minimum AP cost enforced after Cascade reduction.
     /// </summary>
     private const int MinimumApCost = 1;
+
+    // ===== Tier 3 Constants (v0.20.8c) =====
+
+    /// <summary>
+    /// Base AP cost for the Völva's Vision ability (before Cascade reduction).
+    /// </summary>
+    private const int VolvasVisionApCost = 3;
+
+    /// <summary>
+    /// Amount of Resonance gained per Völva's Vision cast.
+    /// Same as Aether Storm (+2), representing the high Aetheric channeling of Tier 3 abilities.
+    /// </summary>
+    private const int VolvasVisionResonanceGain = 2;
+
+    /// <summary>
+    /// Detection radius for the Völva's Vision reveal effect (15 spaces).
+    /// The largest detection radius of any Seiðkona ability.
+    /// </summary>
+    private const int VolvasVisionRevealRadius = 15;
+
+    /// <summary>
+    /// Base AP cost for the Aether Storm ability (before Cascade reduction).
+    /// Highest cost in the Seiðkona ability tree before the capstone.
+    /// </summary>
+    private const int AetherStormApCost = 5;
+
+    /// <summary>
+    /// Amount of Resonance gained per Aether Storm cast.
+    /// Same as Völva's Vision (+2), representing the high Aetheric channeling of Tier 3 abilities.
+    /// </summary>
+    private const int AetherStormResonanceGain = 2;
+
+    // ===== Capstone Constants (v0.20.8c) =====
+
+    /// <summary>
+    /// Fixed AP cost for the Unraveling capstone ability.
+    /// Immune to Resonance Cascade reduction — always costs exactly 5 AP.
+    /// </summary>
+    private const int UnravelingApCost = 5;
+
+    /// <summary>
+    /// Required Resonance level for the Unraveling capstone.
+    /// Must be exactly 10 (max) — the Unraveling can only be unleashed at full Resonance.
+    /// </summary>
+    private const int UnravelingRequiredResonance = 10;
 
     // ===== PP Requirements =====
 
@@ -506,6 +565,339 @@ public class SeidkonaAbilityService : ISeidkonaAbilityService
         return result;
     }
 
+    // ===== Tier 3 Abilities (v0.20.8c) =====
+
+    /// <inheritdoc />
+    public VolvasVisionResult? ExecuteVolvasVision(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsSeidkona(player))
+        {
+            _logger.LogWarning(
+                "Völva's Vision failed: {Player} ({PlayerId}) is not a Seiðkona",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.VolvasVision))
+        {
+            _logger.LogWarning(
+                "Völva's Vision failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Calculate effective AP cost (Cascade reduces 3→2 at Resonance 5+)
+        var effectiveCost = GetEffectiveApCostInternal(player, VolvasVisionApCost);
+        var cascadeApplied = effectiveCost < VolvasVisionApCost;
+
+        // Validate AP cost
+        if (player.CurrentAP < effectiveCost)
+        {
+            _logger.LogWarning(
+                "Völva's Vision failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}{CascadeNote}, have {Available})",
+                player.Name, player.Id, effectiveCost,
+                cascadeApplied ? " [Cascade active]" : "",
+                player.CurrentAP);
+            return null;
+        }
+
+        // Capture Resonance state BEFORE any changes
+        var resonance = _resonanceService.GetResonance(player);
+        var resonanceBefore = resonance?.CurrentResonance ?? 0;
+
+        // === Evaluate Corruption risk BEFORE spending resources ===
+        // Uses current Resonance (before the +2 gain from this cast)
+        var corruptionResult = _corruptionService.EvaluateRisk(
+            SeidkonaAbilityId.VolvasVision,
+            resonanceBefore);
+
+        // Deduct AP
+        player.CurrentAP -= effectiveCost;
+
+        // Build Resonance (+2 from Völva's Vision — high buildup, shared with Aether Storm)
+        var actualGain = _resonanceService.BuildResonance(player, VolvasVisionResonanceGain, "Völva's Vision cast");
+
+        // NO accumulated damage — Völva's Vision is detection, not damage
+
+        // Apply Corruption if triggered
+        if (corruptionResult.IsTriggered)
+        {
+            _corruptionService.ApplyCorruption(player.Id, corruptionResult);
+        }
+
+        // Capture Resonance state AFTER changes
+        var resonanceAfter = resonance?.CurrentResonance ?? 0;
+
+        // Build result
+        var result = new VolvasVisionResult
+        {
+            RevealRadius = VolvasVisionRevealRadius,
+            ResonanceBefore = resonanceBefore,
+            ResonanceAfter = resonanceAfter,
+            ResonanceGained = actualGain,
+            CorruptionCheckPerformed = corruptionResult.RollResult > 0 || corruptionResult.RiskPercent > 0,
+            CorruptionTriggered = corruptionResult.IsTriggered,
+            CorruptionReason = corruptionResult.Reason,
+            CorruptionRoll = corruptionResult.RollResult,
+            CorruptionRiskPercent = corruptionResult.RiskPercent,
+            ApCostPaid = effectiveCost,
+            CascadeApplied = cascadeApplied
+        };
+
+        _logger.LogInformation(
+            "Völva's Vision executed: {Player} ({PlayerId}). " +
+            "AP: {ApCost}{CascadeNote}. Reveal radius: {Radius} spaces. {ResonanceChange}. " +
+            "Corruption: {CorruptionStatus}",
+            player.Name, player.Id,
+            effectiveCost, cascadeApplied ? " [Cascade]" : "",
+            VolvasVisionRevealRadius,
+            result.GetResonanceChange(),
+            corruptionResult.IsTriggered
+                ? $"+{corruptionResult.CorruptionAmount} (d100: {corruptionResult.RollResult} ≤ {corruptionResult.RiskPercent}%)"
+                : corruptionResult.RollResult > 0
+                    ? $"safe (d100: {corruptionResult.RollResult} > {corruptionResult.RiskPercent}%)"
+                    : "safe (no check needed)");
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public AetherStormResult? ExecuteAetherStorm(Player player, Guid targetId)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsSeidkona(player))
+        {
+            _logger.LogWarning(
+                "Aether Storm failed: {Player} ({PlayerId}) is not a Seiðkona",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.AetherStorm))
+        {
+            _logger.LogWarning(
+                "Aether Storm failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Calculate effective AP cost (Cascade reduces 5→4 at Resonance 5+)
+        var effectiveCost = GetEffectiveApCostInternal(player, AetherStormApCost);
+        var cascadeApplied = effectiveCost < AetherStormApCost;
+
+        // Validate AP cost
+        if (player.CurrentAP < effectiveCost)
+        {
+            _logger.LogWarning(
+                "Aether Storm failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required}{CascadeNote}, have {Available})",
+                player.Name, player.Id, effectiveCost,
+                cascadeApplied ? " [Cascade active]" : "",
+                player.CurrentAP);
+            return null;
+        }
+
+        // Capture Resonance state BEFORE any changes
+        var resonance = _resonanceService.GetResonance(player);
+        var resonanceBefore = resonance?.CurrentResonance ?? 0;
+
+        // === Evaluate Corruption risk BEFORE spending resources ===
+        // Uses current Resonance (before the +2 gain from this cast)
+        var corruptionResult = _corruptionService.EvaluateRisk(
+            SeidkonaAbilityId.AetherStorm,
+            resonanceBefore);
+
+        // Deduct AP
+        player.CurrentAP -= effectiveCost;
+
+        // Roll damage (4d6 Aetheric)
+        var damageRoll = Roll4D6();
+
+        // Build Resonance (+2 from Aether Storm — high buildup, shared with Völva's Vision)
+        var actualGain = _resonanceService.BuildResonance(player, AetherStormResonanceGain, "Aether Storm cast");
+
+        // Add to Accumulated Aetheric Damage tracker — Aether Storm DOES accumulate damage
+        _resonanceService.AddAccumulatedDamage(player, damageRoll);
+
+        // Apply Corruption if triggered
+        if (corruptionResult.IsTriggered)
+        {
+            _corruptionService.ApplyCorruption(player.Id, corruptionResult);
+        }
+
+        // Capture Resonance state AFTER changes
+        var resonanceAfter = resonance?.CurrentResonance ?? 0;
+
+        // Build result
+        var result = new AetherStormResult
+        {
+            DamageRoll = damageRoll,
+            TotalDamage = damageRoll,
+            ResonanceBefore = resonanceBefore,
+            ResonanceAfter = resonanceAfter,
+            ResonanceGained = actualGain,
+            CorruptionCheckPerformed = corruptionResult.RollResult > 0 || corruptionResult.RiskPercent > 0,
+            CorruptionTriggered = corruptionResult.IsTriggered,
+            CorruptionReason = corruptionResult.Reason,
+            CorruptionRoll = corruptionResult.RollResult,
+            CorruptionRiskPercent = corruptionResult.RiskPercent,
+            ApCostPaid = effectiveCost,
+            CascadeApplied = cascadeApplied
+        };
+
+        _logger.LogInformation(
+            "Aether Storm executed: {Player} ({PlayerId}) vs target {TargetId}. " +
+            "AP: {ApCost}{CascadeNote}. {DamageBreakdown}. {ResonanceChange}. " +
+            "Corruption: {CorruptionStatus}",
+            player.Name, player.Id, targetId,
+            effectiveCost, cascadeApplied ? " [Cascade]" : "",
+            result.GetDamageBreakdown(),
+            result.GetResonanceChange(),
+            corruptionResult.IsTriggered
+                ? $"+{corruptionResult.CorruptionAmount} (d100: {corruptionResult.RollResult} ≤ {corruptionResult.RiskPercent}%)"
+                : corruptionResult.RollResult > 0
+                    ? $"safe (d100: {corruptionResult.RollResult} > {corruptionResult.RiskPercent}%)"
+                    : "safe (no check needed)");
+
+        return result;
+    }
+
+    // ===== Capstone Ability (v0.20.8c) =====
+
+    /// <inheritdoc />
+    public UnravelingResult? ExecuteUnraveling(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Validate specialization
+        if (!IsSeidkona(player))
+        {
+            _logger.LogWarning(
+                "The Unraveling failed: {Player} ({PlayerId}) is not a Seiðkona",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate ability unlock
+        if (!player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.Unraveling))
+        {
+            _logger.LogWarning(
+                "The Unraveling failed: {Player} ({PlayerId}) has not unlocked the ability",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate per-combat cooldown
+        if (player.HasUsedUnravelingThisCombat)
+        {
+            _logger.LogWarning(
+                "The Unraveling failed: {Player} ({PlayerId}) has already used the Unraveling this combat",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // Validate AP cost (NO Cascade — Unraveling is immune to AP reduction)
+        if (player.CurrentAP < UnravelingApCost)
+        {
+            _logger.LogWarning(
+                "The Unraveling failed: {Player} ({PlayerId}) has insufficient AP " +
+                "(need {Required} [Cascade immune], have {Available})",
+                player.Name, player.Id, UnravelingApCost, player.CurrentAP);
+            return null;
+        }
+
+        // Validate Resonance requirement (must be exactly 10)
+        var resonance = _resonanceService.GetResonance(player);
+        var currentResonance = resonance?.CurrentResonance ?? 0;
+
+        if (currentResonance != UnravelingRequiredResonance)
+        {
+            _logger.LogWarning(
+                "The Unraveling failed: {Player} ({PlayerId}) does not have max Resonance " +
+                "(need {Required}, have {Current})",
+                player.Name, player.Id, UnravelingRequiredResonance, currentResonance);
+            return null;
+        }
+
+        // Validate Accumulated Aetheric Damage (must be > 0)
+        var accumulatedDamage = _resonanceService.GetAccumulatedDamage(player);
+        var totalAccumulated = accumulatedDamage?.TotalDamage ?? 0;
+
+        if (totalAccumulated <= 0)
+        {
+            _logger.LogWarning(
+                "The Unraveling failed: {Player} ({PlayerId}) has no Accumulated Aetheric Damage to release",
+                player.Name, player.Id);
+            return null;
+        }
+
+        // === Evaluate Corruption risk BEFORE spending resources ===
+        // Guaranteed 20% capstone check — always performed regardless of Resonance
+        var corruptionResult = _corruptionService.EvaluateRisk(
+            SeidkonaAbilityId.Unraveling,
+            currentResonance);
+
+        // Deduct AP (fixed 5 AP — Cascade immune)
+        player.CurrentAP -= UnravelingApCost;
+
+        // Capture accumulated damage for release before resetting
+        var damageToRelease = totalAccumulated;
+
+        // Reset Resonance from 10 to 0
+        _resonanceService.ResetResonance(player, "Unraveling capstone");
+
+        // Reset Accumulated Aetheric Damage to 0
+        _resonanceService.ResetAccumulatedDamage(player);
+
+        // Set per-combat cooldown flag
+        player.HasUsedUnravelingThisCombat = true;
+
+        // Apply Corruption if triggered (+2 at CapstoneActivation tier)
+        if (corruptionResult.IsTriggered)
+        {
+            _corruptionService.ApplyCorruption(player.Id, corruptionResult);
+        }
+
+        // Build result
+        var result = new UnravelingResult
+        {
+            AccumulatedDamageConsumed = damageToRelease,
+            TotalDamage = damageToRelease,
+            ResonanceBefore = UnravelingRequiredResonance,
+            ResonanceAfter = 0,
+            CorruptionCheckPerformed = true, // Always true for Unraveling
+            CorruptionTriggered = corruptionResult.IsTriggered,
+            CorruptionReason = corruptionResult.Reason,
+            CorruptionRoll = corruptionResult.RollResult,
+            CorruptionRiskPercent = corruptionResult.RiskPercent,
+            ApCostPaid = UnravelingApCost,
+            CooldownActivated = true
+        };
+
+        _logger.LogInformation(
+            "THE UNRAVELING EXECUTED: {Player} ({PlayerId}). " +
+            "{DamageBreakdown}. AP: {ApCost} [Cascade immune]. " +
+            "{ResonanceChange}. Cooldown: activated (once per combat). " +
+            "Corruption: {CorruptionStatus}",
+            player.Name, player.Id,
+            result.GetDamageBreakdown(),
+            UnravelingApCost,
+            result.GetResonanceChange(),
+            corruptionResult.IsTriggered
+                ? $"+{corruptionResult.CorruptionAmount} (d100: {corruptionResult.RollResult} ≤ {corruptionResult.RiskPercent}%)"
+                : $"safe (d100: {corruptionResult.RollResult} > {corruptionResult.RiskPercent}%)");
+
+        return result;
+    }
+
     /// <inheritdoc />
     public ResonanceCascadeState GetResonanceCascadeState(Player player)
     {
@@ -525,6 +917,10 @@ public class SeidkonaAbilityService : ISeidkonaAbilityService
     public int GetEffectiveApCost(Player player, SeidkonaAbilityId abilityId)
     {
         ArgumentNullException.ThrowIfNull(player);
+
+        // Unraveling is immune to Cascade reduction — always costs exactly 5 AP
+        if (abilityId == SeidkonaAbilityId.Unraveling)
+            return UnravelingApCost;
 
         var baseCost = GetBaseApCost(abilityId);
         if (baseCost == 0)
@@ -581,6 +977,34 @@ public class SeidkonaAbilityService : ISeidkonaAbilityService
         if (player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.ResonanceCascade))
         {
             readiness[SeidkonaAbilityId.ResonanceCascade] = true;
+        }
+
+        // Tier 3 active abilities (v0.20.8c)
+        if (player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.VolvasVision))
+        {
+            var cost = GetEffectiveApCostInternal(player, VolvasVisionApCost);
+            readiness[SeidkonaAbilityId.VolvasVision] = player.CurrentAP >= cost;
+        }
+
+        if (player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.AetherStorm))
+        {
+            var cost = GetEffectiveApCostInternal(player, AetherStormApCost);
+            readiness[SeidkonaAbilityId.AetherStorm] = player.CurrentAP >= cost;
+        }
+
+        // Capstone ability (v0.20.8c) — multiple preconditions
+        if (player.HasSeidkonaAbilityUnlocked(SeidkonaAbilityId.Unraveling))
+        {
+            var resonance = _resonanceService.GetResonance(player);
+            var currentResonance = resonance?.CurrentResonance ?? 0;
+            var accumulatedDamage = _resonanceService.GetAccumulatedDamage(player);
+            var totalAccumulated = accumulatedDamage?.TotalDamage ?? 0;
+
+            readiness[SeidkonaAbilityId.Unraveling] =
+                player.CurrentAP >= UnravelingApCost &&
+                currentResonance == UnravelingRequiredResonance &&
+                totalAccumulated > 0 &&
+                !player.HasUsedUnravelingThisCombat;
         }
 
         return readiness;
@@ -640,6 +1064,17 @@ public class SeidkonaAbilityService : ISeidkonaAbilityService
         return Random.Shared.Next(1, 21);
     }
 
+    /// <summary>
+    /// Rolls 4d6 for Aether Storm damage.
+    /// Marked <c>internal virtual</c> for unit test overriding.
+    /// </summary>
+    /// <returns>The sum of four d6 rolls (4–24).</returns>
+    internal virtual int Roll4D6()
+    {
+        return Random.Shared.Next(1, 7) + Random.Shared.Next(1, 7) +
+               Random.Shared.Next(1, 7) + Random.Shared.Next(1, 7);
+    }
+
     // ===== Private Helpers =====
 
     /// <summary>
@@ -667,6 +1102,9 @@ public class SeidkonaAbilityService : ISeidkonaAbilityService
             SeidkonaAbilityId.FatesThread => FatesThreadApCost,
             SeidkonaAbilityId.WeaveDisruption => WeaveDisruptionApCost,
             SeidkonaAbilityId.ResonanceCascade => 0,      // Passive
+            SeidkonaAbilityId.VolvasVision => VolvasVisionApCost,
+            SeidkonaAbilityId.AetherStorm => AetherStormApCost,
+            SeidkonaAbilityId.Unraveling => UnravelingApCost,
             _ => 0
         };
     }

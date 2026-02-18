@@ -2106,6 +2106,21 @@ public class Player : IEntity
     public WyrdSightResult? WyrdSight { get; private set; }
 
     /// <summary>
+    /// Gets or sets whether the Unraveling capstone ability has been used this combat.
+    /// Reset to false at combat end via <see cref="ResetUnravelingCooldown"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Introduced in v0.20.8c for the Seiðkona Capstone ability.</para>
+    /// <para>The Unraveling is once per combat — it releases ALL Accumulated Aetheric Damage
+    /// in a single devastating burst and resets the entire Resonance cycle. The per-combat
+    /// cooldown prevents repeated capstone usage within a single encounter.</para>
+    /// <para>Uses per-specialization naming (<c>HasUsedUnravelingThisCombat</c>) rather than
+    /// a generic <c>HasUsedCapstoneThisCombat</c> to avoid cross-specialization coupling,
+    /// consistent with the per-specialization naming convention established in v0.20.7c.</para>
+    /// </remarks>
+    public bool HasUsedUnravelingThisCombat { get; set; }
+
+    /// <summary>
     /// Backing store for unlocked Seiðkona abilities.
     /// </summary>
     private readonly HashSet<SeidkonaAbilityId> _unlockedSeidkonaAbilities = [];
@@ -2172,6 +2187,20 @@ public class Player : IEntity
     public void UnlockSeidkonaAbility(SeidkonaAbilityId abilityId)
     {
         _unlockedSeidkonaAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Resets the Unraveling per-combat cooldown, allowing the capstone to be used again.
+    /// Called at the end of a combat encounter.
+    /// </summary>
+    /// <remarks>
+    /// <para>Introduced in v0.20.8c. The Unraveling can only be used once per combat
+    /// encounter. This method is called by the combat system when an encounter ends
+    /// to re-enable capstone usage for the next combat.</para>
+    /// </remarks>
+    public void ResetUnravelingCooldown()
+    {
+        HasUsedUnravelingThisCombat = false;
     }
 
     /// <summary>

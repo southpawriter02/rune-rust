@@ -60,6 +60,20 @@ public class SeidkonaCorruptionService : ISeidkonaCorruptionService
     /// </summary>
     private const int MaxResonance = 10;
 
+    /// <summary>
+    /// Corruption risk percentage for the Unraveling capstone (fixed 20%).
+    /// Intentionally lower than the standard Critical tier (25%) at Resonance 10,
+    /// rewarding bold capstone use.
+    /// </summary>
+    private const int CapstoneRiskPercent = 20;
+
+    /// <summary>
+    /// Corruption amount for the Unraveling capstone (+2).
+    /// Elevated from the standard +1 to reflect the magnitude of Aether channeled
+    /// during a full Resonance cycle release.
+    /// </summary>
+    private const int CapstoneCorruption = 2;
+
     private readonly ILogger<SeidkonaCorruptionService> _logger;
 
     /// <summary>
@@ -98,13 +112,12 @@ public class SeidkonaCorruptionService : ISeidkonaCorruptionService
             SeidkonaAbilityId.ResonanceCascade => SeidkonaCorruptionRiskResult.CreateSafe(
                 "Resonance Cascade is a passive ability — no Aether channeled, no Corruption risk"),
 
-            // === Future T3 abilities: generic high-resonance check ===
+            // === T3 active abilities: generic high-resonance check (v0.20.8c) ===
             SeidkonaAbilityId.VolvasVision or
             SeidkonaAbilityId.AetherStorm => EvaluateGenericCastingRisk(currentResonance, abilityId),
 
-            // === Capstone: handled separately in v0.20.8c ===
-            SeidkonaAbilityId.Unraveling => SeidkonaCorruptionRiskResult.CreateSafe(
-                "Unraveling capstone Corruption check deferred to v0.20.8c"),
+            // === Capstone: guaranteed 20% check with +2 Corruption (v0.20.8c) ===
+            SeidkonaAbilityId.Unraveling => EvaluateUnravelingRisk(),
 
             _ => SeidkonaCorruptionRiskResult.CreateSafe(
                 $"Unknown ability {abilityId} — defaulting to safe")
@@ -278,6 +291,42 @@ public class SeidkonaCorruptionService : ISeidkonaCorruptionService
             $"(d100: {roll} > {riskPercent}%)",
             roll,
             riskPercent);
+    }
+
+    /// <summary>
+    /// Evaluates the Unraveling capstone Corruption risk.
+    /// Always performs a d100 check against a fixed 20% threshold — the check is guaranteed
+    /// regardless of Resonance level (which is always 10 when Unraveling is cast).
+    /// </summary>
+    /// <returns>
+    /// Triggered (+2, CapstoneActivation) if d100 ≤ 20%; safe-with-roll if d100 &gt; 20%.
+    /// The check is always performed — there is no "no check needed" path for the Unraveling.
+    /// </returns>
+    /// <remarks>
+    /// <para>The 20% risk is actually lower than the standard 25% at Resonance 10 — a design
+    /// choice rewarding bold capstone use. However, the Corruption amount is elevated (+2 instead
+    /// of +1), reflecting the magnitude of Aether channeled during a full cycle release.</para>
+    /// </remarks>
+    private SeidkonaCorruptionRiskResult EvaluateUnravelingRisk()
+    {
+        var roll = RollD100();
+
+        if (roll <= CapstoneRiskPercent)
+        {
+            return SeidkonaCorruptionRiskResult.CreateTriggered(
+                CapstoneCorruption,
+                SeidkonaCorruptionTrigger.CapstoneActivation,
+                $"The Unraveling tears at the fabric of reality — Corruption surges " +
+                $"(d100: {roll} ≤ {CapstoneRiskPercent}%)",
+                roll,
+                CapstoneRiskPercent);
+        }
+
+        return SeidkonaCorruptionRiskResult.CreateSafeWithRoll(
+            $"The Unraveling releases devastating power, but your will holds against Corruption " +
+            $"(d100: {roll} > {CapstoneRiskPercent}%)",
+            roll,
+            CapstoneRiskPercent);
     }
 
     /// <summary>
