@@ -53,7 +53,7 @@ public static class RoomFeatureExaminationSeeder
             "The seals are broken. Someone got here first, but may have left something behind.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Container, "weapon_crate",
-            "Citadel armory supply crate, Series 7. These held standard-issue weapons for garrison troops.");
+            "Citadel armory supply crate, form of the Seventh Age. These held standard-issue weapons for garrison troops.");
 
         // old_crate
         yield return ExaminationDescriptor.CreateCursory(
@@ -66,27 +66,27 @@ public static class RoomFeatureExaminationSeeder
             ObjectCategory.Container, "old_crate",
             "The wood is from surface trees - this was brought down from above, long ago.");
 
-        // rusted_terminal
+        // rusted_spirit_slate
         yield return ExaminationDescriptor.CreateCursory(
-            ObjectCategory.Machinery, "rusted_terminal",
-            "An ancient computing device, its screen dark and cracked.");
+            ObjectCategory.Machinery, "rusted_spirit_slate",
+            "An ancient spirit-slate, its glass face dark and cracked.");
         yield return ExaminationDescriptor.CreateDetailed(
-            ObjectCategory.Machinery, "rusted_terminal",
-            "Corrosion has claimed most of the internals, but the power coupling might be salvageable.");
+            ObjectCategory.Machinery, "rusted_spirit_slate",
+            "Rust has claimed most of the inner-guts, but the spark-vein might be salvageable.");
         yield return ExaminationDescriptor.CreateExpert(
-            ObjectCategory.Machinery, "rusted_terminal",
-            "Oracle-box, pre-Glitch Series 3. If the memory core survived, it might hold administrative data.", revealsHint: true);
+            ObjectCategory.Machinery, "rusted_spirit_slate",
+            "Oracle-box, Old World Third Age. If the thought-stone survived, it might hold records of the Old Law.", revealsHint: true);
 
         // salvage_pile
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Container, "salvage_pile",
-            "A heap of broken machinery and debris.");
+            "A heap of broken iron-works and debris.");
         yield return ExaminationDescriptor.CreateDetailed(
             ObjectCategory.Container, "salvage_pile",
-            "Among the junk: intact gears, copper wiring, functional servos. Worth sifting through.");
+            "Among the junk: intact gears, copper wiring, sleeping iron-muscles. Worth sifting through.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Container, "salvage_pile",
-            "Most of this is Dvergr manufacture. The components could be repurposed for repairs.");
+            "Most of this is Dvergr manufacture. The components could be repurposed for healing machines.");
 
         // harvestable_fungus
         yield return ExaminationDescriptor.CreateCursory(
@@ -316,7 +316,7 @@ public static class RoomFeatureExaminationSeeder
             "Breathing deeply would be unwise. Cover your face.", revealsHint: true);
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Machinery, "spore_cloud",
-            "Mindmoss spores - prolonged exposure causes hallucinations. Get out quickly.");
+            "Dream-death spores - prolonged exposure causes waking nightmares. Get out quickly.");
 
         // heat_vent
         yield return ExaminationDescriptor.CreateCursory(
@@ -327,7 +327,7 @@ public static class RoomFeatureExaminationSeeder
             "The venting is predictable. Watch the rhythm and time your passage.", revealsHint: true);
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Machinery, "heat_vent",
-            "Geothermal pressure release. The intervals are regular - exactly 12 seconds safe.");
+            "Earth-blood pressure release. The intervals are regular - safe for a few heartbeats.");
 
         // lava_pool
         yield return ExaminationDescriptor.CreateCursory(
