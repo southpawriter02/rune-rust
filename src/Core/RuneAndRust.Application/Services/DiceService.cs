@@ -137,6 +137,8 @@ public class DiceService : IDiceService
             var roll = RollSingleDie(pool.Faces);
             rolls.Add(roll);
 
+            _logger.LogTrace("Rolled die {Index}/{Count}: {Result}", i + 1, pool.Count, roll);
+
             // Handle exploding dice
             if (pool.Exploding && roll == pool.Faces)
             {
@@ -149,7 +151,7 @@ public class DiceService : IDiceService
                     explosions.Add(explosionRoll);
                     explosionCount++;
 
-                    _logger.LogDebug(
+                    _logger.LogTrace(
                         "Die exploded! Roll {Explosion} on d{Faces} (explosion {Count})",
                         explosionRoll, pool.Faces, explosionCount);
                 }

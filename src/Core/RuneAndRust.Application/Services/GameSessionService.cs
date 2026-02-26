@@ -313,7 +313,7 @@ public class GameSessionService
     /// </remarks>
     public (bool Success, string Message) TryMove(Direction direction)
     {
-        _logger.LogDebug("TryMove called with direction: {Direction}", direction);
+        _logger.LogTrace("TryMove called with direction: {Direction}", direction);
 
         if (_currentSession == null)
         {
@@ -400,7 +400,7 @@ public class GameSessionService
     /// </remarks>
     public (bool Success, string Message) TryPickUpItem(string itemName)
     {
-        _logger.LogDebug("TryPickUpItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryPickUpItem called for item: {ItemName}", itemName);
 
         if (_currentSession == null)
         {
@@ -466,7 +466,7 @@ public class GameSessionService
     /// </remarks>
     public (bool Success, string Message, ExperienceGainDto? ExperienceGain, LevelUpDto? LevelUp, LootDropDto? LootDrop) TryAttack()
     {
-        _logger.LogDebug("TryAttack called");
+        _logger.LogTrace("TryAttack called");
 
         if (_currentSession == null)
         {
@@ -646,7 +646,7 @@ public class GameSessionService
     /// <returns>A tuple indicating success and a descriptive message.</returns>
     public (bool Success, string Message) TryDropItem(string itemName)
     {
-        _logger.LogDebug("TryDropItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryDropItem called for item: {ItemName}", itemName);
 
         if (_currentSession == null)
         {
@@ -691,7 +691,7 @@ public class GameSessionService
     /// <returns>A tuple indicating success and a descriptive message.</returns>
     public (bool Success, string Message) TryUseItem(string itemName)
     {
-        _logger.LogDebug("TryUseItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryUseItem called for item: {ItemName}", itemName);
 
         if (_currentSession == null)
         {
@@ -736,7 +736,7 @@ public class GameSessionService
     /// <returns>Examination result DTO or null if target not found.</returns>
     public ExamineResultDto? GetExamineInfo(string target)
     {
-        _logger.LogDebug("GetExamineInfo called for target: {Target}", target);
+        _logger.LogTrace("GetExamineInfo called for target: {Target}", target);
 
         if (_currentSession == null)
         {
@@ -1048,6 +1048,8 @@ public class GameSessionService
     /// <returns>A structured result containing all turn-end changes.</returns>
     public TurnEndResult ProcessTurnEnd()
     {
+        _logger.LogTrace("ProcessTurnEnd called for session {SessionId}", _currentSession?.Id);
+
         if (_currentSession == null)
         {
             _logger.LogWarning("ProcessTurnEnd called with no active session");
@@ -1103,7 +1105,7 @@ public class GameSessionService
     /// <returns>The result of the equip operation as a DTO.</returns>
     public EquipResultDto TryEquipItem(string itemName)
     {
-        _logger.LogDebug("TryEquipItem called for item: {ItemName}", itemName);
+        _logger.LogTrace("TryEquipItem called for item: {ItemName}", itemName);
 
         if (_currentSession == null)
         {
@@ -1122,7 +1124,7 @@ public class GameSessionService
     /// <returns>The result of the unequip operation as a DTO.</returns>
     public EquipResultDto TryUnequipItem(EquipmentSlot slot)
     {
-        _logger.LogDebug("TryUnequipItem called for slot: {Slot}", slot);
+        _logger.LogTrace("TryUnequipItem called for slot: {Slot}", slot);
 
         if (_currentSession == null)
         {
