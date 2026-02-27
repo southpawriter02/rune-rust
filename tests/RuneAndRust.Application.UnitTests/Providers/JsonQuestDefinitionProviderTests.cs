@@ -60,7 +60,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
 
             // Assert
             definition.Should().NotBeNull();
-            definition.QuestId.Should().Be(questId);
+            definition!.QuestId.Should().Be(questId);
             definition.Name.Should().NotBeNullOrEmpty();
         }
 
@@ -104,7 +104,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
             // Assert
             quests.Should().NotBeNull();
             quests.Should().NotBeEmpty();
-            quests.All(q => q.GiverId == npcId).Should().BeTrue();
+            quests.All(q => q.GiverNpcId == npcId).Should().BeTrue();
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
         {
             // Arrange
             var playerLevel = 1;
-            var completedQuestIds = new List<string> { "quest_clear_nest" };
+            var completedQuestIds = new HashSet<string> { "quest_clear_nest" };
 
             // Act
             var availableQuests = _provider.GetAvailableQuests(playerLevel, completedQuestIds);
@@ -125,7 +125,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
             availableQuests.Any(q => completedQuestIds.Contains(q.QuestId)).Should().BeFalse();
 
             // Verify that all returned quests meet the level requirement
-            availableQuests.All(q => q.MinimumLevel <= playerLevel).Should().BeTrue();
+            availableQuests.All(q => q.MinimumLegend <= playerLevel).Should().BeTrue();
         }
     }
 }

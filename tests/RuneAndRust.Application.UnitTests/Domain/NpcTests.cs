@@ -3,7 +3,7 @@ using NUnit.Framework;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 
-namespace RuneAndRust.Application.UnitTests.Domain;
+namespace RuneAndRust.Application.UnitTests.Entities;
 
 /// <summary>
 /// Comprehensive unit tests for the Npc domain entity.
@@ -150,7 +150,7 @@ public class NpcTests
 
         // Assert
         npc.Id.Should().NotBeEmpty();
-        npc.Id.Should().BeOfType<Guid>();
+        npc.Id.GetType().Should().Be(typeof(Guid));
     }
 
     [Test]

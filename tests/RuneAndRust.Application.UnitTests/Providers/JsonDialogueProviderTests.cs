@@ -22,7 +22,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
         public void OneTimeSetUp()
         {
             var baseDir = TestContext.CurrentContext.TestDirectory;
-            _configPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "config", "dialogue.json");
+            _configPath = Path.Combine(baseDir, "..", "..", "..", "..", "..", "config", "dialogues.json");
 
             if (!File.Exists(_configPath))
             {
@@ -61,7 +61,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
             // Assert
             dialogueTree.Should().NotBeNull();
             dialogueTree.Should().NotBeEmpty();
-            dialogueTree.All(n => n != null).Should().BeTrue();
+            dialogueTree!.All(n => n != null).Should().BeTrue();
         }
 
         [Test]
@@ -83,15 +83,15 @@ namespace RuneAndRust.Application.UnitTests.Providers
             // Arrange
             var dialogueId = "thorvald_greeting";
             var dialogueTree = _provider.GetDialogueTree(dialogueId);
-            var firstNode = dialogueTree.FirstOrDefault();
-            var nodeId = firstNode?.NodeId;
+            var firstNode = dialogueTree!.FirstOrDefault();
+            var nodeId = firstNode?.Id;
 
             // Act
-            var node = _provider.GetNode(dialogueId, nodeId);
+            var node = _provider.GetNode(dialogueId, nodeId!);
 
             // Assert
             node.Should().NotBeNull();
-            node.NodeId.Should().Be(nodeId);
+            node!.Id.Should().Be(nodeId);
             node.Text.Should().NotBeNullOrEmpty();
         }
 

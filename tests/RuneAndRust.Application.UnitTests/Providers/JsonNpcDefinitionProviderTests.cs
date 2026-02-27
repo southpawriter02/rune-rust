@@ -60,7 +60,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
 
             // Assert
             definition.Should().NotBeNull();
-            definition.NpcId.Should().Be(npcId);
+            definition!.NpcId.Should().Be(npcId);
             definition.Name.Should().NotBeNullOrEmpty();
             definition.Description.Should().NotBeNullOrEmpty();
             definition.InitialGreeting.Should().NotBeNullOrEmpty();

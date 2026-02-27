@@ -259,13 +259,12 @@ public class QuestEventBusTests
     {
         // Arrange
         var monsterId = "monster_001";
-        var questId = Guid.NewGuid();
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
             with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
-        var questObjective = new QuestObjective("Kill the boss", QuestObjectiveType.KillEnemy, "monster_001", 1);
-        var quest = new Quest(Guid.NewGuid(), questId, "quest_defeat_boss", "Defeat the Boss",
-            new List<QuestObjective> { questObjective });
+        var questObjective = new QuestObjective("Kill the boss", 1);
+        var quest = new Quest("quest_defeat_boss", "Defeat the Boss", "Defeat the fearsome boss monster");
+        quest.AddObjective(questObjective);
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, monsterId, 1))
             .Returns(true);
@@ -278,7 +277,7 @@ public class QuestEventBusTests
         // Assert
         result.Should().NotBeEmpty();
         result.Should().HaveCount(1);
-        result[0].QuestId.Should().Be(questId);
+        result[0].QuestId.Should().Be(quest.Id);
         result[0].QuestName.Should().Be("Defeat the Boss");
         result[0].ObjectiveDescription.Should().Be("Kill the boss");
     }
@@ -291,12 +290,12 @@ public class QuestEventBusTests
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
             with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
-        var questId1 = Guid.NewGuid();
-        var questId2 = Guid.NewGuid();
-        var questObjective1 = new QuestObjective("Kill any monster", QuestObjectiveType.KillEnemy, "monster_001", 1);
-        var questObjective2 = new QuestObjective("Collect items", QuestObjectiveType.CollectItem, "item_001", 1);
-        var quest1 = new Quest(Guid.NewGuid(), questId1, "quest_1", "Quest 1", new List<QuestObjective> { questObjective1 });
-        var quest2 = new Quest(Guid.NewGuid(), questId2, "quest_2", "Quest 2", new List<QuestObjective> { questObjective2 });
+        var questObjective1 = new QuestObjective("Kill any monster", 1);
+        var questObjective2 = new QuestObjective("Collect items", 1);
+        var quest1 = new Quest("quest_1", "Quest 1", "First quest description");
+        quest1.AddObjective(questObjective1);
+        var quest2 = new Quest("quest_2", "Quest 2", "Second quest description");
+        quest2.AddObjective(questObjective2);
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, monsterId, 1))
             .Returns(true);
@@ -308,8 +307,8 @@ public class QuestEventBusTests
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().Contain(r => r.QuestId == questId1);
-        result.Should().Contain(r => r.QuestId == questId2);
+        result.Should().Contain(r => r.QuestId == quest1.Id);
+        result.Should().Contain(r => r.QuestId == quest2.Id);
     }
 
     [Test]
@@ -317,14 +316,13 @@ public class QuestEventBusTests
     {
         // Arrange
         var monsterId = "monster_001";
-        var questId = Guid.NewGuid();
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
             with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
-        var questObjective = new QuestObjective("Kill 3 enemies", QuestObjectiveType.KillEnemy, "monster_001", 3);
-        questObjective.Advance(1);
-        var quest = new Quest(Guid.NewGuid(), questId, "quest_kill_3", "Kill 3 Enemies",
-            new List<QuestObjective> { questObjective });
+        var questObjective = new QuestObjective("Kill 3 enemies", 3);
+        questObjective.AdvanceProgress(1);
+        var quest = new Quest("quest_kill_3", "Kill 3 Enemies", "Defeat three enemies in the dungeon");
+        quest.AddObjective(questObjective);
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, monsterId, 1))
             .Returns(true);
@@ -584,11 +582,9 @@ public class QuestEventBusTests
         // Arrange
         var questId = Guid.NewGuid();
 
-        // Act
-        var result = Record.Exception(() => _eventBus.UnregisterQuest(questId));
-
-        // Assert
-        result.Should().BeNull();
+        // Act & Assert
+        FluentActions.Invoking(() => _eventBus.UnregisterQuest(questId))
+            .Should().NotThrow();
     }
 
     [Test]
@@ -598,12 +594,10 @@ public class QuestEventBusTests
         var questId = Guid.NewGuid();
         _eventBus.RegisterObjective(questId, QuestObjectiveType.KillEnemy, "monster_001");
 
-        // Act
+        // Act & Assert
         _eventBus.UnregisterQuest(questId);
-        var result = Record.Exception(() => _eventBus.UnregisterQuest(questId));
-
-        // Assert
-        result.Should().BeNull();
+        FluentActions.Invoking(() => _eventBus.UnregisterQuest(questId))
+            .Should().NotThrow();
         var watches = _eventBus.GetActiveWatches();
         watches.Should().BeEmpty();
     }
