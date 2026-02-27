@@ -38,6 +38,29 @@ public record DialogueOptionDto
 }
 
 /// <summary>
+/// Defines a skill check requirement on a dialogue option.
+/// When present, the player must pass this check to select the option.
+/// </summary>
+/// <remarks>
+/// This is the *requirement* definition from config/dialogues.json, not the result
+/// of performing a check. See <see cref="SkillCheckResultDto"/> for check outcomes.
+/// </remarks>
+public record SkillCheckDto
+{
+    /// <summary>
+    /// The skill or attribute to check (e.g., "Wits", "Might", "Finesse", "Charm").
+    /// Maps to a player attribute or derived stat.
+    /// </summary>
+    public string Skill { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The difficulty class the player's roll must meet or exceed.
+    /// Higher values require greater skill or luck to pass.
+    /// </summary>
+    public int DifficultyClass { get; init; }
+}
+
+/// <summary>
 /// Outcome triggered by a dialogue choice.
 /// </summary>
 public record DialogueOutcomeDto
