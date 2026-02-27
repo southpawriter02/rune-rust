@@ -126,17 +126,18 @@ public class DamageServiceTests
     [Test]
     public void ApplyDamage_ReducesPlayerHealth()
     {
-        // Arrange
+        // Arrange — default player has Defense=5, so use 15 damage
+        // to ensure actual damage (15 - 5 defense = 10) is applied
         _mockAbilityService
             .Setup(s => s.GetDamageReduction(_player))
             .Returns(0);
         var healthBefore = _player.Health;
 
         // Act
-        var damage = _damageService.ApplyDamage(_player, 5);
+        var damage = _damageService.ApplyDamage(_player, 15);
 
-        // Assert
-        damage.Should().Be(5);
-        _player.Health.Should().Be(healthBefore - 5);
+        // Assert — ApplyDamage returns finalDamage (15), but TakeDamage subtracts Defense (5)
+        damage.Should().Be(15);
+        _player.Health.Should().Be(healthBefore - 10); // 15 damage - 5 defense = 10 actual
     }
 }

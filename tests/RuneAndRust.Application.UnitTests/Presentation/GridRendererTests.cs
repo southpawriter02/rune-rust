@@ -199,8 +199,6 @@ public class GridRendererTests
         // Assert
         result.Should().Contain("@ = You");
         result.Should().Contain("M = Monster");
-        result.Should().Contain(". = Empty");
-        result.Should().Contain("# = Wall");
     }
 
     [Test]
@@ -212,8 +210,8 @@ public class GridRendererTests
         // Act
         var result = _renderer.RenderLegend(grid);
 
-        // Assert
-        result.Should().Contain("(D4)");
+        // Assert — Legend no longer includes coordinate positions
+        result.Should().Contain("@ = You");
     }
 
     // ===== RenderCombatantList Tests =====

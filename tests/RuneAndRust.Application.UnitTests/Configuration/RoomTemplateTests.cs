@@ -49,7 +49,7 @@ public class RoomTemplateTests
     }
 
     [Test]
-    public void Constructor_WithNoValidBiomes_ThrowsArgumentException()
+    public void Constructor_WithNoValidBiomes_DoesNotThrow()
     {
         // Arrange & Act
         var act = () => new RoomTemplate(
@@ -60,8 +60,8 @@ public class RoomTemplateTests
             roomType: RoomType.Standard,
             slots: []);
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
+        // Assert — empty biome list is now valid (universal template)
+        act.Should().NotThrow();
     }
 
     [Test]

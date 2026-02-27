@@ -44,9 +44,9 @@ namespace RuneAndRust.Application.UnitTests.Providers
             var provider = new JsonQuestDefinitionProvider(_configPath, _mockLogger.Object);
 
             // Assert
-            var allQuests = provider.GetQuestsByFaction("");
+            var allQuests = provider.GetAllDefinitions();
             allQuests.Should().NotBeNull();
-            allQuests.Count().Should().BeGreaterThanOrEqualTo(10);
+            allQuests.Count.Should().BeGreaterThanOrEqualTo(10);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
         public void GetQuestsByFaction_ExistingFaction_ReturnsFilteredList()
         {
             // Arrange
-            var faction = "Midgard";
+            var faction = "RustClans";
 
             // Act
             var quests = _provider.GetQuestsByFaction(faction);

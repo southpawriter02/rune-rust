@@ -403,12 +403,13 @@ public class QuestEventBusTests
         // Arrange
         var questId = Guid.NewGuid();
 
-        // Act & Assert
+        // Act & Assert — empty and whitespace throw ArgumentException
         Assert.Throws<ArgumentException>(() =>
             _eventBus.RegisterObjective(questId, QuestObjectiveType.KillEnemy, ""));
         Assert.Throws<ArgumentException>(() =>
             _eventBus.RegisterObjective(questId, QuestObjectiveType.KillEnemy, "   "));
-        Assert.Throws<ArgumentException>(() =>
+        // null throws ArgumentNullException (subclass of ArgumentException)
+        Assert.Throws<ArgumentNullException>(() =>
             _eventBus.RegisterObjective(questId, QuestObjectiveType.KillEnemy, null!));
     }
 

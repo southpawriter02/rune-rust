@@ -44,9 +44,9 @@ namespace RuneAndRust.Application.UnitTests.Providers
             var provider = new JsonNpcDefinitionProvider(_configPath, _mockLogger.Object);
 
             // Assert
-            var allNpcs = provider.GetNpcsByFaction("");
+            var allNpcs = provider.GetAllDefinitions();
             allNpcs.Should().NotBeNull();
-            allNpcs.Count().Should().BeGreaterThanOrEqualTo(6);
+            allNpcs.Count.Should().BeGreaterThanOrEqualTo(6);
         }
 
         [Test]
@@ -83,7 +83,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
         public void GetNpcsByFaction_MidgardCombine_ReturnsMultiple()
         {
             // Arrange
-            var faction = "Midgard";
+            var faction = "MidgardCombine";
 
             // Act
             var npcs = _provider.GetNpcsByFaction(faction);

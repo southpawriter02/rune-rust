@@ -17,7 +17,7 @@ public class HazardTypeTests
         var values = Enum.GetValues<HazardType>();
 
         // Assert
-        values.Should().HaveCount(9);
+        values.Should().HaveCount(11);
         values.Should().Contain(HazardType.PoisonGas);
         values.Should().Contain(HazardType.Fire);
         values.Should().Contain(HazardType.Ice);
@@ -27,6 +27,8 @@ public class HazardTypeTests
         values.Should().Contain(HazardType.Electricity);
         values.Should().Contain(HazardType.Radiant);
         values.Should().Contain(HazardType.Necrotic);
+        values.Should().Contain(HazardType.Pit);
+        values.Should().Contain(HazardType.Lava);
     }
 
     [Test]
@@ -35,9 +37,11 @@ public class HazardTypeTests
         // Arrange & Act
         var poisonGas = (int)HazardType.PoisonGas;
         var necrotic = (int)HazardType.Necrotic;
+        var lava = (int)HazardType.Lava;
 
         // Assert
         poisonGas.Should().Be(0);
         necrotic.Should().Be(8);
+        lava.Should().Be(10);
     }
 }

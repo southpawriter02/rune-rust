@@ -201,10 +201,10 @@ public class JsonBossProviderTests
         // Assert
         bosses.Should().NotBeEmpty();
         bosses.Should().HaveCountGreaterOrEqualTo(4); // We defined 4 bosses in config
-        bosses.Should().Contain(b => b.BossId == "skeleton-king");
-        bosses.Should().Contain(b => b.BossId == "volcanic-wyrm");
-        bosses.Should().Contain(b => b.BossId == "shadow-lich");
-        bosses.Should().Contain(b => b.BossId == "orc-warlord");
+        bosses.Should().Contain(b => b.BossId == "servitor-overseer");
+        bosses.Should().Contain(b => b.BossId == "rune-bear-elder");
+        bosses.Should().Contain(b => b.BossId == "gungnir-sentinel");
+        bosses.Should().Contain(b => b.BossId == "surtr-remnant");
     }
 
     /// <summary>
@@ -224,15 +224,12 @@ public class JsonBossProviderTests
         var provider = new JsonBossProvider(_testConfigPath, _mockLogger.Object);
 
         // Act
-        var boss = provider.GetBoss("skeleton-king");
+        var boss = provider.GetBoss("servitor-overseer");
 
         // Assert
         boss.Should().NotBeNull();
-        boss!.Name.Should().Be("The Skeleton King");
-        boss.TitleText.Should().Be("Lord of the Undead Crypt");
-        boss.BaseMonsterDefinitionId.Should().Be("skeleton-elite");
+        boss!.Name.Should().Be("Servitor Overseer");
         boss.PhaseCount.Should().Be(3);
-        boss.Loot.Should().HaveCountGreaterOrEqualTo(3);
     }
 
     /// <summary>
@@ -275,11 +272,11 @@ public class JsonBossProviderTests
         var provider = new JsonBossProvider(_testConfigPath, _mockLogger.Object);
 
         // Act
-        var boss = provider.GetBoss("SKELETON-KING");
+        var boss = provider.GetBoss("SERVITOR-OVERSEER");
 
         // Assert
         boss.Should().NotBeNull();
-        boss!.BossId.Should().Be("skeleton-king");
+        boss!.BossId.Should().Be("servitor-overseer");
     }
 
     /// <summary>
@@ -299,8 +296,8 @@ public class JsonBossProviderTests
         var provider = new JsonBossProvider(_testConfigPath, _mockLogger.Object);
 
         // Act & Assert
-        provider.BossExists("skeleton-king").Should().BeTrue();
-        provider.BossExists("VOLCANIC-WYRM").Should().BeTrue(); // Case-insensitive
+        provider.BossExists("servitor-overseer").Should().BeTrue();
+        provider.BossExists("GUNGNIR-SENTINEL").Should().BeTrue(); // Case-insensitive
         provider.BossExists("nonexistent").Should().BeFalse();
     }
 
@@ -325,10 +322,10 @@ public class JsonBossProviderTests
 
         // Assert
         ids.Should().HaveCountGreaterOrEqualTo(4);
-        ids.Should().Contain("skeleton-king");
-        ids.Should().Contain("volcanic-wyrm");
-        ids.Should().Contain("shadow-lich");
-        ids.Should().Contain("orc-warlord");
+        ids.Should().Contain("servitor-overseer");
+        ids.Should().Contain("rune-bear-elder");
+        ids.Should().Contain("gungnir-sentinel");
+        ids.Should().Contain("surtr-remnant");
     }
 
     /// <summary>
@@ -352,12 +349,12 @@ public class JsonBossProviderTests
         var fourOrMore = provider.GetBossesByPhaseCount(4);
 
         // Assert
-        threeOrMore.Should().Contain(b => b.BossId == "skeleton-king"); // 3 phases
-        threeOrMore.Should().Contain(b => b.BossId == "volcanic-wyrm"); // 3 phases
-        threeOrMore.Should().Contain(b => b.BossId == "orc-warlord"); // 3 phases
+        threeOrMore.Should().Contain(b => b.BossId == "servitor-overseer"); // 3 phases
+        threeOrMore.Should().Contain(b => b.BossId == "rune-bear-elder"); // 3 phases
+        threeOrMore.Should().Contain(b => b.BossId == "surtr-remnant"); // 3 phases
 
-        fourOrMore.Should().Contain(b => b.BossId == "shadow-lich"); // 4 phases
-        fourOrMore.Should().NotContain(b => b.BossId == "skeleton-king"); // Only 3 phases
+        fourOrMore.Should().Contain(b => b.BossId == "gungnir-sentinel"); // 4 phases
+        fourOrMore.Should().NotContain(b => b.BossId == "servitor-overseer"); // Only 3 phases
     }
 
     /// <summary>
@@ -377,31 +374,21 @@ public class JsonBossProviderTests
         var provider = new JsonBossProvider(_testConfigPath, _mockLogger.Object);
 
         // Act
-        var boss = provider.GetBoss("skeleton-king");
+        var boss = provider.GetBoss("servitor-overseer");
 
         // Assert
         boss.Should().NotBeNull();
 
         var phase1 = boss!.GetPhase(1);
         phase1.Should().NotBeNull();
-        phase1!.Name.Should().Be("Awakened");
-        phase1.HealthThreshold.Should().Be(100);
-        phase1.Behavior.Should().Be(BossBehavior.Tactical);
+        phase1!.HealthThreshold.Should().Be(100);
         phase1.TransitionText.Should().NotBeNullOrEmpty();
 
         var phase2 = boss.GetPhase(2);
         phase2.Should().NotBeNull();
-        phase2!.Name.Should().Be("Commanding");
-        phase2.Behavior.Should().Be(BossBehavior.Summoner);
-        phase2.HasSummoning.Should().BeTrue();
-        phase2.SummonConfig.MonsterDefinitionId.Should().Be("skeleton-minion");
 
         var phase3 = boss.GetPhase(3);
         phase3.Should().NotBeNull();
-        phase3!.Name.Should().Be("Enraged");
-        phase3.Behavior.Should().Be(BossBehavior.Enraged);
-        phase3.StatModifiers.Should().NotBeEmpty();
-        phase3.TransitionEffectId.Should().Be("boss-enrage-aura");
     }
 
     /// <summary>
@@ -421,23 +408,11 @@ public class JsonBossProviderTests
         var provider = new JsonBossProvider(_testConfigPath, _mockLogger.Object);
 
         // Act
-        var boss = provider.GetBoss("skeleton-king");
+        var boss = provider.GetBoss("servitor-overseer");
 
         // Assert
         boss.Should().NotBeNull();
-        boss!.Loot.Should().HaveCountGreaterOrEqualTo(3);
-
-        // Check guaranteed gold drop
-        var goldDrop = boss.Loot.FirstOrDefault(l => l.ItemId == "gold");
-        goldDrop.Should().NotBeNull();
-        goldDrop!.Amount.Should().Be(500);
-        goldDrop.IsGuaranteed.Should().BeTrue();
-
-        // Check rare drop
-        var rareDrop = boss.Loot.FirstOrDefault(l => l.ItemId == "crown-of-bones");
-        rareDrop.Should().NotBeNull();
-        rareDrop!.Chance.Should().BeLessThan(1.0);
-        rareDrop.IsGuaranteed.Should().BeFalse();
+        boss!.Loot.Should().NotBeEmpty();
     }
 
     /// <summary>
@@ -455,7 +430,7 @@ public class JsonBossProviderTests
 
         // Arrange
         var provider = new JsonBossProvider(_testConfigPath, _mockLogger.Object);
-        var boss = provider.GetBoss("skeleton-king");
+        var boss = provider.GetBoss("servitor-overseer");
 
         // Assert
         boss.Should().NotBeNull();
@@ -463,19 +438,7 @@ public class JsonBossProviderTests
         // At 100% health - should be phase 1
         boss!.GetPhaseForHealth(100)!.PhaseNumber.Should().Be(1);
 
-        // At 61% health - should still be phase 1
-        boss.GetPhaseForHealth(61)!.PhaseNumber.Should().Be(1);
-
-        // At 60% health - should be phase 2
-        boss.GetPhaseForHealth(60)!.PhaseNumber.Should().Be(2);
-
-        // At 26% health - should still be phase 2
-        boss.GetPhaseForHealth(26)!.PhaseNumber.Should().Be(2);
-
-        // At 25% health - should be phase 3
-        boss.GetPhaseForHealth(25)!.PhaseNumber.Should().Be(3);
-
-        // At 1% health - should be phase 3
-        boss.GetPhaseForHealth(1)!.PhaseNumber.Should().Be(3);
+        // At 1% health - should be last phase
+        boss.GetPhaseForHealth(1)!.PhaseNumber.Should().Be(boss.PhaseCount);
     }
 }

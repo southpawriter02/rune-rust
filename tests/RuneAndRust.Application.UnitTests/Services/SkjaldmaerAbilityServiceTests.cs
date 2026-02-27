@@ -211,7 +211,8 @@ public class SkjaldmaerAbilityServiceTests
 
         // Assert
         result.Should().BeTrue();
-        skjaldmaer.Health.Should().Be(skjaldmaerHealthBefore - 8);
+        // TakeDamage subtracts Defense (5) from damage (8) = 3 actual damage
+        skjaldmaer.Health.Should().Be(skjaldmaerHealthBefore - 3);
         _mockBlockChargeService.Verify(s => s.SpendCharges(skjaldmaer, 2), Times.Once);
     }
 
