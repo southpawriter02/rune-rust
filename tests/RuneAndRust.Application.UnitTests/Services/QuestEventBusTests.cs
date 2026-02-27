@@ -39,9 +39,7 @@ public class QuestEventBusTests
         // Arrange
         var monsterId = "monster_001";
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", monsterId } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, monsterId, 1))
             .Returns(true);
@@ -62,9 +60,7 @@ public class QuestEventBusTests
         // Arrange
         var itemId = "item_golden_ring";
         var gameEvent = GameEvent.Inventory("ItemPickedUp", "Item picked up")
-        {
-            Data = new Dictionary<string, object> { { "ItemId", itemId } }
-        };
+            with { Data = new Dictionary<string, object> { { "ItemId", itemId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.CollectItem, itemId, 1))
             .Returns(true);
@@ -85,9 +81,7 @@ public class QuestEventBusTests
         // Arrange
         var roomId = "room_throne_hall";
         var gameEvent = GameEvent.Exploration("RoomEntered", "Room entered")
-        {
-            Data = new Dictionary<string, object> { { "RoomId", roomId } }
-        };
+            with { Data = new Dictionary<string, object> { { "RoomId", roomId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.ExploreRoom, roomId, 1))
             .Returns(true);
@@ -108,9 +102,7 @@ public class QuestEventBusTests
         // Arrange
         var objectId = "obj_ancient_lever";
         var gameEvent = GameEvent.Interaction("InteractionCompleted", "Interaction completed")
-        {
-            Data = new Dictionary<string, object> { { "ObjectId", objectId } }
-        };
+            with { Data = new Dictionary<string, object> { { "ObjectId", objectId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.InteractWithObject, objectId, 1))
             .Returns(true);
@@ -131,9 +123,7 @@ public class QuestEventBusTests
         // Arrange
         var choiceId = "choice_accept_bargain";
         var gameEvent = GameEvent.Interaction("DialogueChoiceMade", "Dialogue choice made")
-        {
-            Data = new Dictionary<string, object> { { "ChoiceId", choiceId } }
-        };
+            with { Data = new Dictionary<string, object> { { "ChoiceId", choiceId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.MakeChoice, choiceId, 1))
             .Returns(true);
@@ -154,9 +144,7 @@ public class QuestEventBusTests
         // Arrange
         var npcId = "npc_merchant_borgrim";
         var gameEvent = GameEvent.Interaction("DialogueStarted", "Dialogue started")
-        {
-            Data = new Dictionary<string, object> { { "NpcId", npcId } }
-        };
+            with { Data = new Dictionary<string, object> { { "NpcId", npcId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.TalkToNpc, npcId, 1))
             .Returns(true);
@@ -177,9 +165,7 @@ public class QuestEventBusTests
         // Arrange
         var level = "5";
         var gameEvent = GameEvent.Character("LevelUp", "Level up achieved")
-        {
-            Data = new Dictionary<string, object> { { "Level", level } }
-        };
+            with { Data = new Dictionary<string, object> { { "Level", level } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.ReachLevel, level, 1))
             .Returns(true);
@@ -199,9 +185,7 @@ public class QuestEventBusTests
     {
         // Arrange
         var gameEvent = GameEvent.System("UnknownEvent", "Unknown event")
-        {
-            Data = new Dictionary<string, object> { { "SomeKey", "some_value" } }
-        };
+            with { Data = new Dictionary<string, object> { { "SomeKey", "some_value" } } };
 
         // Act
         var result = _eventBus.ProcessEvent(gameEvent);
@@ -216,9 +200,7 @@ public class QuestEventBusTests
     {
         // Arrange
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = null
-        };
+            with { Data = null };
 
         // Act
         var result = _eventBus.ProcessEvent(gameEvent);
@@ -233,9 +215,7 @@ public class QuestEventBusTests
     {
         // Arrange
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "WrongKey", "value" } }
-        };
+            with { Data = new Dictionary<string, object> { { "WrongKey", "value" } } };
 
         // Act
         var result = _eventBus.ProcessEvent(gameEvent);
@@ -251,9 +231,7 @@ public class QuestEventBusTests
         // Arrange
         var monsterId = "monster_001";
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", monsterId } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, monsterId, 1))
             .Returns(false);
@@ -283,9 +261,7 @@ public class QuestEventBusTests
         var monsterId = "monster_001";
         var questId = Guid.NewGuid();
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", monsterId } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
         var questObjective = new QuestObjective("Kill the boss", QuestObjectiveType.KillEnemy, "monster_001", 1);
         var quest = new Quest(Guid.NewGuid(), questId, "quest_defeat_boss", "Defeat the Boss",
@@ -313,9 +289,7 @@ public class QuestEventBusTests
         // Arrange
         var monsterId = "monster_001";
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", monsterId } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
         var questId1 = Guid.NewGuid();
         var questId2 = Guid.NewGuid();
@@ -345,9 +319,7 @@ public class QuestEventBusTests
         var monsterId = "monster_001";
         var questId = Guid.NewGuid();
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", monsterId } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
         var questObjective = new QuestObjective("Kill 3 enemies", QuestObjectiveType.KillEnemy, "monster_001", 3);
         questObjective.Advance(1);
@@ -722,9 +694,7 @@ public class QuestEventBusTests
         _eventBus.RegisterQuestObjectives(questId, objectives);
 
         var gameEvent = GameEvent.Combat("MonsterDefeated", "Boss defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", monsterId } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", monsterId } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, monsterId, 1))
             .Returns(true);
@@ -761,9 +731,7 @@ public class QuestEventBusTests
         _eventBus.RegisterObjective(questId2, QuestObjectiveType.CollectItem, "item_001");
 
         var event1 = GameEvent.Combat("MonsterDefeated", "Enemy defeated")
-        {
-            Data = new Dictionary<string, object> { { "MonsterId", "monster_001" } }
-        };
+            with { Data = new Dictionary<string, object> { { "MonsterId", "monster_001" } } };
 
         _mockQuestService.Setup(qs => qs.AdvanceObjective(QuestObjectiveType.KillEnemy, "monster_001", 1))
             .Returns(true);
