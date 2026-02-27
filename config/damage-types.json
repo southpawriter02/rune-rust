@@ -48,6 +48,13 @@
       "description": "Necrotic damage from shadow and death magic.",
       "color": "purple",
       "sortOrder": 6
+    },
+    {
+      "id": "aetheric",
+      "name": "Aetheric",
+      "description": "Raw Wyrd-force damage from Aether manipulation. Unique to the Seiðkona specialization. Bypasses conventional resistances but accumulates toward the Unraveling capstone.",
+      "color": "mediumorchid1",
+      "sortOrder": 7
     }
   ]
 }

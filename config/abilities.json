@@ -1549,6 +1549,641 @@
           "description": "Investigate tracks to reveal creature information"
         }
       ]
+    },
+    {
+      "id": "hunters-eye",
+      "name": "Hunter's Eye",
+      "description": "Passive ability that evaluates ranged attacks against targets with cover. Ignores Partial cover penalties (+2 AC negated), but cannot bypass Full cover. No AP cost — applied automatically when making ranged attacks.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 0,
+      "rangeUnit": "None",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "tags": [
+        "passive",
+        "cover-negation",
+        "ranged-attack",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "IgnoreCover",
+          "coverTypesIgnored": [
+            "Partial"
+          ],
+          "partialCoverPenaltyNegated": 2,
+          "description": "Ignore partial cover on ranged attacks"
+        }
+      ]
+    },
+    {
+      "id": "trap-mastery",
+      "name": "Trap Mastery",
+      "description": "Place hunting traps (2 AP) or detect enemy traps (2 AP). Placement: creates an armed trap at a location (max 2 active). Detection: Perception check 1d20 + Trap Mastery (+3) + Keen Senses (+1 if unlocked) vs DC 13. Traps deal 1d8 piercing damage and immobilize for 1 turn.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Location",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 5,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "active",
+        "tactical",
+        "battlefield-control",
+        "detection",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "TrapPlacement",
+          "maxActiveTraps": 2,
+          "trapDamage": "1d8",
+          "trapDamageType": "piercing",
+          "immobilizeTurns": 1,
+          "trapDetectionDc": 13,
+          "description": "Place a hunting trap at a location"
+        },
+        {
+          "type": "TrapDetection",
+          "perceptionBonus": 3,
+          "keenSensesBonus": 1,
+          "detectionDc": 13,
+          "description": "Scan the area for enemy traps"
+        }
+      ]
+    },
+    {
+      "id": "predators-patience",
+      "name": "Predator's Patience",
+      "description": "Activates a patient hunter stance (1 AP). While active and stationary, the hunter gains +3 to all attack rolls. Movement immediately breaks the stance. No AP cost to deactivate.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Stance",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 8,
+      "range": 0,
+      "rangeUnit": "None",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "UntilBroken",
+      "tags": [
+        "stance",
+        "hit-bonus",
+        "tactical-patience",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "StanceBuff",
+          "hitBonus": 3,
+          "breakConditions": [
+            "Movement"
+          ],
+          "description": "Gain +3 to hit while stationary"
+        }
+      ]
+    },
+    {
+      "id": "apex-predator",
+      "name": "Apex Predator",
+      "description": "The apex predator's presence strips concealment from marked quarry. When evaluating a marked target, any concealment type (Light Obscurement, Invisibility, Magical Camo, Hidden) is denied — the quarry cannot hide from the ultimate hunter. Passive ability — no AP cost.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 0,
+      "rangeUnit": "None",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Persistent",
+      "tags": [
+        "passive",
+        "concealment-denial",
+        "tier3",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "ConcealmentDenial",
+          "requiresQuarryMark": true,
+          "deniedConcealmentTypes": [
+            "LightObscurement",
+            "Invisibility",
+            "MagicalCamo",
+            "Hidden"
+          ],
+          "description": "Marked quarry cannot benefit from any concealment"
+        }
+      ]
+    },
+    {
+      "id": "crippling-shot",
+      "name": "Crippling Shot",
+      "description": "Fires a precision shot at a marked quarry's legs, halving their movement speed for 2 turns. Costs 1 AP and consumes 1 Quarry Mark. Guaranteed effect — no attack roll required. The mark must exist on the target.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "quarry-mark",
+      "costAmount": 1,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 2,
+      "durationUnit": "Turns",
+      "tags": [
+        "attack",
+        "movement-debuff",
+        "tier3",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "MovementDebuff",
+          "movementDivisor": 2,
+          "durationTurns": 2,
+          "requiresQuarryMark": true,
+          "consumesMark": true,
+          "guaranteedEffect": true,
+          "description": "Halves target movement speed for 2 turns"
+        }
+      ]
+    },
+    {
+      "id": "the-perfect-hunt",
+      "name": "The Perfect Hunt",
+      "description": "The culmination of the Veiðimaðr's hunting mastery. Declares an unstoppable strike against a marked quarry — automatic critical hit with all base damage doubled. Costs 3 AP, consumes 1 Quarry Mark. Usable once per long rest.",
+      "classIds": [
+        "veidimadur"
+      ],
+      "costResource": "quarry-mark",
+      "costAmount": 1,
+      "apCost": 3,
+      "cooldown": 1,
+      "cooldownUnit": "LongRest",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 4,
+      "ppCost": 6,
+      "ppPrerequisite": 24,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "attack",
+        "capstone",
+        "auto-crit",
+        "coherent",
+        "hunter"
+      ],
+      "effects": [
+        {
+          "type": "AutoCritical",
+          "criticalMultiplier": 2,
+          "requiresQuarryMark": true,
+          "consumesMark": true,
+          "autoCrit": true,
+          "description": "Automatic critical hit — base damage doubled"
+        }
+      ],
+      "restrictions": [
+        "OncePerLongRest"
+      ]
+    },
+    {
+      "id": "seidr-bolt",
+      "name": "Seiðr Bolt",
+      "description": "Launch a bolt of raw Aetheric energy at a target, dealing 2d6 Aetheric damage. Each cast builds +1 Aether Resonance and adds the damage to the Accumulated Aetheric Damage tracker for the Unraveling capstone. Subject to probability-based Corruption check at Resonance 5+ (Heretical path).",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "damage",
+        "aetheric",
+        "ranged",
+        "heretical",
+        "active",
+        "mystic",
+        "resonance-build"
+      ],
+      "effects": [
+        {
+          "type": "Damage",
+          "dice": "2d6",
+          "damageType": "aetheric",
+          "resonanceGain": 1,
+          "accumulatesDamage": true,
+          "description": "2d6 Aetheric damage, +1 Resonance, damage accumulated for Unraveling"
+        }
+      ]
+    },
+    {
+      "id": "wyrd-sight",
+      "name": "Wyrd Sight",
+      "description": "Open the Wyrd Sight to perceive hidden truths. Detects invisible creatures, magic auras, and Corruption sources within a 10-space radius for 3 turns. Does NOT build Resonance and does NOT trigger Corruption checks — pure detection has no Aetheric cost.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Active",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 10,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 3,
+      "durationUnit": "Turns",
+      "tags": [
+        "detection",
+        "utility",
+        "active",
+        "mystic",
+        "no-resonance"
+      ],
+      "effects": [
+        {
+          "type": "Detection",
+          "detectsInvisible": true,
+          "detectsMagic": true,
+          "detectsCorruption": true,
+          "radius": 10,
+          "description": "Detect invisible creatures, magic auras, and Corruption sources within 10 spaces"
+        }
+      ]
+    },
+    {
+      "id": "aether-attunement",
+      "name": "Aether Attunement",
+      "description": "Attunement to the Aether enhances natural recovery, granting +10% AP regeneration rate. Always active while conscious. Does not build Resonance (passive abilities do not channel Aether). No Corruption risk.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 1,
+      "ppCost": 0,
+      "ppPrerequisite": 0,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "tags": [
+        "passive",
+        "regeneration",
+        "mystic",
+        "no-resonance"
+      ],
+      "effects": [
+        {
+          "type": "PassiveBonus",
+          "apRegenBonus": 10,
+          "description": "+10% AP regeneration rate"
+        }
+      ]
+    },
+    {
+      "id": "fates-thread",
+      "name": "Fate's Thread",
+      "description": "Weave your perception through the Wyrd to glimpse your foe's next action. Grants divination insight into the target's upcoming move. Builds +2 Aether Resonance per cast (higher than Tier 1). Subject to probability-based Corruption check at Resonance 5+ (Heretical path). AP cost reduced by 1 when Resonance Cascade is active at Resonance 5+.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 2,
+      "apCostWithCascade": 1,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 0,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 1,
+      "durationUnit": "Actions",
+      "tags": [
+        "divination",
+        "precognition",
+        "mystic",
+        "resonance-build",
+        "tier-2"
+      ],
+      "effects": [
+        {
+          "type": "Divination",
+          "resonanceGain": 2,
+          "revealTarget": true,
+          "description": "Glimpse target's next action, +2 Resonance"
+        }
+      ]
+    },
+    {
+      "id": "weave-disruption",
+      "name": "Weave Disruption",
+      "description": "Unravel magical effects with a gesture, disrupting enemy spellwork. Rolls d20 + current Resonance as a dispel check against effect DCs. Builds +1 Aether Resonance per cast. Subject to probability-based Corruption check at Resonance 5+ (Heretical path). AP cost reduced by 1 when Resonance Cascade is active at Resonance 5+.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 3,
+      "apCostWithCascade": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 0,
+      "range": 10,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "dispel",
+        "counterspell",
+        "mystic",
+        "resonance-build",
+        "tier-2"
+      ],
+      "effects": [
+        {
+          "type": "Dispel",
+          "dice": "1d20",
+          "resonanceBonus": true,
+          "resonanceGain": 1,
+          "description": "d20 + Resonance vs effect DC, +1 Resonance"
+        }
+      ]
+    },
+    {
+      "id": "resonance-cascade",
+      "name": "Resonance Cascade",
+      "description": "Channel the power of accumulated Resonance to optimize your casting. When Aether Resonance reaches 5 or higher, all Seiðkona ability AP costs are reduced by 1 (minimum 1). This passive modifier creates a feedback loop: higher Resonance enables cheaper abilities, more casts per turn, and faster Resonance buildup — but also escalating Corruption risk. Does not affect the Unraveling capstone. Does not build Resonance (passive). No Corruption risk.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 0,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Passive",
+      "unlockLevel": 2,
+      "ppCost": 4,
+      "ppPrerequisite": 0,
+      "range": 0,
+      "rangeUnit": "Self",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Permanent",
+      "cascadeTrigger": {
+        "resonanceThreshold": 5,
+        "apCostReduction": 1,
+        "minimumApCost": 1
+      },
+      "tags": [
+        "passive",
+        "modifier",
+        "mystic",
+        "no-resonance",
+        "tier-2"
+      ],
+      "effects": [
+        {
+          "type": "PassiveModifier",
+          "apCostReduction": 1,
+          "minimumApCost": 1,
+          "resonanceThreshold": 5,
+          "description": "Reduce all Seiðkona ability AP costs by 1 (min 1) at Resonance 5+"
+        }
+      ]
+    },
+    {
+      "id": "volvas-vision",
+      "name": "Völva's Vision",
+      "description": "Channel the sight of the ancient völur to reveal all hidden, invisible, and concealed enemies within a 15-space radius. This mass-detection ability is the enhanced version of Wyrd Sight, offering area revelation instead of individual detection. Each cast builds +2 Aether Resonance — a significant escalation representing the magnitude of Aetheric channeling required for mass revelation. Subject to probability-based Corruption check at Resonance 5+. Does NOT deal damage and does NOT add to Accumulated Aetheric Damage.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 3,
+      "apCostWithCascade": 2,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Self",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 15,
+      "rangeUnit": "Spaces",
+      "areaType": "Radius",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "detection",
+        "revelation",
+        "heretical",
+        "active",
+        "mystic",
+        "resonance-build",
+        "tier-3"
+      ],
+      "effects": [
+        {
+          "type": "Detection",
+          "revealRadius": 15,
+          "detects": ["hidden", "invisible", "concealed"],
+          "resonanceGain": 2,
+          "accumulatesDamage": false,
+          "description": "Reveals all hidden/invisible/concealed enemies in 15-space radius, +2 Resonance"
+        }
+      ]
+    },
+    {
+      "id": "aether-storm",
+      "name": "Aether Storm",
+      "description": "Unleash a devastating cone of raw Aetheric energy, dealing 4d6 Aetheric damage to all enemies in the area. The highest single-ability damage source in the Seiðkona arsenal before the Unraveling capstone. Each cast builds +2 Aether Resonance and adds the full damage to the Accumulated Aetheric Damage tracker. With Resonance Cascade active, the 5 AP cost reduces to 4 AP, enabling more aggressive usage at the expense of increased Corruption risk. Subject to probability-based Corruption check at Resonance 5+.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 5,
+      "apCostWithCascade": 4,
+      "cooldown": 0,
+      "cooldownUnit": "None",
+      "targetType": "Cone",
+      "type": "Active",
+      "unlockLevel": 3,
+      "ppCost": 5,
+      "ppPrerequisite": 16,
+      "range": 8,
+      "rangeUnit": "Spaces",
+      "areaType": "Cone",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "tags": [
+        "damage",
+        "aetheric",
+        "aoe",
+        "cone",
+        "heretical",
+        "active",
+        "mystic",
+        "resonance-build",
+        "tier-3"
+      ],
+      "effects": [
+        {
+          "type": "Damage",
+          "dice": "4d6",
+          "damageType": "aetheric",
+          "resonanceGain": 2,
+          "accumulatesDamage": true,
+          "description": "4d6 Aetheric damage (cone AoE), +2 Resonance, damage accumulated for Unraveling"
+        }
+      ]
+    },
+    {
+      "id": "unraveling",
+      "name": "The Unraveling",
+      "description": "The ultimate expression of Aetheric power. Releases 100% of Accumulated Aetheric Damage as a single devastating burst, consuming the entire Resonance cycle. Requires Resonance at maximum (10) and Accumulated Aetheric Damage greater than 0. Resets Resonance from 10 to 0 and clears the Accumulated Damage tracker. Immune to Resonance Cascade AP reduction — always costs exactly 5 AP. Guaranteed 20% Corruption check (lower than standard 25% at Resonance 10, rewarding bold capstone use) but triggers +2 Corruption if activated (elevated from standard +1). Once per combat encounter.",
+      "classIds": [
+        "seidkona"
+      ],
+      "costResource": "none",
+      "costAmount": 0,
+      "apCost": 5,
+      "cooldown": 1,
+      "cooldownUnit": "Combat",
+      "targetType": "SingleEnemy",
+      "type": "Active",
+      "unlockLevel": 4,
+      "ppCost": 6,
+      "ppPrerequisite": 24,
+      "range": 12,
+      "rangeUnit": "Spaces",
+      "areaType": "None",
+      "duration": 0,
+      "durationUnit": "Instant",
+      "cascadeImmune": true,
+      "requirements": {
+        "resonance": 10,
+        "accumulatedDamageGreaterThan": 0,
+        "oncePerCombat": true
+      },
+      "tags": [
+        "damage",
+        "aetheric",
+        "capstone",
+        "heretical",
+        "active",
+        "mystic",
+        "cascade-immune",
+        "once-per-combat"
+      ],
+      "effects": [
+        {
+          "type": "AccumulatedDamageRelease",
+          "damageType": "aetheric",
+          "releasesAllAccumulated": true,
+          "resetsResonance": true,
+          "corruptionRiskPercent": 20,
+          "corruptionAmount": 2,
+          "description": "Releases 100% of Accumulated Aetheric Damage, resets Resonance to 0, guaranteed 20% Corruption check (+2)"
+        }
+      ]
     }
   ]
 }
