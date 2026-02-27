@@ -1,243 +1,630 @@
 {
-    "$schema": "schemas/room-templates.schema.json",
-    "version": "1.1",
-    "templates": [
+  "$schema": "schemas/room-templates.schema.json",
+  "version": "1.1",
+  "templates": [
+    {
+      "templateId": "roots-collapsed-entry",
+      "namePattern": "{adjective} Entry Hall",
+      "descriptionPattern": "A {condition} entry hall where the ceiling has partially collapsed. {atmosphere} {detail}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Entry",
+      "weight": 30,
+      "minDepth": 0,
+      "maxDepth": 0,
+      "tags": ["entry", "safe", "start"],
+      "slots": [
         {
-            "templateId": "dungeon-corridor-narrow",
-            "namePattern": "{adjective} Corridor",
-            "descriptionPattern": "A {width} {material} corridor stretches {direction}. {atmosphere}",
-            "validBiomes": [
-                "dungeon",
-                "ruins",
-                "cave"
-            ],
-            "roomType": "Standard",
-            "weight": 40,
-            "minDepth": 0,
-            "maxDepth": null,
-            "tags": [
-                "corridor",
-                "passage"
-            ],
-            "slots": [
-                {
-                    "slotId": "adjective",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.adjectives.corridor"
-                },
-                {
-                    "slotId": "width",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.dimensions.width"
-                },
-                {
-                    "slotId": "material",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.materials.wall"
-                },
-                {
-                    "slotId": "direction",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.directions"
-                },
-                {
-                    "slotId": "atmosphere",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.7,
-                    "descriptorPool": "environmental.atmosphere"
-                },
-                {
-                    "slotId": "monster_01",
-                    "type": "Monster",
-                    "isRequired": false,
-                    "fillProbability": 0.35,
-                    "minQuantity": 1,
-                    "maxQuantity": 2,
-                    "constraints": {
-                        "maxTier": "standard"
-                    }
-                }
-            ]
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
         },
         {
-            "templateId": "dungeon-treasure-vault",
-            "namePattern": "{guardian}'s {container_type}",
-            "descriptionPattern": "A {size} chamber filled with {treasure_description}. {guardian_hint}",
-            "validBiomes": [
-                "dungeon",
-                "ruins"
-            ],
-            "roomType": "Treasure",
-            "weight": 8,
-            "minDepth": 2,
-            "maxDepth": null,
-            "tags": [
-                "treasure",
-                "vault",
-                "guarded"
-            ],
-            "slots": [
-                {
-                    "slotId": "guardian",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "npcs.guardian_types"
-                },
-                {
-                    "slotId": "container_type",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.container_names"
-                },
-                {
-                    "slotId": "size",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.dimensions.size"
-                },
-                {
-                    "slotId": "treasure_description",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.treasure_descriptions"
-                },
-                {
-                    "slotId": "guardian_hint",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.8,
-                    "descriptorPool": "room.guardian_hints"
-                },
-                {
-                    "slotId": "guardian_monster",
-                    "type": "Monster",
-                    "isRequired": true,
-                    "fillProbability": 1.0,
-                    "minQuantity": 1,
-                    "maxQuantity": 1,
-                    "constraints": {
-                        "minTier": "elite"
-                    }
-                },
-                {
-                    "slotId": "main_container",
-                    "type": "Container",
-                    "isRequired": true,
-                    "fillProbability": 1.0,
-                    "constraints": {
-                        "containerType": "chest",
-                        "lootQuality": "high"
-                    }
-                }
-            ]
+          "slotId": "condition",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.conditions.decay"
         },
         {
-            "templateId": "cave-crystal-chamber",
-            "namePattern": "Crystal {chamber_type}",
-            "descriptionPattern": "{crystal_description} {lighting_effect} {sound_description}",
-            "validBiomes": [
-                "cave"
-            ],
-            "roomType": "Standard",
-            "weight": 25,
-            "minDepth": 1,
-            "maxDepth": 5,
-            "tags": [
-                "crystal",
-                "natural"
-            ],
-            "slots": [
-                {
-                    "slotId": "chamber_type",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.cave_chamber_types"
-                },
-                {
-                    "slotId": "crystal_description",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.crystal_descriptions"
-                },
-                {
-                    "slotId": "lighting_effect",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "environmental.lighting.crystal"
-                },
-                {
-                    "slotId": "sound_description",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.6,
-                    "descriptorPool": "environmental.sounds.cave"
-                }
-            ]
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.7,
+          "descriptorPool": "environmental.atmosphere.facility"
         },
         {
-            "templateId": "volcanic-lava-bridge",
-            "namePattern": "{condition} Bridge",
-            "descriptionPattern": "A {material} bridge spans a {chasm_type}. {heat_description} {danger_warning}",
-            "validBiomes": [
-                "volcanic"
-            ],
-            "roomType": "Standard",
-            "weight": 20,
-            "minDepth": 4,
-            "maxDepth": null,
-            "tags": [
-                "bridge",
-                "dangerous",
-                "lava"
-            ],
-            "slots": [
-                {
-                    "slotId": "condition",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.conditions.structure"
-                },
-                {
-                    "slotId": "material",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.materials.volcanic"
-                },
-                {
-                    "slotId": "chasm_type",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "room.chasms.volcanic"
-                },
-                {
-                    "slotId": "heat_description",
-                    "type": "Description",
-                    "isRequired": true,
-                    "descriptorPool": "environmental.temperature.volcanic"
-                },
-                {
-                    "slotId": "danger_warning",
-                    "type": "Description",
-                    "isRequired": false,
-                    "fillProbability": 0.7,
-                    "descriptorPool": "room.danger_warnings"
-                },
-                {
-                    "slotId": "hazard_01",
-                    "type": "Hazard",
-                    "isRequired": false,
-                    "fillProbability": 0.4,
-                    "constraints": {
-                        "hazardType": "environmental",
-                        "element": "fire"
-                    }
-                }
-            ]
+          "slotId": "detail",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.5,
+          "descriptorPool": "room.details.facility"
         }
-    ]
+      ]
+    },
+    {
+      "templateId": "roots-loading-dock",
+      "namePattern": "{adjective} Loading Dock",
+      "descriptionPattern": "A {size} loading dock with {cargo_description}. {atmosphere}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Entry",
+      "weight": 20,
+      "minDepth": 0,
+      "maxDepth": 0,
+      "tags": ["entry", "safe", "start", "large"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "cargo_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.cargo"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.6,
+          "descriptorPool": "environmental.atmosphere.facility"
+        }
+      ]
+    },
+    {
+      "templateId": "roots-data-spine",
+      "namePattern": "{adjective} Data-Spine",
+      "descriptionPattern": "A {width} corridor lined with {data_description}. {lighting} {sound}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Standard",
+      "weight": 35,
+      "minDepth": 0,
+      "maxDepth": null,
+      "tags": ["corridor", "passage", "technical"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.technical"
+        },
+        {
+          "slotId": "width",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.width"
+        },
+        {
+          "slotId": "data_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.data_infrastructure"
+        },
+        {
+          "slotId": "lighting",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "environmental.lighting.facility"
+        },
+        {
+          "slotId": "sound",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.7,
+          "descriptorPool": "environmental.sounds.machinery"
+        },
+        {
+          "slotId": "monster_01",
+          "type": "Monster",
+          "isRequired": false,
+          "fillProbability": 0.3,
+          "minQuantity": 1,
+          "maxQuantity": 2,
+          "constraints": {
+            "maxTier": "common"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-geothermal-passage",
+      "namePattern": "{adjective} Geothermal Passage",
+      "descriptionPattern": "A {material} passage wreathed in {steam_description}. {heat} {warning}",
+      "validBiomes": ["the_roots", "muspelheim_ashfall"],
+      "roomType": "Standard",
+      "weight": 25,
+      "minDepth": 1,
+      "maxDepth": null,
+      "tags": ["corridor", "passage", "hazardous", "geothermal"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
+        },
+        {
+          "slotId": "material",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.materials.facility"
+        },
+        {
+          "slotId": "steam_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.geothermal"
+        },
+        {
+          "slotId": "heat",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "environmental.temperature.geothermal"
+        },
+        {
+          "slotId": "warning",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.6,
+          "descriptorPool": "room.danger_warnings.facility"
+        },
+        {
+          "slotId": "hazard_01",
+          "type": "Hazard",
+          "isRequired": false,
+          "fillProbability": 0.4,
+          "constraints": {
+            "hazardType": "environmental",
+            "element": "fire"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-maintenance-tunnel",
+      "namePattern": "{adjective} Maintenance Tunnel",
+      "descriptionPattern": "A cramped tunnel packed with {pipe_description}. {atmosphere}",
+      "validBiomes": ["the_roots", "svartalfheim_guild"],
+      "roomType": "Standard",
+      "weight": 30,
+      "minDepth": 0,
+      "maxDepth": null,
+      "tags": ["corridor", "cramped", "maintenance"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
+        },
+        {
+          "slotId": "pipe_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.pipes"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.7,
+          "descriptorPool": "environmental.atmosphere.facility"
+        },
+        {
+          "slotId": "monster_01",
+          "type": "Monster",
+          "isRequired": false,
+          "fillProbability": 0.25,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "constraints": {
+            "maxTier": "common"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-rust-choked-corridor",
+      "namePattern": "{adjective} Corridor",
+      "descriptionPattern": "A {width} {material} corridor stretching {direction}. {atmosphere}",
+      "validBiomes": ["the_roots", "jotunheim_salvage"],
+      "roomType": "Standard",
+      "weight": 40,
+      "minDepth": 0,
+      "maxDepth": null,
+      "tags": ["corridor", "passage"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.decay"
+        },
+        {
+          "slotId": "width",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.width"
+        },
+        {
+          "slotId": "material",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.materials.facility"
+        },
+        {
+          "slotId": "direction",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.directions"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.7,
+          "descriptorPool": "environmental.atmosphere.facility"
+        },
+        {
+          "slotId": "monster_01",
+          "type": "Monster",
+          "isRequired": false,
+          "fillProbability": 0.35,
+          "minQuantity": 1,
+          "maxQuantity": 2,
+          "constraints": {
+            "maxTier": "standard"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-research-lab",
+      "namePattern": "{adjective} Research Laboratory",
+      "descriptionPattern": "A {size} chamber filled with {equipment_description}. {detail} {lore}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Standard",
+      "weight": 15,
+      "minDepth": 2,
+      "maxDepth": null,
+      "tags": ["chamber", "exploration", "research", "puzzle", "lore"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.technical"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "equipment_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.research_equipment"
+        },
+        {
+          "slotId": "detail",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.8,
+          "descriptorPool": "room.details.facility"
+        },
+        {
+          "slotId": "lore",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.5,
+          "descriptorPool": "room.details.data_fragments"
+        },
+        {
+          "slotId": "container_01",
+          "type": "Container",
+          "isRequired": false,
+          "fillProbability": 0.6,
+          "constraints": {
+            "containerType": "shelf",
+            "lootQuality": "medium"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-power-substation",
+      "namePattern": "{adjective} Power Substation",
+      "descriptionPattern": "A {size} substation humming with {power_description}. {warning} {sound}",
+      "validBiomes": ["the_roots", "muspelheim_ashfall"],
+      "roomType": "Standard",
+      "weight": 15,
+      "minDepth": 2,
+      "maxDepth": null,
+      "tags": ["chamber", "hazard", "power", "dangerous"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "power_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.power_systems"
+        },
+        {
+          "slotId": "warning",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.8,
+          "descriptorPool": "room.danger_warnings.facility"
+        },
+        {
+          "slotId": "sound",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "environmental.sounds.electrical"
+        },
+        {
+          "slotId": "hazard_01",
+          "type": "Hazard",
+          "isRequired": false,
+          "fillProbability": 0.5,
+          "constraints": {
+            "hazardType": "environmental",
+            "element": "lightning"
+          }
+        },
+        {
+          "slotId": "monster_01",
+          "type": "Monster",
+          "isRequired": false,
+          "fillProbability": 0.4,
+          "minQuantity": 1,
+          "maxQuantity": 2,
+          "constraints": {
+            "maxTier": "elite"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-salvage-bay",
+      "namePattern": "{adjective} Salvage Bay",
+      "descriptionPattern": "A {size} bay stacked with {salvage_description}. {atmosphere}",
+      "validBiomes": ["the_roots", "jotunheim_salvage"],
+      "roomType": "Treasure",
+      "weight": 10,
+      "minDepth": 2,
+      "maxDepth": null,
+      "tags": ["chamber", "treasure", "storage", "large"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.decay"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "salvage_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.salvage"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.7,
+          "descriptorPool": "environmental.atmosphere.facility"
+        },
+        {
+          "slotId": "main_container",
+          "type": "Container",
+          "isRequired": true,
+          "constraints": {
+            "containerType": "cache",
+            "lootQuality": "high"
+          }
+        },
+        {
+          "slotId": "guardian_monster",
+          "type": "Monster",
+          "isRequired": false,
+          "fillProbability": 0.6,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "constraints": {
+            "minTier": "elite"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-operations-nexus",
+      "namePattern": "{adjective} Operations Nexus",
+      "descriptionPattern": "A {size} hub where {corridor_count} corridors converge. {detail} {atmosphere}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Junction",
+      "weight": 12,
+      "minDepth": 1,
+      "maxDepth": null,
+      "tags": ["junction", "branching", "hub", "choice"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "corridor_count",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.convergence"
+        },
+        {
+          "slotId": "detail",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.7,
+          "descriptorPool": "room.details.facility"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.6,
+          "descriptorPool": "environmental.atmosphere.facility"
+        }
+      ]
+    },
+    {
+      "templateId": "roots-reactor-core",
+      "namePattern": "{adjective} Reactor Core",
+      "descriptionPattern": "A {size} chamber dominated by {reactor_description}. {warning} {atmosphere}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Boss",
+      "weight": 5,
+      "minDepth": 4,
+      "maxDepth": null,
+      "tags": ["boss", "combat", "hazard", "power", "climactic"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.technical"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "reactor_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.reactor"
+        },
+        {
+          "slotId": "warning",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.danger_warnings.critical"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "environmental.atmosphere.facility"
+        },
+        {
+          "slotId": "boss_monster",
+          "type": "Monster",
+          "isRequired": true,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "constraints": {
+            "minTier": "boss"
+          }
+        },
+        {
+          "slotId": "hazard_01",
+          "type": "Hazard",
+          "isRequired": false,
+          "fillProbability": 0.6,
+          "constraints": {
+            "hazardType": "environmental",
+            "element": "fire"
+          }
+        }
+      ]
+    },
+    {
+      "templateId": "roots-vault-chamber",
+      "namePattern": "{adjective} Vault Chamber",
+      "descriptionPattern": "A {size} vault sealed by {seal_description}. {atmosphere} {warning}",
+      "validBiomes": ["the_roots"],
+      "roomType": "Boss",
+      "weight": 5,
+      "minDepth": 4,
+      "maxDepth": null,
+      "tags": ["boss", "combat", "climactic", "dangerous"],
+      "slots": [
+        {
+          "slotId": "adjective",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.adjectives.facility"
+        },
+        {
+          "slotId": "size",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.dimensions.size"
+        },
+        {
+          "slotId": "seal_description",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "room.details.vault_seals"
+        },
+        {
+          "slotId": "atmosphere",
+          "type": "Description",
+          "isRequired": true,
+          "descriptorPool": "environmental.atmosphere.facility"
+        },
+        {
+          "slotId": "warning",
+          "type": "Description",
+          "isRequired": false,
+          "fillProbability": 0.8,
+          "descriptorPool": "room.danger_warnings.critical"
+        },
+        {
+          "slotId": "boss_monster",
+          "type": "Monster",
+          "isRequired": true,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "constraints": {
+            "minTier": "boss"
+          }
+        }
+      ]
+    }
+  ]
 }

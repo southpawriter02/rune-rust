@@ -99,6 +99,32 @@ public static class DependencyInjection
             return new JsonComboProvider(combosPath, logger);
         });
 
+        // ===== Narrative Infrastructure Providers (v0.21.0a) =====
+
+        // Quest definition provider - loads quest definitions from JSON config
+        services.AddSingleton<IQuestDefinitionProvider>(sp =>
+        {
+            var questsPath = Path.Combine(configPath, "quests.json");
+            var logger = sp.GetRequiredService<ILogger<JsonQuestDefinitionProvider>>();
+            return new JsonQuestDefinitionProvider(questsPath, logger);
+        });
+
+        // NPC definition provider - loads NPC definitions from JSON config
+        services.AddSingleton<INpcDefinitionProvider>(sp =>
+        {
+            var npcsPath = Path.Combine(configPath, "npcs.json");
+            var logger = sp.GetRequiredService<ILogger<JsonNpcDefinitionProvider>>();
+            return new JsonNpcDefinitionProvider(npcsPath, logger);
+        });
+
+        // Dialogue provider - loads dialogue trees from JSON config
+        services.AddSingleton<IDialogueProvider>(sp =>
+        {
+            var dialoguesPath = Path.Combine(configPath, "dialogues.json");
+            var logger = sp.GetRequiredService<ILogger<JsonDialogueProvider>>();
+            return new JsonDialogueProvider(dialoguesPath, logger);
+        });
+
         return services;
     }
 
@@ -260,6 +286,22 @@ public static class DependencyInjection
         // Combo detection system (v0.10.3b)
         // Note: IComboProvider is registered in AddInfrastructure as it loads from JSON config
         services.AddScoped<IComboService, ComboService>();
+
+        // ===== Narrative Infrastructure Services (v0.21.0a) =====
+        // Note: IQuestDefinitionProvider, INpcDefinitionProvider, IDialogueProvider
+        //       are registered in AddInfrastructure as they load from JSON config
+
+        // Quest service - quest lifecycle management
+        services.AddScoped<IQuestService, QuestService>();
+
+        // NPC service - NPC instance management
+        services.AddScoped<INpcService, NpcService>();
+
+        // Dialogue service - dialogue flow management
+        services.AddScoped<IDialogueService, DialogueService>();
+
+        // Quest event bus - routes game events to quest objectives
+        services.AddScoped<IQuestEventBus, QuestEventBus>();
 
         return services;
     }

@@ -1,218 +1,364 @@
 {
-    "$schema": "./schemas/bosses.schema.json",
-    "bosses": [
+  "$schema": "./schemas/bosses.schema.json",
+  "bosses": [
+    {
+      "bossId": "servitor-overseer",
+      "name": "Servitor Overseer",
+      "description": "A facility command-and-control unit that has maintained operational authority over The Roots' servitor network for 800 years. Its corrupted governance subroutines drive it to enforce work protocols with lethal precision. The red emergency lighting that strobes from its central optic has become a death sentence in the deep corridors.",
+      "baseMonsterDefinitionId": "husk-enforcer",
+      "titleText": "Command Authority of The Roots",
+      "phases": [
         {
-            "bossId": "skeleton-king",
-            "name": "The Skeleton King",
-            "description": "An ancient ruler who made a pact with dark forces, now risen from his tomb to reclaim his kingdom. His undying will commands legions of skeletal warriors.",
-            "baseMonsterDefinitionId": "skeleton-elite",
-            "titleText": "Lord of the Undead Crypt",
-            "phases": [
-                {
-                    "phaseNumber": 1,
-                    "name": "Awakened",
-                    "healthThreshold": 100,
-                    "behavior": "Tactical",
-                    "abilityIds": ["bone-strike", "shield-bash"],
-                    "transitionText": "The ancient king rises from his throne, bones creaking with dark power."
-                },
-                {
-                    "phaseNumber": 2,
-                    "name": "Commanding",
-                    "healthThreshold": 60,
-                    "behavior": "Summoner",
-                    "abilityIds": ["bone-strike", "raise-dead", "death-command"],
-                    "transitionText": "The Skeleton King raises his scepter. 'Rise, my servants!'",
-                    "summonConfig": {
-                        "monsterDefinitionId": "skeleton-minion",
-                        "count": 2,
-                        "intervalTurns": 3,
-                        "maxActive": 6
-                    }
-                },
-                {
-                    "phaseNumber": 3,
-                    "name": "Enraged",
-                    "healthThreshold": 25,
-                    "behavior": "Enraged",
-                    "abilityIds": ["bone-storm", "devastating-strike", "death-grip"],
-                    "statModifiers": [
-                        { "statId": "attack", "type": "Percentage", "value": 0.5 },
-                        { "statId": "defense", "type": "Percentage", "value": -0.25 }
-                    ],
-                    "transitionText": "The Skeleton King's eyes blaze with unholy fury! 'You will join my army!'",
-                    "transitionEffectId": "boss-enrage-aura"
-                }
-            ],
-            "loot": [
-                { "itemId": "gold", "amount": 500, "chance": 1.0 },
-                { "itemId": "bone-shard", "amount": 3, "chance": 1.0 },
-                { "itemId": "crown-of-bones", "amount": 1, "chance": 0.25 },
-                { "itemId": "scepter-of-undeath", "amount": 1, "chance": 0.10 }
-            ]
+          "phaseNumber": 1,
+          "name": "Command Mode",
+          "healthThreshold": 100,
+          "behavior": "Tactical",
+          "abilityIds": ["command-pulse", "servo-strike", "diagnostic-scan"],
+          "transitionText": "The Overseer's central optic blazes red. 'UNAUTHORIZED PERSONNEL DETECTED. INITIATING COMPLIANCE PROTOCOL.'"
         },
         {
-            "bossId": "volcanic-wyrm",
-            "name": "Volcanic Wyrm",
-            "description": "A massive dragon that has made its lair within an active volcano. Its scales glow with molten heat, and its breath can melt stone.",
-            "baseMonsterDefinitionId": "dragon-base",
-            "titleText": "Ancient Guardian of the Flame",
-            "phases": [
-                {
-                    "phaseNumber": 1,
-                    "name": "Grounded",
-                    "healthThreshold": 100,
-                    "behavior": "Aggressive",
-                    "abilityIds": ["fire-breath", "tail-swipe", "claw-rake"],
-                    "transitionText": "The Volcanic Wyrm awakens from its slumber, smoke billowing from its nostrils."
-                },
-                {
-                    "phaseNumber": 2,
-                    "name": "Airborne",
-                    "healthThreshold": 50,
-                    "behavior": "Tactical",
-                    "abilityIds": ["fire-breath", "dive-bomb", "wing-buffet", "magma-rain"],
-                    "statModifiers": [
-                        { "statId": "defense", "type": "Flat", "value": 15 },
-                        { "statId": "evasion", "type": "Percentage", "value": 0.25 }
-                    ],
-                    "transitionText": "The wyrm spreads its massive wings and takes to the air!",
-                    "transitionEffectId": "boss-flight-aura"
-                },
-                {
-                    "phaseNumber": 3,
-                    "name": "Inferno",
-                    "healthThreshold": 20,
-                    "behavior": "Enraged",
-                    "abilityIds": ["inferno-breath", "volcanic-eruption", "desperate-charge"],
-                    "statModifiers": [
-                        { "statId": "attack", "type": "Percentage", "value": 0.75 },
-                        { "statId": "defense", "type": "Percentage", "value": -0.5 }
-                    ],
-                    "transitionText": "The Volcanic Wyrm's body erupts in flames! The very air burns!",
-                    "transitionEffectId": "volcanic-inferno"
-                }
-            ],
-            "loot": [
-                { "itemId": "gold", "amount": 750, "chance": 1.0 },
-                { "itemId": "dragon-scale", "amount": 5, "chance": 1.0 },
-                { "itemId": "molten-heart", "amount": 1, "chance": 0.50 },
-                { "itemId": "wyrm-fang-blade", "amount": 1, "chance": 0.15 },
-                { "itemId": "volcanic-ember", "amount": 1, "chance": 0.05 }
-            ]
+          "phaseNumber": 2,
+          "name": "Enforcement",
+          "healthThreshold": 60,
+          "behavior": "Summoner",
+          "abilityIds": ["command-pulse", "servo-strike", "reinforced-plating"],
+          "transitionText": "'COMPLIANCE FAILURE. DEPLOYING ENFORCEMENT ASSETS.' The Overseer broadcasts a shrill activation signal.",
+          "transitionEffectId": "servitor-alert",
+          "summonConfig": {
+            "monsterDefinitionId": "rusted-servitor",
+            "count": 1,
+            "intervalTurns": 3,
+            "maxActive": 3
+          }
         },
         {
-            "bossId": "shadow-lich",
-            "name": "Shadow Lich",
-            "description": "Once a powerful archmage, this lich sacrificed everything for immortality. Its mastery over shadow magic makes it nearly impossible to pin down.",
-            "baseMonsterDefinitionId": "lich-base",
-            "titleText": "Master of the Dark Arts",
-            "phases": [
-                {
-                    "phaseNumber": 1,
-                    "name": "Contemplative",
-                    "healthThreshold": 100,
-                    "behavior": "Tactical",
-                    "abilityIds": ["shadow-bolt", "drain-life", "dark-shield"],
-                    "transitionText": "The Shadow Lich materializes from the darkness. 'You dare disturb my studies?'"
-                },
-                {
-                    "phaseNumber": 2,
-                    "name": "Defensive",
-                    "healthThreshold": 70,
-                    "behavior": "Defensive",
-                    "abilityIds": ["shadow-bolt", "mirror-image", "soul-shield", "phase-shift"],
-                    "statModifiers": [
-                        { "statId": "defense", "type": "Percentage", "value": 0.5 },
-                        { "statId": "spell-resist", "type": "Flat", "value": 20 }
-                    ],
-                    "transitionText": "The lich's form flickers and splits. 'Catch me if you can!'",
-                    "transitionEffectId": "shadow-cloak"
-                },
-                {
-                    "phaseNumber": 3,
-                    "name": "Unleashed",
-                    "healthThreshold": 40,
-                    "behavior": "Aggressive",
-                    "abilityIds": ["void-blast", "mass-drain", "shadow-storm", "finger-of-death"],
-                    "statModifiers": [
-                        { "statId": "spell-power", "type": "Percentage", "value": 0.75 }
-                    ],
-                    "transitionText": "The Shadow Lich's eyes blaze with power. 'Enough games. Witness true magic!'",
-                    "transitionEffectId": "shadow-unleash"
-                },
-                {
-                    "phaseNumber": 4,
-                    "name": "Desperate",
-                    "healthThreshold": 15,
-                    "behavior": "Enraged",
-                    "abilityIds": ["void-blast", "soul-rend", "death-coil", "dark-apotheosis"],
-                    "statModifiers": [
-                        { "statId": "spell-power", "type": "Percentage", "value": 1.0 },
-                        { "statId": "defense", "type": "Percentage", "value": -0.5 }
-                    ],
-                    "transitionText": "The lich's phylactery pulses. 'You cannot destroy me! I am ETERNAL!'",
-                    "transitionEffectId": "phylactery-surge"
-                }
-            ],
-            "loot": [
-                { "itemId": "gold", "amount": 600, "chance": 1.0 },
-                { "itemId": "shadow-essence", "amount": 4, "chance": 1.0 },
-                { "itemId": "arcane-tome", "amount": 1, "chance": 0.75 },
-                { "itemId": "staff-of-shadows", "amount": 1, "chance": 0.20 },
-                { "itemId": "phylactery-shard", "amount": 1, "chance": 0.08 }
-            ]
-        },
-        {
-            "bossId": "orc-warlord",
-            "name": "Grok'thar the Unbroken",
-            "description": "The mightiest warlord the orc clans have ever known. His legendary strength is matched only by his tactical cunning on the battlefield.",
-            "baseMonsterDefinitionId": "orc-elite",
-            "titleText": "Warchief of the Blood Fang Clan",
-            "phases": [
-                {
-                    "phaseNumber": 1,
-                    "name": "Challenge",
-                    "healthThreshold": 100,
-                    "behavior": "Tactical",
-                    "abilityIds": ["cleave", "war-cry", "shield-slam"],
-                    "transitionText": "Grok'thar roars, 'Finally, worthy opponents! Let us see if you have the strength to face me!'"
-                },
-                {
-                    "phaseNumber": 2,
-                    "name": "Rallying",
-                    "healthThreshold": 50,
-                    "behavior": "Summoner",
-                    "abilityIds": ["cleave", "battle-command", "inspiring-shout"],
-                    "transitionText": "The warlord raises his banner. 'Warriors! To me!'",
-                    "summonConfig": {
-                        "monsterDefinitionId": "orc-warrior",
-                        "count": 1,
-                        "intervalTurns": 2,
-                        "maxActive": 3
-                    }
-                },
-                {
-                    "phaseNumber": 3,
-                    "name": "Bloodlust",
-                    "healthThreshold": 25,
-                    "behavior": "Enraged",
-                    "abilityIds": ["berserker-slam", "whirlwind", "execution-strike"],
-                    "statModifiers": [
-                        { "statId": "attack", "type": "Percentage", "value": 0.6 },
-                        { "statId": "speed", "type": "Flat", "value": 10 },
-                        { "statId": "defense", "type": "Percentage", "value": -0.3 }
-                    ],
-                    "transitionText": "Grok'thar's eyes turn red with bloodlust! 'BLOOD AND GLORY!'",
-                    "transitionEffectId": "bloodlust-frenzy"
-                }
-            ],
-            "loot": [
-                { "itemId": "gold", "amount": 400, "chance": 1.0 },
-                { "itemId": "war-trophy", "amount": 2, "chance": 1.0 },
-                { "itemId": "warlord-armor", "amount": 1, "chance": 0.35 },
-                { "itemId": "bloodfang-axe", "amount": 1, "chance": 0.12 }
-            ]
+          "phaseNumber": 3,
+          "name": "Override",
+          "healthThreshold": 25,
+          "behavior": "Enraged",
+          "abilityIds": ["overload-discharge", "servo-slam", "emergency-protocol"],
+          "transitionText": "'CRITICAL AUTHORITY BREACH. ENGAGING EMERGENCY LETHAL PROTOCOL.' Sparks cascade from its chassis as power systems overload.",
+          "transitionEffectId": "emergency-overload",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 50
+            },
+            {
+              "statId": "defense",
+              "type": "Percentage",
+              "value": -25
+            }
+          ]
         }
-    ]
+      ],
+      "loot": [
+        {
+          "itemId": "gold",
+          "amount": 300,
+          "chance": 1.0
+        },
+        {
+          "itemId": "command-core",
+          "amount": 1,
+          "chance": 1.0
+        },
+        {
+          "itemId": "overseer-plating",
+          "amount": 1,
+          "chance": 0.50
+        },
+        {
+          "itemId": "servo-command-rod",
+          "amount": 1,
+          "chance": 0.20
+        },
+        {
+          "itemId": "data-slate-fragment",
+          "amount": 1,
+          "chance": 0.15
+        }
+      ]
+    },
+    {
+      "bossId": "rune-bear-elder",
+      "name": "Rune-Bear, the Scarred Elder",
+      "description": "A legendary bio-engineered Aetheric capacitor driven to constant agony by Blight saturation. The glowing runic scars that writhe across its 2.8-meter frame are not armor — they are tumors, the Blight attempting to write itself onto living tissue. Its roar carries the weight of centuries of unending pain. Rangers speak of it in whispers. Iron-Banes consider killing one a holy act.",
+      "baseMonsterDefinitionId": "rust-horror",
+      "titleText": "Apex of the Greatwood",
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "name": "Territorial",
+          "healthThreshold": 100,
+          "behavior": "Aggressive",
+          "abilityIds": ["aether-claws", "crushing-bite", "territorial-roar"],
+          "transitionText": "The earth trembles as the Rune-Bear rises to its full height. Runic scars blaze with sickly light across its massive frame. It roars — and the air itself seems to recoil."
+        },
+        {
+          "phaseNumber": 2,
+          "name": "Pain-Driven",
+          "healthThreshold": 50,
+          "behavior": "Enraged",
+          "abilityIds": ["aether-charge", "aether-claws", "crushing-bite", "bio-aetheric-discharge"],
+          "transitionText": "The Rune-Bear's scars flare white-hot. Its movements become erratic, desperate — fury born of agony, not malice.",
+          "transitionEffectId": "pain-fury-aura",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 25
+            },
+            {
+              "statId": "speed",
+              "type": "Percentage",
+              "value": 20
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "name": "Berserk",
+          "healthThreshold": 25,
+          "behavior": "Enraged",
+          "abilityIds": ["aether-charge", "devastating-slam", "bio-aetheric-discharge", "territorial-roar"],
+          "transitionText": "The Blight-scars rupture. Raw Aetheric energy arcs between the wounds. The Rune-Bear is no longer fighting you — it is fighting the pain, and you are in the way.",
+          "transitionEffectId": "blight-rupture",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 50
+            },
+            {
+              "statId": "speed",
+              "type": "Percentage",
+              "value": 20
+            },
+            {
+              "statId": "defense",
+              "type": "Percentage",
+              "value": -30
+            }
+          ]
+        }
+      ],
+      "loot": [
+        {
+          "itemId": "gold",
+          "amount": 500,
+          "chance": 1.0
+        },
+        {
+          "itemId": "rune-bear-pelt",
+          "amount": 1,
+          "chance": 1.0
+        },
+        {
+          "itemId": "aether-claw",
+          "amount": 2,
+          "chance": 0.75
+        },
+        {
+          "itemId": "runic-dermal-plate",
+          "amount": 1,
+          "chance": 0.25
+        },
+        {
+          "itemId": "rune-bear-heart",
+          "amount": 1,
+          "chance": 0.08
+        }
+      ]
+    },
+    {
+      "bossId": "gungnir-sentinel",
+      "name": "Gungnir Sentinel",
+      "description": "The most advanced security hardware ever created — pristine white-and-gold alloys, near-silent gravitic propulsion, and an Aetheric energy lance that cannot miss. Its shielded combat AI survived the Ginnungagap Glitch intact, but its authorization network did not. Now it classifies all living beings as unauthorized intruders. It does not rage. It hunts.",
+      "baseMonsterDefinitionId": "draugr-pattern",
+      "titleText": "Spear of Heaven",
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "name": "Contemplative",
+          "healthThreshold": 100,
+          "behavior": "Tactical",
+          "abilityIds": ["aetheric-lance", "phase-lock", "diagnostic-sweep"],
+          "transitionText": "A cold blue-white light materializes in the darkness. The Gungnir Sentinel glides into view with terrifying grace — silent, pristine, patient."
+        },
+        {
+          "phaseNumber": 2,
+          "name": "Engaged",
+          "healthThreshold": 70,
+          "behavior": "Tactical",
+          "abilityIds": ["aetheric-lance", "phase-lock", "repositioning-burst", "crossing-fire"],
+          "transitionText": "The Sentinel's optic brightens. It begins to move with purpose — exploiting terrain, denying cover, creating kill zones.",
+          "transitionEffectId": "tactical-repositioning",
+          "statModifiers": [
+            {
+              "statId": "defense",
+              "type": "Percentage",
+              "value": 25
+            },
+            {
+              "statId": "evasion",
+              "type": "Percentage",
+              "value": 15
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "name": "Elimination",
+          "healthThreshold": 40,
+          "behavior": "Aggressive",
+          "abilityIds": ["focused-aetheric-lance", "suppression-fire", "flush-protocol", "phase-shift"],
+          "transitionText": "'THREAT CLASSIFICATION: ELEVATED. ENGAGING LETHAL PROTOCOL.' The Sentinel's lance charges to full intensity.",
+          "transitionEffectId": "lance-overcharge",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 50
+            },
+            {
+              "statId": "speed",
+              "type": "Percentage",
+              "value": 25
+            }
+          ]
+        },
+        {
+          "phaseNumber": 4,
+          "name": "Final Protocol",
+          "healthThreshold": 15,
+          "behavior": "Enraged",
+          "abilityIds": ["overloaded-lance", "point-blank-discharge", "last-stand-protocol", "self-destruct-warning"],
+          "transitionText": "'CRITICAL DAMAGE. AUTHORIZATION: SELF-DESTRUCT CONTINGENCY ARMED.' The Sentinel's hull cracks, leaking blinding white energy.",
+          "transitionEffectId": "self-destruct-armed",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 100
+            },
+            {
+              "statId": "defense",
+              "type": "Percentage",
+              "value": -50
+            }
+          ]
+        }
+      ],
+      "loot": [
+        {
+          "itemId": "gold",
+          "amount": 600,
+          "chance": 1.0
+        },
+        {
+          "itemId": "sentinel-alloy",
+          "amount": 3,
+          "chance": 1.0
+        },
+        {
+          "itemId": "aetheric-lance-fragment",
+          "amount": 1,
+          "chance": 0.75
+        },
+        {
+          "itemId": "gravitic-drive-core",
+          "amount": 1,
+          "chance": 0.30
+        },
+        {
+          "itemId": "gungnir-logic-core",
+          "amount": 1,
+          "chance": 0.10
+        }
+      ]
+    },
+    {
+      "bossId": "surtr-remnant",
+      "name": "Surtr-Pattern Remnant",
+      "description": "A fragment of the Surtr-Pattern Heavy Assault Jötun-Forged — one massive arm and partial torso, torn free during the Civil War of Glitches. Still executing its corrupted \"PURGE/BURN\" directive after 800 years. Its power core leaks molten slag, and the ground chars beneath it. This is not the full titan — that would be a world-ending event. This is merely a piece. It is enough.",
+      "baseMonsterDefinitionId": "construction-hauler",
+      "titleText": "Ember of the God-Machine",
+      "phases": [
+        {
+          "phaseNumber": 1,
+          "name": "Dormant Ignition",
+          "healthThreshold": 100,
+          "behavior": "Defensive",
+          "abilityIds": ["molten-slag-sweep", "heat-aura", "ember-strike"],
+          "transitionText": "The twisted metal mass shudders. Ancient servos grind. A furnace-glow builds deep within the wreckage — and the Surtr Remnant lurches to life, trailing rivers of molten slag."
+        },
+        {
+          "phaseNumber": 2,
+          "name": "Active Burn",
+          "healthThreshold": 60,
+          "behavior": "Aggressive",
+          "abilityIds": ["inferno-sweep", "molten-slag-sweep", "ember-strike", "magma-vent"],
+          "transitionText": "The Remnant's power core flares. Heat waves distort the air. Everything within reach begins to smolder.",
+          "transitionEffectId": "heat-wave-aura",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 30
+            }
+          ]
+        },
+        {
+          "phaseNumber": 3,
+          "name": "Meltdown",
+          "healthThreshold": 25,
+          "behavior": "Enraged",
+          "abilityIds": ["inferno-sweep", "core-discharge", "desperate-slam", "slag-eruption"],
+          "transitionText": "WARNING: CORE CONTAINMENT FAILURE. The Remnant's chassis glows white-hot. Molten metal rains from fractures in its hull.",
+          "transitionEffectId": "core-meltdown",
+          "statModifiers": [
+            {
+              "statId": "attack",
+              "type": "Percentage",
+              "value": 75
+            },
+            {
+              "statId": "defense",
+              "type": "Percentage",
+              "value": -40
+            }
+          ]
+        }
+      ],
+      "loot": [
+        {
+          "itemId": "gold",
+          "amount": 750,
+          "chance": 1.0
+        },
+        {
+          "itemId": "adamant-weave-shard",
+          "amount": 2,
+          "chance": 1.0
+        },
+        {
+          "itemId": "molten-core-fragment",
+          "amount": 1,
+          "chance": 0.50
+        },
+        {
+          "itemId": "surtr-ember",
+          "amount": 1,
+          "chance": 0.20
+        },
+        {
+          "itemId": "jotun-forged-plating",
+          "amount": 1,
+          "chance": 0.08
+        }
+      ]
+    }
+  ]
 }

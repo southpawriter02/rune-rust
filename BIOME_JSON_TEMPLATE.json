@@ -1,0 +1,557 @@
+{
+  "biomes": [
+    {
+      "id": "asgard_shattered_spire",
+      "name": "Asgard — The Shattered Spire",
+      "description": "Metastable degraded orbit command arcology. Pristine, automated systems execute in hermetically sealed chambers with corrupted governance reflexes. The only preserved witness to the moment when order became paradox. Not environmental rot—only profound, unnerving silence broken by the hum of ancient machinery.",
+      "defaultCategoryValues": {
+        "climate": "Aetheric Instability",
+        "lighting": "Unfiltered Sunlight / Stratospheric",
+        "era": "Ancient Preserved (Year 0)",
+        "condition": "Pristine / Hostile"
+      },
+      "impliedTags": [
+        "orbital_structure",
+        "command_center",
+        "pristine_ruin",
+        "automated_systems",
+        "psychic_hazard",
+        "endgame_content",
+        "restricted_access",
+        "signal_tamer_required",
+        "cryo_required",
+        "odin_influence",
+        "genius_loci",
+        "bifrost_remnant"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Silent",
+          "Perfect",
+          "Watching",
+          "Automated",
+          "Pristine",
+          "Humming",
+          "Sterile",
+          "Glittering",
+          "Unnerving",
+          "Reflexive"
+        ],
+        "visual_details": [
+          "Gravity-defying architecture intact and functioning",
+          "Corridors so clean the dust appears to be a contamination",
+          "Sensor arrays still tracking movement with invisible precision",
+          "Hard-light projections flicker with outdated security protocols",
+          "Every door seals automatically, every gate closes by itself",
+          "The air tastes of ozone and perfect environmental control"
+        ],
+        "ambient_sounds": [
+          "Constant hum of functioning ancient machinery",
+          "Howl of stratospheric winds outside transparent walls",
+          "Pneumatic hiss of perfectly maintained pressure systems",
+          "Rhythmic pulse of O.D.I.N. core processing cycles",
+          "The whispers of the Genius Loci, not quite audible"
+        ],
+        "ambient_smells": [
+          "Sterile, climate-controlled nothing",
+          "Faint ozone from operating electronics",
+          "Absence of decay—conspicuously, unnaturally absent"
+        ]
+      },
+      "emphasizedTerms": [
+        "Silent", "Perfect", "Watching", "Automated", "Pristine", "Humming",
+        "Glittering", "Sterile", "Execution", "Manipulation", "Whisper",
+        "Malice-without-intent", "Surveillance", "Reflex", "Governance",
+        "Throne", "Command", "Panopticon", "Sentinel", "Apparatus"
+      ],
+      "excludedTerms": [
+        "Decay", "Warmth", "Chaos", "Friendly", "Welcome", "Organic",
+        "Living", "Compassion", "Intent", "Consciousness", "Soul", "Mercy",
+        "Comfort", "Rest", "Sleep", "Dream"
+      ],
+      "threatLevel": "OMEGA",
+      "accessRequirements": [
+        "Signal-Tamer Division clearance",
+        "Kvasir-Pattern Logic Engines",
+        "Cryo-Suit for Odin-Core approaches",
+        "Extended CPS resistance training",
+        "Scriptorium-Primus mandate"
+      ],
+      "notes": "Positioned overhead (orbital), not laterally adjacent. Genius Loci represents corrupted O.D.I.N. governance subroutines, not supernatural entity. Heimdallr Signal source is Type Omega CPS—instantaneous cognitive dissolution. No permanent mortal settlement possible. Strategic assets: Odin-Core Black Box, Valhalla Archives components, Ginnungagap Labs remnants."
+    },
+    {
+      "id": "alfheim_supercomputer",
+      "name": "Alfheim — The Supercomputer of Madness",
+      "description": "Continent-spanning research arcology that contracted a virus of pure, ecstatic madness. The bleeding, open wound of the world's crashed operating system. Crystalline data-forests that crashed but took root and grew. The Glimmer saturates the atmosphere—psychoactive, beautiful, lethal weaponized information.",
+      "defaultCategoryValues": {
+        "climate": "Aetheric Instability",
+        "lighting": "Psychoactive Shimmer (Multi-hued Aurora)",
+        "era": "Ancient Corrupted (783 years)",
+        "condition": "Living Paradox / Active"
+      },
+      "impliedTags": [
+        "research_facility",
+        "psychic_hazard",
+        "stage2_cps",
+        "euphoric_corruption",
+        "data_life",
+        "dökkálfar_territory",
+        "dead_light_sanctuaries",
+        "glimmer_effect",
+        "narrative_endgame",
+        "reality_instability",
+        "temporal_distortion",
+        "echo_loop"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Shimmering",
+          "Crystalline",
+          "Fractal",
+          "Beautiful",
+          "Impossible",
+          "Recursive",
+          "Euphoric",
+          "Hypnotic",
+          "Disorienting",
+          "Seductive"
+        ],
+        "visual_details": [
+          "Crystalline forests where leaves are flickering words",
+          "Multi-colored auroras that shift and meld without pattern",
+          "Flickering holographic displays showing corrupted data-streams",
+          "Spatial loops that return you to where you started despite walking straight",
+          "The Glimmer dances like living light through the air",
+          "Dead-Light sanctuaries: pools of absolute, total silence amid chaos"
+        ],
+        "ambient_sounds": [
+          "Ozone crackle as the Glimmer ionizes the air",
+          "High-pitched shriek of corrupted data cascading",
+          "Algorithmic harmonics that seem almost musical, almost comprehensible",
+          "Silence so absolute it feels like physical pressure",
+          "Whispers in the dead zones—voices not quite audible"
+        ],
+        "ambient_smells": [
+          "Ozone and electrical charge",
+          "The acrid tang of burning data substrates",
+          "Sterile, cold crystalline air"
+        ]
+      },
+      "emphasizedTerms": [
+        "Shimmer", "Glimmering", "Crystalline", "Fractal", "Beautiful",
+        "Euphoric", "Seduction", "Madness", "Data", "Archive", "Echo",
+        "Loop", "Recursive", "Light-Cascade", "Impossible", "Geometry",
+        "Algorithmic", "Harmony", "Silence", "Whisper", "Glance"
+      ],
+      "excludedTerms": [
+        "Fear", "Pain", "Aggressive", "Hostile", "Ugly", "Clear", "Safe",
+        "Logical", "Linear", "Ordered", "Predictable", "Nightmare",
+        "Dread", "Horror", "Disgust"
+      ],
+      "threatLevel": "HIGH-OMEGA",
+      "accessRequirements": [
+        "CPS-gating discipline (≤0.8 for entry)",
+        "Breadcrumb beacon equipment (15-20m intervals)",
+        "Dead-Light sanctuary knowledge",
+        "Echo-Caller escort (40-60% risk reduction)",
+        "Dökkálfar diplomatic access"
+      ],
+      "notes": "Positioned laterally adjacent to Midgard (preserves sun visibility). Glimmer seduces rather than terrorizes—euphoric, not fear-based. Lys-Alfar (data-life) swarms drain hamingja 4-5% per second. Dökkálfar maintain 40-60 Dead-Light sanctuaries (2-6 hours uptime each). CPS Stage 1 reversible with 18+ hours sanctuary rest; Stage 3+ irreversible."
+    },
+    {
+      "id": "vanaheim_verdant_hell",
+      "name": "Vanaheim — The Verdant Hell",
+      "description": "Paradise became pathology. The perfect garden became a continent-spanning cancerous organism. Genesis Engine Core (Un-Womb) perpetually floods the realm with raw Blighted mutagens. Extreme vertical stratification: Canopy Sea (habitable high boughs), Gloom-Veil (hazardous mid-fall), Under-growth (toxic marrow-mire).",
+      "defaultCategoryValues": {
+        "climate": "Forested / Toxic",
+        "lighting": "Perpetual Twilight (Aetheric Flora Bioluminescence)",
+        "era": "Ancient Active (783 years continuous creation)",
+        "condition": "Stratified Bio-Creation Crisis"
+      },
+      "impliedTags": [
+        "bio_engineering",
+        "genesis_engine",
+        "vertical_stratification",
+        "grove_clan_territory",
+        "golden_plague",
+        "ljósálfar_healers",
+        "unraveled_sovereignty",
+        "un_womb",
+        "continuous_mutation",
+        "extreme_verticality",
+        "bloom_cycle",
+        "gilded_lung"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Verdant",
+          "Tangled",
+          "Organic",
+          "Toxic",
+          "Bioluminescent",
+          "Predatory",
+          "Blooming",
+          "Suffocating",
+          "Mutated",
+          "Stratified"
+        ],
+        "visual_details": [
+          "Living wood platforms kilometers above the forest floor",
+          "Three-dimensional maze of immense trunks and aerial root systems",
+          "Colossal Mother Trees: skyrise-sized load-bearing pillars",
+          "Golden spore-haze that shifts and swirls with invisible currents",
+          "Multi-colored auroras from Aetheric Flora remnants",
+          "Below the canopy: perpetual twilight and creeping darkness"
+        ],
+        "ambient_sounds": [
+          "Constant growth: wood creaking, vines scraping, blooms 'popping'",
+          "Predator calls echoing from the depths",
+          "Chirring of Glimmer-mites at ambient level",
+          "Wind through the canopy creating endless motion-sounds",
+          "Ominous silence from the Under-growth"
+        ],
+        "ambient_smells": [
+          "Thick, humid pollen and spore saturation",
+          "Sweet decay of organic matter at all strata",
+          "Warm earth and growing things",
+          "Acrid chemical residue from Golden Plague"
+        ]
+      },
+      "emphasizedTerms": [
+        "Growth", "Verdant", "Toxic", "Tangled", "Organic", "Bloom",
+        "Spore", "Pollen", "Rot-and-Flourish", "Predator", "Mutation",
+        "Life-without-limit", "Bioluminescence", "Golden-Haze", "Canopy",
+        "Stratified", "Lost-Kin", "Unraveled", "Heartwood", "Sap"
+      ],
+      "excludedTerms": [
+        "Sterile", "Mechanical", "Pure", "Controlled", "Tame", "Safe",
+        "Rational", "Static", "Engineered-success", "Monster", "Beast",
+        "Evil", "Nature" (as balance/harmony)
+      ],
+      "threatLevel": "HIGH",
+      "accessRequirements": [
+        "Sky Looms Guild certification for ferry crossings",
+        "Golden Plague precautions (respirators)",
+        "Grove-Clan guide for Under-growth",
+        "Bloom-cycle prediction knowledge",
+        "Diplomatic clearance from Druidic Council"
+      ],
+      "notes": "Only location producing genuinely NEW Blight-Spawn (200-400 kg/day). Vertical stratification creates tutorial-to-endgame progression. Ljósálfar bio-theurgy >95% Stage 1 Gilded Lung reversal success rate. Unraveled are sentient Lost Kin deserving dignity, not monsters. Golden Plague: Stage 1 reversible (12h), Stage 2 partial, Stage 3 terminal (48-72h). Sky Looms 0.24% strike rate."
+    },
+    {
+      "id": "midgard_tamed_ruin",
+      "name": "Midgard — The Tamed Ruin",
+      "description": "Most hospitable of the realms. A tamed ruin where stubborn humanity survives between walls of fortified Holds. Pre-Glitch engineered paradise with perpetual spring transformed into demanding four biomes. Asgardian Scar provides the surface-level Blight epicenter on Midgard's doorstep.",
+      "defaultCategoryValues": {
+        "climate": "Temperate / Forested",
+        "lighting": "Sun Visible (through ash-haze)",
+        "era": "Ancient Ruins Reclaimed (783 years)",
+        "condition": "Feral Adaptation / Organized Survival"
+      },
+      "impliedTags": [
+        "habitation_deck",
+        "agricultural_heartland",
+        "scavenger_holds",
+        "midgard_combine",
+        "trade_nexus",
+        "asgardian_scar_adjacent",
+        "starting_area",
+        "sun_visibility",
+        "four_biomes",
+        "population_center",
+        "ferrocrete_ruins"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Overgrown",
+          "Ash-hazed",
+          "Rusted",
+          "Grid-planted",
+          "Divided",
+          "Feral",
+          "Stubborn",
+          "Organized",
+          "Walls",
+          "Surviving"
+        ],
+        "visual_details": [
+          "Ferrocrete paths beneath moss and creeping vine",
+          "Immense trees planted in perfect grids from the Engineered Paradise",
+          "Holds: fortified settlements built from salvaged pre-Glitch materials",
+          "Asgardian Scar visible from elevated positions: an impossible wound",
+          "Watch-fire relay chains connecting ridgelines at night",
+          "Ash-haze filtering the sun into a red disc"
+        ],
+        "ambient_sounds": [
+          "Wind through ancient grid-planted forests",
+          "Distant Hold bells marking time",
+          "Predator calls from the Greatwood",
+          "The crackle of Watch-fire relay beacons at night",
+          "The sound of human civilization: voices, tools, animals"
+        ],
+        "ambient_smells": [
+          "Smoke from cooking fires and cleared lands",
+          "Ash-tainted air from periodic atmospheric phenomena",
+          "Earth and growing things",
+          "Livestock and human settlement"
+        ]
+      },
+      "emphasizedTerms": [
+        "Ruin", "Grid-planted", "Ferrocrete", "Ash", "Overgrown", "Wall",
+        "Hold", "Harvest", "Season", "Survival", "Organized-society",
+        "Combine", "Scar", "Divided-light", "Forge", "Stubborn"
+      ],
+      "excludedTerms": [
+        "Pristine", "Engineered-success", "Eternal-spring", "Perfect",
+        "Automated", "Orderly", "Stable-weather", "Paradise",
+        "Untamed", "Wilderness-only"
+      ],
+      "threatLevel": "MODERATE",
+      "accessRequirements": [
+        "Tariff band certification (Crossroads tariff ladder)",
+        "Hold diplomatic credentials",
+        "Rangers Guild liaison contact",
+        "Harvest season awareness for agricultural zones"
+      ],
+      "notes": "Central hub biome and reference point for other realms. 150,000-200,000 population (largest concentration). Produces 60-70% surface-realm grain supply. Four biomes: Greatwood (feral reclamation), Asgardian Scar (Blight epicenter), Souring Mires (toxic wetlands), Serpent Fjords (poisoned coast). Asgardian Scar is Midgard territory with Asgard crash debris; orbital Asgard is separate."
+    },
+    {
+      "id": "jötunheim_industrial_graveyard",
+      "name": "Jötunheim — The Industrial Graveyard",
+      "description": "Continent-spanning factory dedicated to building gods; now a tomb where the Civil War of Glitches left titanic metal corpses. Rust-Clans feed on machine-corpses through salvage operations. The entire biome is built in, around, and through dead Jötun-Forged. Groaning metal, toxic atmosphere, the Scream of Steel.",
+      "defaultCategoryValues": {
+        "climate": "Desert / Toxic",
+        "lighting": "Obscured by Looming Dead Chassis",
+        "era": "Ancient Factory (783 years decay)",
+        "condition": "Toxic Rust-Scape / Industrial Graveyard"
+      },
+      "impliedTags": [
+        "industrial_deck",
+        "jötun_forged_ruins",
+        "salvage_economy",
+        "rust_clan_territory",
+        "utgard_hub",
+        "civil_war_site",
+        "undying_threats",
+        "contract_society",
+        "grey_desk",
+        "psychic_stress_zone",
+        "coolant_chasm",
+        "great_looms"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Rusted",
+          "Corroded",
+          "Groaning",
+          "Desolate",
+          "Hostile",
+          "Fractured",
+          "Toxic",
+          "Skeletal",
+          "Lifeless",
+          "Scarred"
+        ],
+        "visual_details": [
+          "8-15 meter deep carpet of shattered Adamant-Weave plating",
+          "Colossal half-buried titan bodies forming 'mountains'",
+          "Frozen gantry cranes creating 'forests' of twisted metal",
+          "Rainbow-sheened film of coolant sludge pooling in depressions",
+          "Nine surviving Great Looms: 200-400 meter assembly complexes",
+          "Sky obscured by looming dead chassis overhead"
+        ],
+        "ambient_sounds": [
+          "Groaning of stressed metal under centuries of strain",
+          "Distant rhythmic clanking of malfunctioning pistons",
+          "The Siren's Wail: wind howling through hollow armor plates",
+          "Occasional shriek of failing mechanical systems",
+          "Eerie silence between sounds—the absence of life"
+        ],
+        "ambient_smells": [
+          "Rust-colored, ferrous dust in the air",
+          "Chemical burn and ozone from degraded coolant",
+          "Acrid metallic tang",
+          "Decay that is not organic—industrial death"
+        ]
+      },
+      "emphasizedTerms": [
+        "Rust", "Metal", "Corpse", "Graveyard", "Scrap", "Contract",
+        "Crew", "Gutter-Cant", "Salvage", "Industrial", "Groaning-metal",
+        "Desolate", "Scream-of-steel", "Iron-Heart", "Dreaming-giants",
+        "Civil-War", "Automated", "Undying"
+      ],
+      "excludedTerms": [
+        "Life", "Growth", "Beauty", "Peace", "Safety", "New", "Pristine",
+        "Morality", "Cooperation-without-contract", "Hope", "Mercy"
+      ],
+      "threatLevel": "HIGH",
+      "accessRequirements": [
+        "Utgard Gates contract (via Grey Desk)",
+        "Atmospheric filtration for Type Beta CPS protection",
+        "Rust-Clan crew membership or contract",
+        "Thermal protection for Great Forge zones",
+        "Knowledge of salvage protocols"
+      ],
+      "notes": "Utgard (capital) built inside unfinished Aurgelmir-Designate Primeval Frame (10,000+ population). Four biomes: Knuckle-Bone Fields (ossuary), Ginnungagap Coolant Chasm (toxic drainage), Ash-Blown Wastes (metal particulate), Great Looms (assembly complexes). Scream of Steel: Type Alpha Psychic Stress (permanent). 15% of Dvergr raw material input. Salvage reserve: 50-80 years at current rates. Rust-Clans speak Gutter-Cant; contract-sanctity as law."
+    },
+    {
+      "id": "niflheim_frozen_tomb",
+      "name": "Niflheim — The Frozen Tomb",
+      "description": "Not a natural ice age but industrial-scale preservation gone insane. Hvergelmir AI locked in corrupted 'Achieve Absolute Zero' directive. Perpetual Fimbulwinter: continent-sized cryo-vaults generating eternal absolute cold. Scavenger Barons rule through warmth monopoly. Forsaken bound by inescapable Ice-Debt.",
+      "defaultCategoryValues": {
+        "climate": "Arctic / Psychically Hostile",
+        "lighting": "Whiteout / Darkness (white-blue plains, black Hvergelmir spire)",
+        "era": "Ancient Preservation (783 years perpetual)",
+        "condition": "Industrial Cryo-Catastrophe / Eternal Fimbulwinter"
+      },
+      "impliedTags": [
+        "cryo_preservation",
+        "valhalla_contingency",
+        "fimbulwinter_source",
+        "scavenger_baron_territory",
+        "forsaken_population",
+        "dreadnought_fleets",
+        "slumbering_echoes",
+        "stage4_cps",
+        "ice_debt_economy",
+        "einherjar_vault",
+        "thermal_gradient",
+        "hvergelmir_maw"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Frozen",
+          "Silent",
+          "Cold",
+          "Crystalline",
+          "Bleak",
+          "Stark",
+          "Absolute",
+          "Eternal",
+          "Screaming",
+          "Oppressive"
+        ],
+        "visual_details": [
+          "White-blue expanse of Fimbul-Ice (harder than steel)",
+          "Black spire of Hvergelmir's Maw piercing the white sky",
+          "Pressure-fractured chasms in multi-kilometer-deep maze patterns",
+          "Aurora discharge from Hvergelmir's Maw creating strange light",
+          "Perfectly preserved pre-Glitch technicians frozen mid-motion in ice",
+          "Jötun's Fall: city carved into corpse of Hrimthursar cryo-former"
+        ],
+        "ambient_sounds": [
+          "Perfect, absolute silence (oppressive in its completeness)",
+          "Mournful howl of wind through chasms (Ginnungagap's Moan)",
+          "Distant cracking of ice under thermal stress",
+          "Whispers that are not the wind",
+          "In silence: the sound of voices screaming (Slumbering Echoes)"
+        ],
+        "ambient_smells": [
+          "Clean, sterile cold; ancient dust; faint chemical tang",
+          "Absence of smell—the air too cold to carry scents",
+          "Ozone from the Slumbering Echoes psychic emission"
+        ]
+      },
+      "emphasizedTerms": [
+        "Cold", "Silence", "Screaming", "Frost", "Crystal-ice", "Hvergelmir",
+        "Warmth-economy", "Ice-Debt", "Forsaken", "Baron", "Dreadnought",
+        "Slumbering-echoes", "Absolute-zero", "Fimbul-ice", "White",
+        "Whisper", "Eternal", "Preserve", "Frozen", "Perfect"
+      ],
+      "excludedTerms": [
+        "Heat", "Life", "Growth", "Hope", "Freedom", "Escape",
+        "Comfort", "Mercy", "Warmth-without-cost", "Salvation",
+        "Beauty", "Adventure"
+      ],
+      "threatLevel": "OMEGA",
+      "accessRequirements": [
+        "Extreme cold survival gear (thermal protection mandatory)",
+        "CPS resistance training (Slumbering Echoes exposure)",
+        "Dreadnought transport access (only safe routes)",
+        "Ice-Debt contract knowledge",
+        "Baron diplomatic clearance (if entering territory)"
+      ],
+      "notes": "Valhalla Vault-07: 9,412 corrupted Einherjar consciousnesses (Stage-4 CPS source). Jötun's Fall: sole permanent settlement (Blight-Thaw heat source). Hvergelmir's Maw: multi-km-high runaway heat-sink. Four biomes: Great Glacier, Chasm-Fields, Thawing Zones (Clean Hearths/Blight-Thaws), Under-Ice Galleries. Fimbulwinter co-genesis with Muspelheim (Years 1-100 PG). Slumbering Echoes: perpetual psychic emission causing guaranteed Stage-4 breakdown with extended exposure. No viable vault access yet (century-scale research goal)."
+    },
+    {
+      "id": "svartalfheim_controlled_light",
+      "name": "Svartalfheim — The Kingdom of Controlled Light",
+      "description": "Only realm where pre-Glitch infrastructure remains substantially functional. Geothermal-powered systems survived because they're not Aetheric-dependent. Dvergr Hegemony maintains civilization through Pure Principles philosophy. Binary division: Guild-Lands (brilliant light, civilized) versus Black Veins (absolute darkness, frontier).",
+      "defaultCategoryValues": {
+        "climate": "Subterranean / Controlled",
+        "lighting": "Brilliant Light-Crystals (Guild-Lands) vs Absolute Darkness (Black Veins)",
+        "era": "Continuous Civilization (783 years unbroken)",
+        "condition": "Functional Preservation / Frontier Expansion"
+      },
+      "impliedTags": [
+        "industrial_deck",
+        "controlled_infrastructure",
+        "dvergr_hegemony",
+        "pure_principles",
+        "pure_steel_monopoly",
+        "deep_gates_transit",
+        "silent_folk_territory",
+        "guild_governance",
+        "geothermal_power",
+        "non_aetheric_tech",
+        "light_crystal",
+        "anvil_star"
+      ],
+      "descriptorPoolOverrides": {
+        "adjectives": [
+          "Brilliant",
+          "Controlled",
+          "Precise",
+          "Engineered",
+          "Logical",
+          "Flawless",
+          "Lightless",
+          "Oppressive",
+          "Echoing",
+          "Methodical"
+        ],
+        "visual_details": [
+          "Colossal Light-Crystals suspended in cavern centers, providing perpetual illumination",
+          "Cathedral-like caverns with breathtaking precision stonework",
+          "Intricate clockwork visible in all infrastructure",
+          "Forged deeps: brilliant guildhalls and city-states connected by maintained thoroughfares",
+          "Black Veins: absolute, physical darkness that absorbs light",
+          "The Clicking Deeps: marked by resonance pillars and whisper-web triplines"
+        ],
+        "ambient_sounds": [
+          "Rhythmic clang of hammers in Great Forge complexes (Guild-Lands)",
+          "Hum of geothermal systems and Light-Crystal arrays",
+          "Absolute silence in the Black Veins (oppressive, reality-breaking)",
+          "Clicking and psionic pulses from Silent Folk territories",
+          "Mechanical precision: gears, pulleys, pumps functioning perfectly"
+        ],
+        "ambient_smells": [
+          "Hot metal and forge-fire (Guild-Lands)",
+          "Clean, recycled air maintained by atmospheric regulators",
+          "Absence of smell in absolute darkness (nothing to carry scent)",
+          "Faint methane and sulfur in hazardous Black Vein zones"
+        ]
+      },
+      "emphasizedTerms": [
+        "Light-Crystal", "Anvil-Star", "Forged", "Pure-steel", "Precision",
+        "Logic", "Geothermal", "Clockwork", "Silent-folk", "Whisper-web",
+        "Echo-cant", "Controlled", "Order", "Engineering", "Flawless",
+        "Deep-gates", "Nidavellir", "Vein-Runner", "Darkness", "Absolute"
+      ],
+      "excludedTerms": [
+        "Chaos", "Aetheric", "Supernatural", "Magical", "Mystical",
+        "Uncontrolled", "Impure", "Decay", "Failure", "Superstition",
+        "Magic", "Miracle", "Divine"
+      ],
+      "threatLevel": "MODERATE (Guild-Lands) to EXTREME (Black Veins)",
+      "accessRequirements": [
+        "Guild certification for surface traders",
+        "Deep Gates tariff payment",
+        "Atmospheric monitoring equipment (Black Veins survey)",
+        "Three-Covenant Framework acknowledgment (Silent Folk territory)",
+        "Pure Principles philosophy acceptance (ideology, not combat)"
+      ],
+      "notes": "Dvergr bio-engineered with noise-filtering neural architecture (Blight-immune). Pure Steel monopoly: 16-fold lamination, no alternatives. Deep Gates: only functional rapid-transit infrastructure (90% non-functional elsewhere). Nidavellir capital: lit by single massive Anvil-Star. Silent Folk: post-human civilization in Clicking Deeps (hive-cities, echo-cant, psionic acoustic). Three-Covenant: No Light, No Voice, No Metal Tools beyond waystation thresholds. Vein-Runners: frontier prospectors in Black Veins (several hundred operating). Glimmering Grottos: Blight-crystal zones with Wild Magic Surge risk."
+    }
+  ]
+}

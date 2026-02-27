@@ -1,135 +1,165 @@
 {
   "version": "1.0",
   "biomes": {
-    "cave": {
-      "id": "cave",
-      "name": "Cave",
-      "description": "Natural underground cavern system",
+    "the_roots": {
+      "id": "the_roots",
+      "name": "The Roots",
+      "description": "Lower maintenance levels of Aethelgard transformed into rusted, claustrophobic passages after 800 years of decay.",
       "defaultCategoryValues": {
         "climate": "cold",
         "lighting": "dim",
-        "era": "ancient"
+        "era": "ancient",
+        "condition": "decayed"
       },
-      "impliedTags": ["underground", "natural", "stone", "cave"],
+      "impliedTags": ["underground", "constructed", "facility", "industrial", "the_roots"],
       "descriptorPoolOverrides": {
-        "environmental.lighting": "environmental.lighting.cave",
-        "environmental.sounds": "environmental.sounds.cave"
+        "environmental.lighting": "environmental.lighting.facility",
+        "environmental.sounds": "environmental.sounds.machinery",
+        "environmental.temperature": "environmental.temperature.cold",
+        "environmental.smells": "environmental.smells.industrial"
       },
-      "emphasizedTerms": ["dripping", "echo", "stone", "stalactite"],
-      "excludedTerms": ["sunlight", "breeze", "grass"]
+      "emphasizedTerms": ["corroded", "rusted", "hissing", "pipes", "conduit", "servo", "glyph", "data-slate", "bulkhead", "ozone"],
+      "excludedTerms": ["sunlight", "trees", "grass", "natural", "breeze"]
     },
-    "dungeon": {
-      "id": "dungeon",
-      "name": "Dungeon",
-      "description": "Constructed underground passages and chambers",
+    "midgard_greatwood": {
+      "id": "midgard_greatwood",
+      "name": "Midgard Greatwood",
+      "description": "Feral reclaimed forest grown over pre-Glitch grid-planted paradise with massive trees in perfect rows and moss-covered ferrocrete paths.",
       "defaultCategoryValues": {
-        "climate": "cold",
+        "climate": "temperate",
         "lighting": "dim",
-        "era": "medieval"
+        "era": "ancient",
+        "condition": "overgrown"
       },
-      "impliedTags": ["underground", "constructed", "stone", "dungeon"],
+      "impliedTags": ["forest", "outdoor", "natural", "midgard", "reclaimed"],
       "descriptorPoolOverrides": {
-        "environmental.lighting": "environmental.lighting.dungeon"
+        "environmental.lighting": "environmental.lighting.forest",
+        "environmental.sounds": "environmental.sounds.forest_feral",
+        "environmental.temperature": "environmental.temperature.temperate",
+        "environmental.smells": "environmental.smells.forest_decay"
       },
-      "emphasizedTerms": ["torch", "chains", "iron", "stone"],
-      "excludedTerms": ["sunlight", "trees", "grass"]
+      "emphasizedTerms": ["ferrocrete", "grid-planted", "moss", "overgrown", "ash-hazed", "hold", "patrol", "rune-bear", "predator"],
+      "excludedTerms": ["pristine", "engineered", "paradise", "tame", "safe"]
     },
-    "volcanic": {
-      "id": "volcanic",
-      "name": "Volcanic",
-      "description": "Areas of active or dormant volcanic activity",
+    "jotunheim_salvage": {
+      "id": "jotunheim_salvage",
+      "name": "Jötunheim Salvage",
+      "description": "Industrial graveyard where dead Jötun-Forged form iron mountains and Rust-Clans scavenge among titan corpses.",
       "defaultCategoryValues": {
-        "climate": "scorching",
-        "lighting": "dim"
+        "climate": "hot",
+        "lighting": "dim",
+        "era": "ancient",
+        "condition": "toxic"
       },
-      "impliedTags": ["volcanic", "heat", "danger", "fire"],
+      "impliedTags": ["industrial", "outdoor", "toxic", "jotunheim", "salvage"],
       "descriptorPoolOverrides": {
-        "environmental.lighting": "environmental.lighting.volcanic",
-        "environmental.temperature": "environmental.temperature.volcanic",
-        "environmental.smells": "environmental.smells.volcanic"
+        "environmental.lighting": "environmental.lighting.industrial",
+        "environmental.sounds": "environmental.sounds.industrial_graveyard",
+        "environmental.temperature": "environmental.temperature.industrial",
+        "environmental.smells": "environmental.smells.toxic_metal"
       },
-      "emphasizedTerms": ["lava", "sulfur", "heat", "glow", "magma"],
-      "excludedTerms": ["cold", "ice", "frost", "chill", "freezing"]
+      "emphasizedTerms": ["rust", "scrap", "titan", "metal-corpse", "gutter-cant", "salvage", "groaning", "desolate", "iron-heart"],
+      "excludedTerms": ["life", "growth", "beauty", "peace", "pristine", "clean"]
     },
-    "frozen": {
-      "id": "frozen",
-      "name": "Frozen",
-      "description": "Ice-covered or extremely cold regions",
+    "niflheim_glacier": {
+      "id": "niflheim_glacier",
+      "name": "Niflheim Glacier",
+      "description": "Industrial-scale preservation gone insane with perpetual Fimbulwinter generated by Hvergelmir AI's corrupted Absolute Zero directive.",
       "defaultCategoryValues": {
         "climate": "freezing",
-        "lighting": "bright"
+        "lighting": "bright",
+        "era": "ancient",
+        "condition": "frozen"
       },
-      "impliedTags": ["frozen", "ice", "cold", "snow"],
+      "impliedTags": ["frozen", "ice", "cold", "niflheim", "psychic_hazard"],
       "descriptorPoolOverrides": {
-        "environmental.temperature": "environmental.temperature.frozen",
-        "environmental.sounds": "environmental.sounds.frozen"
+        "environmental.lighting": "environmental.lighting.ice_crystal",
+        "environmental.sounds": "environmental.sounds.frozen_silence",
+        "environmental.temperature": "environmental.temperature.absolute_zero",
+        "environmental.smells": "environmental.smells.frost"
       },
-      "emphasizedTerms": ["ice", "frost", "frozen", "cold", "chill"],
-      "excludedTerms": ["warm", "heat", "fire", "lava", "sweat"]
+      "emphasizedTerms": ["fimbul-ice", "silence", "screaming", "frost", "crystal", "baron", "dreadnought", "eternal", "absolute"],
+      "excludedTerms": ["warm", "heat", "fire", "lava", "comfort", "mercy", "hope"]
     },
-    "swamp": {
-      "id": "swamp",
-      "name": "Swamp",
-      "description": "Waterlogged wetlands with decaying vegetation",
+    "svartalfheim_guild": {
+      "id": "svartalfheim_guild",
+      "name": "Svartalfheim Guild-Lands",
+      "description": "The Dvergr Guild-Lands where pre-Glitch infrastructure remains substantially functional with brilliant Light-Crystal illumination and geothermal power.",
+      "defaultCategoryValues": {
+        "climate": "temperate",
+        "lighting": "bright",
+        "era": "continuous_civilization",
+        "condition": "maintained"
+      },
+      "impliedTags": ["underground", "constructed", "dvergr", "civilization", "geothermal"],
+      "descriptorPoolOverrides": {
+        "environmental.lighting": "environmental.lighting.light_crystal",
+        "environmental.sounds": "environmental.sounds.forge_works",
+        "environmental.temperature": "environmental.temperature.geothermal",
+        "environmental.smells": "environmental.smells.forged_metal"
+      },
+      "emphasizedTerms": ["light-crystal", "anvil", "forged", "precision", "clockwork", "guild", "pure-steel", "geothermal"],
+      "excludedTerms": ["chaos", "decay", "failure", "impure", "supernatural", "magical"]
+    },
+    "alfheim_glimmer": {
+      "id": "alfheim_glimmer",
+      "name": "Alfheim Glimmer",
+      "description": "Continent-spanning research arcology infected with psychoactive madness featuring crystalline data-forests saturated by the Glimmer.",
+      "defaultCategoryValues": {
+        "climate": "aetheric_instability",
+        "lighting": "psychoactive_shimmer",
+        "era": "ancient",
+        "condition": "corrupted"
+      },
+      "impliedTags": ["psychic_hazard", "data", "crystal", "alfheim", "corruption"],
+      "descriptorPoolOverrides": {
+        "environmental.lighting": "environmental.lighting.glimmer",
+        "environmental.sounds": "environmental.sounds.data_cascade",
+        "environmental.temperature": "environmental.temperature.aetheric",
+        "environmental.smells": "environmental.smells.ozone"
+      },
+      "emphasizedTerms": ["shimmer", "crystalline", "fractal", "euphoric", "recursive", "echo", "glimmer", "algorithmic", "seductive"],
+      "excludedTerms": ["safe", "logical", "linear", "ordered", "predictable", "clear"]
+    },
+    "vanaheim_canopy": {
+      "id": "vanaheim_canopy",
+      "name": "Vanaheim Canopy",
+      "description": "Paradise become pathology as a continent-spanning cancerous organism driven by the Genesis Engine exhibits extreme vertical stratification.",
       "defaultCategoryValues": {
         "climate": "warm",
         "lighting": "dim",
-        "condition": "flooded"
-      },
-      "impliedTags": ["swamp", "wet", "decay", "water", "muck"],
-      "descriptorPoolOverrides": {
-        "environmental.smells": "environmental.smells.swamp",
-        "environmental.sounds": "environmental.sounds.swamp"
-      },
-      "emphasizedTerms": ["murky", "rotting", "mud", "stagnant", "squelch"],
-      "excludedTerms": ["dry", "arid", "dusty", "clean"]
-    },
-    "ruins": {
-      "id": "ruins",
-      "name": "Ruins",
-      "description": "Crumbling remains of ancient structures",
-      "defaultCategoryValues": {
-        "climate": "temperate",
-        "lighting": "normal",
         "era": "ancient",
-        "condition": "collapsed"
-      },
-      "impliedTags": ["ruins", "ancient", "stone", "decay"],
-      "descriptorPoolOverrides": {},
-      "emphasizedTerms": ["crumbling", "ancient", "worn", "faded", "forgotten"],
-      "excludedTerms": ["new", "pristine", "polished"]
-    },
-    "forest": {
-      "id": "forest",
-      "name": "Forest",
-      "description": "Dense woodland area",
-      "defaultCategoryValues": {
-        "climate": "temperate",
-        "lighting": "dim",
         "condition": "overgrown"
       },
-      "impliedTags": ["forest", "outdoor", "natural", "trees"],
+      "impliedTags": ["forest", "bio_hazard", "vanaheim", "vertical", "toxic"],
       "descriptorPoolOverrides": {
-        "environmental.sounds": "environmental.sounds.forest",
-        "environmental.smells": "environmental.smells.forest"
+        "environmental.lighting": "environmental.lighting.canopy",
+        "environmental.sounds": "environmental.sounds.predator_growth",
+        "environmental.temperature": "environmental.temperature.warm",
+        "environmental.smells": "environmental.smells.toxic_bloom"
       },
-      "emphasizedTerms": ["leaves", "bark", "branches", "canopy", "undergrowth"],
-      "excludedTerms": ["stone", "dungeon", "torch"]
+      "emphasizedTerms": ["verdant", "tangled", "organic", "toxic", "bioluminescent", "predatory", "blooming", "spore", "mutation"],
+      "excludedTerms": ["sterile", "mechanical", "controlled", "tame", "safe", "pure"]
     },
-    "desert": {
-      "id": "desert",
-      "name": "Desert",
-      "description": "Arid wasteland or sandy expanse",
+    "muspelheim_ashfall": {
+      "id": "muspelheim_ashfall",
+      "name": "Muspelheim Ashfall",
+      "description": "Volcanic processing deck where Surtr-Pattern Jötun-Forged leaked heat for centuries, creating ash drifts, magma vents, and perpetual thermal haze.",
       "defaultCategoryValues": {
-        "climate": "hot",
-        "lighting": "bright"
+        "climate": "scorching",
+        "lighting": "dim",
+        "era": "ancient",
+        "condition": "volcanic"
       },
-      "impliedTags": ["desert", "outdoor", "dry", "sand"],
+      "impliedTags": ["volcanic", "heat", "danger", "fire", "muspelheim", "industrial"],
       "descriptorPoolOverrides": {
-        "environmental.temperature": "environmental.temperature.desert"
+        "environmental.lighting": "environmental.lighting.volcanic_glow",
+        "environmental.sounds": "environmental.sounds.volcanic_rumble",
+        "environmental.temperature": "environmental.temperature.volcanic",
+        "environmental.smells": "environmental.smells.volcanic_ash"
       },
-      "emphasizedTerms": ["sand", "sun", "dry", "parched", "dune"],
-      "excludedTerms": ["wet", "damp", "moist", "water"]
+      "emphasizedTerms": ["ash", "ember", "molten", "slag", "furnace", "surtr", "heat-shimmer", "volcanic", "sulphur"],
+      "excludedTerms": ["cold", "ice", "frost", "chill", "freezing", "water", "clean"]
     }
   }
 }

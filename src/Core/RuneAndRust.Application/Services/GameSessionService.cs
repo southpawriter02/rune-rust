@@ -3,6 +3,7 @@ using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Events;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Services;
 using RuneAndRust.Domain.ValueObjects;
@@ -84,6 +85,24 @@ public class GameSessionService
     private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
+    /// Quest lifecycle service for accepting, progressing, completing, and failing quests.
+    /// Optional — narrative features are disabled if not registered.
+    /// </summary>
+    private readonly IQuestService? _questService;
+
+    /// <summary>
+    /// Event bus that routes game events (combat, exploration, interaction) to quest objective advancement.
+    /// Optional — quest objective auto-tracking is disabled if not registered.
+    /// </summary>
+    private readonly IQuestEventBus? _questEventBus;
+
+    /// <summary>
+    /// Dialogue service for managing NPC conversations and branching dialogue trees.
+    /// Optional — NPC dialogue features are disabled if not registered.
+    /// </summary>
+    private readonly IDialogueService? _dialogueService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -114,6 +133,9 @@ public class GameSessionService
     /// <param name="examinationService">Optional examination service for detailed object inspection.</param>
     /// <param name="dungeonGenerator">Optional dungeon generator for procedural dungeon creation.</param>
     /// <param name="eventLogger">Optional event logger for comprehensive game event tracking.</param>
+    /// <param name="questService">Optional quest service for narrative quest lifecycle management (v0.21).</param>
+    /// <param name="questEventBus">Optional quest event bus for routing game events to quest objectives (v0.21).</param>
+    /// <param name="dialogueService">Optional dialogue service for NPC conversation management (v0.21).</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
         IGameRepository repository,
@@ -128,7 +150,10 @@ public class GameSessionService
         ILootService lootService,
         IExaminationService? examinationService = null,
         IDungeonGenerator? dungeonGenerator = null,
-        IGameEventLogger? eventLogger = null)
+        IGameEventLogger? eventLogger = null,
+        IQuestService? questService = null,
+        IQuestEventBus? questEventBus = null,
+        IDialogueService? dialogueService = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -145,6 +170,9 @@ public class GameSessionService
         _skillCheckService = new DomainSkillCheckService();
         _dungeonGenerator = dungeonGenerator;
         _eventLogger = eventLogger;
+        _questService = questService;
+        _questEventBus = questEventBus;
+        _dialogueService = dialogueService;
     }
 
     /// <summary>
@@ -363,6 +391,26 @@ public class GameSessionService
                     ["toRoom"] = newRoom?.Name ?? "Unknown"
                 });
 
+            // === Quest Event Bus Integration (v0.21) ===
+            // Route room entry events to quest objectives (ExploreRoom type)
+            if (_questEventBus != null && newRoom != null)
+            {
+                var roomEvent = GameEvent.Exploration("RoomEntered", $"Entered {newRoom.Name}", newRoom.Id)
+                    with { Data = new Dictionary<string, object>
+                    {
+                        ["RoomId"] = newRoom.Id.ToString(),
+                        ["RoomName"] = newRoom.Name
+                    }};
+                var questProgress = _questEventBus.ProcessEvent(roomEvent);
+                foreach (var progress in questProgress)
+                {
+                    _logger.LogInformation(
+                        "Quest objective advanced on room entry: {QuestName} - {Objective} ({Current}/{Required})",
+                        progress.QuestName, progress.ObjectiveDescription,
+                        progress.CurrentProgress, progress.RequiredCount);
+                }
+            }
+
             if (newRoom?.HasMonsters == true)
             {
                 var monsters = newRoom.GetAliveMonsters().ToList();
@@ -446,6 +494,28 @@ public class GameSessionService
                 inventoryBefore,
                 _currentSession.Player.Inventory.Count,
                 _currentSession.Player.Inventory.Capacity);
+
+            // === Quest Event Bus Integration (v0.21) ===
+            // Route item pickup events to quest objectives (CollectItem type)
+            if (_questEventBus != null)
+            {
+                var itemEvent = GameEvent.Inventory("ItemPickedUp", $"Picked up {item.Name}")
+                    with { Data = new Dictionary<string, object>
+                    {
+                        ["ItemId"] = item.Name.ToLowerInvariant().Replace(" ", "_"),
+                        ["ItemName"] = item.Name,
+                        ["ItemType"] = item.Type.ToString()
+                    }};
+                var questProgress = _questEventBus.ProcessEvent(itemEvent);
+                foreach (var progress in questProgress)
+                {
+                    _logger.LogInformation(
+                        "Quest objective advanced on item pickup: {QuestName} - {Objective} ({Current}/{Required})",
+                        progress.QuestName, progress.ObjectiveDescription,
+                        progress.CurrentProgress, progress.RequiredCount);
+                }
+            }
+
             return (true, $"You picked up the {item.Name}.");
         }
 
@@ -562,6 +632,26 @@ public class GameSessionService
                     monster.Name,
                     loot.Items?.Count ?? 0,
                     loot.Currency?.Count ?? 0);
+            }
+
+            // === Quest Event Bus Integration (v0.21) ===
+            // Route monster defeat events to quest objectives (KillEnemy type)
+            if (_questEventBus != null)
+            {
+                var monsterDefeatEvent = GameEvent.Combat("MonsterDefeated", $"Defeated {monster.Name}")
+                    with { Data = new Dictionary<string, object>
+                    {
+                        ["MonsterId"] = monster.MonsterDefinitionId ?? monster.Name.ToLowerInvariant().Replace(" ", "_"),
+                        ["MonsterName"] = monster.Name
+                    }};
+                var questProgress = _questEventBus.ProcessEvent(monsterDefeatEvent);
+                foreach (var progress in questProgress)
+                {
+                    _logger.LogInformation(
+                        "Quest objective advanced on monster defeat: {QuestName} - {Objective} ({Current}/{Required})",
+                        progress.QuestName, progress.ObjectiveDescription,
+                        progress.CurrentProgress, progress.RequiredCount);
+                }
             }
         }
 
@@ -1074,6 +1164,11 @@ public class GameSessionService
             .Select(c => c.AbilityName)
             .ToList();
 
+        // === Quest Timer & Failure Processing (v0.21) ===
+        // Process timed quest countdowns and check failure conditions at end of each turn
+        ProcessQuestTimers();
+        ProcessQuestFailureConditions();
+
         _logger.LogInformation(
             "Turn {Turn} ended: {ResourceChanges} resource changes, {CooldownChanges} cooldown changes, {AbilitiesReady} abilities now ready",
             newTurnCount, resourceChanges.Count, cooldownChanges.Count, abilitiesNowReady.Count);
@@ -1529,5 +1624,460 @@ public class GameSessionService
     {
         var structuralElements = new[] { "walls", "wall", "floor", "ceiling", "ground" };
         return structuralElements.Contains(target.ToLowerInvariant());
+    }
+
+    // ===== Narrative Infrastructure Methods (v0.21 — SPEC-NARRATIVE-001 System 5) =====
+
+    /// <summary>
+    /// Initiates a dialogue with an NPC in the current room, identified by keyword.
+    /// </summary>
+    /// <param name="npcKeyword">
+    /// Keyword to match the NPC (e.g., "thorvald", "guard", "merchant").
+    /// Matched against the NPC's keywords list (case-insensitive).
+    /// </param>
+    /// <returns>
+    /// The opening dialogue node for the NPC's conversation tree,
+    /// or null if the NPC wasn't found, has no dialogue, or the dialogue service isn't registered.
+    /// </returns>
+    /// <remarks>
+    /// This method coordinates between the Room entity (NPC lookup), the NPC entity (dialogue root),
+    /// and the DialogueService (dialogue tree loading). It also fires a TalkToNpc game event
+    /// through the quest event bus for objective tracking.
+    /// </remarks>
+    public (bool Success, DialogueNodeDto? DialogueNode, string Message) TalkToNpc(string npcKeyword)
+    {
+        _logger.LogDebug("TalkToNpc called with keyword: {NpcKeyword}", npcKeyword);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TalkToNpc failed: No active game session");
+            return (false, null, "No active game session.");
+        }
+
+        if (_dialogueService == null)
+        {
+            _logger.LogWarning("TalkToNpc failed: Dialogue service not registered");
+            return (false, null, "Dialogue system is not available.");
+        }
+
+        var currentRoom = _currentSession.CurrentRoom;
+        if (currentRoom == null)
+        {
+            _logger.LogError("TalkToNpc failed: Current room is null for session {SessionId}", _currentSession.Id);
+            return (false, null, "Error: Current room not found.");
+        }
+
+        // Look up the NPC in the current room by keyword
+        var npc = currentRoom.GetNpcByKeyword(npcKeyword);
+        if (npc == null)
+        {
+            _logger.LogDebug("NPC not found with keyword '{NpcKeyword}' in room {RoomName}",
+                npcKeyword, currentRoom.Name);
+            return (false, null, $"There's nobody here matching '{npcKeyword}'.");
+        }
+
+        if (!npc.IsAlive)
+        {
+            _logger.LogDebug("NPC '{NpcName}' is dead, cannot talk", npc.Name);
+            return (false, null, $"{npc.Name} is dead and cannot respond.");
+        }
+
+        // Mark the NPC as met (first encounter tracking)
+        npc.Meet();
+
+        // Start the dialogue through the service
+        var dialogueNode = _dialogueService.StartDialogue(npc);
+        if (dialogueNode == null)
+        {
+            _logger.LogWarning("No dialogue tree found for NPC '{NpcName}' (definitionId: {DefinitionId})",
+                npc.Name, npc.DefinitionId);
+            return (true, null, $"{npc.Name} has nothing to say right now.");
+        }
+
+        _logger.LogInformation("Dialogue started with NPC '{NpcName}' (root: {RootDialogueId})",
+            npc.Name, npc.RootDialogueId);
+
+        // Log the interaction event
+        _eventLogger?.LogInteraction("DialogueStarted", $"Started dialogue with {npc.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["NpcId"] = npc.DefinitionId,
+                ["NpcName"] = npc.Name,
+                ["RootDialogueId"] = npc.RootDialogueId ?? ""
+            });
+
+        // Route to quest event bus for TalkToNpc objectives
+        if (_questEventBus != null)
+        {
+            var talkEvent = GameEvent.Interaction("DialogueStarted", $"Talked to {npc.Name}")
+                with { Data = new Dictionary<string, object>
+                {
+                    ["NpcId"] = npc.DefinitionId,
+                    ["NpcName"] = npc.Name
+                }};
+            var questProgress = _questEventBus.ProcessEvent(talkEvent);
+            foreach (var progress in questProgress)
+            {
+                _logger.LogInformation(
+                    "Quest objective advanced on NPC dialogue: {QuestName} - {Objective} ({Current}/{Required})",
+                    progress.QuestName, progress.ObjectiveDescription,
+                    progress.CurrentProgress, progress.RequiredCount);
+            }
+        }
+
+        return (true, dialogueNode, $"{npc.Name}: {dialogueNode.Text}");
+    }
+
+    /// <summary>
+    /// Accepts a quest by its definition ID. Typically called after a dialogue option
+    /// triggers a QuestGiven outcome.
+    /// </summary>
+    /// <param name="questId">The quest definition ID to accept (e.g., "quest_clear_nest").</param>
+    /// <returns>
+    /// A result indicating whether the quest was accepted, with the quest instance ID
+    /// and a descriptive message for the player.
+    /// </returns>
+    /// <remarks>
+    /// This method:
+    /// 1. Validates the quest service is available
+    /// 2. Delegates to IQuestService.AcceptQuest for entity creation
+    /// 3. Registers quest objectives with the event bus for automatic tracking
+    /// 4. Logs the acceptance event
+    /// </remarks>
+    public QuestAcceptResult AcceptQuest(string questId)
+    {
+        _logger.LogDebug("AcceptQuest called for quest: {QuestId}", questId);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("AcceptQuest failed: No active game session");
+            return new QuestAcceptResult
+            {
+                Success = false,
+                Message = "No active game session.",
+                QuestId = questId
+            };
+        }
+
+        if (_questService == null)
+        {
+            _logger.LogWarning("AcceptQuest failed: Quest service not registered");
+            return new QuestAcceptResult
+            {
+                Success = false,
+                Message = "Quest system is not available.",
+                QuestId = questId
+            };
+        }
+
+        // Delegate quest creation to the quest service
+        var quest = _questService.AcceptQuest(questId);
+        if (quest == null)
+        {
+            _logger.LogWarning("AcceptQuest failed: Quest definition '{QuestId}' not found or already active", questId);
+            return new QuestAcceptResult
+            {
+                Success = false,
+                Message = $"Quest '{questId}' is not available.",
+                QuestId = questId
+            };
+        }
+
+        _logger.LogInformation(
+            "Quest accepted: {QuestName} (id: {QuestId}, instance: {InstanceId}, objectives: {ObjectiveCount})",
+            quest.Name, questId, quest.Id, quest.Objectives.Count);
+
+        // Log the quest event
+        _eventLogger?.LogQuest("QuestAccepted", $"Accepted quest: {quest.Name}",
+            _currentSession.Player.Id,
+            data: new Dictionary<string, object>
+            {
+                ["QuestId"] = questId,
+                ["QuestInstanceId"] = quest.Id.ToString(),
+                ["QuestName"] = quest.Name
+            });
+
+        return new QuestAcceptResult
+        {
+            Success = true,
+            Message = $"Quest accepted: {quest.Name}",
+            QuestId = questId,
+            QuestInstanceId = quest.Id
+        };
+    }
+
+    /// <summary>
+    /// Turns in a completed quest by its runtime instance ID, granting rewards to the player.
+    /// </summary>
+    /// <param name="questId">The quest instance ID (Guid) to turn in.</param>
+    /// <returns>
+    /// A reward result including XP, currency, items granted, and any unlocked follow-up quests.
+    /// Returns failure if the quest isn't complete, not found, or can't be turned in.
+    /// </returns>
+    /// <remarks>
+    /// This method:
+    /// 1. Verifies the quest exists and all objectives are complete
+    /// 2. Delegates to IQuestService.CompleteQuest for reward calculation
+    /// 3. Unregisters the quest's event bus watches
+    /// 4. Logs the completion event
+    /// Note: Actual reward application (XP gain, inventory additions) is handled by the caller
+    /// or a future reward service — this method returns what should be granted.
+    /// </remarks>
+    public QuestRewardResult TurnInQuest(Guid questId)
+    {
+        _logger.LogDebug("TurnInQuest called for quest instance: {QuestId}", questId);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TurnInQuest failed: No active game session");
+            return new QuestRewardResult { Success = false, Message = "No active game session." };
+        }
+
+        if (_questService == null)
+        {
+            _logger.LogWarning("TurnInQuest failed: Quest service not registered");
+            return new QuestRewardResult { Success = false, Message = "Quest system is not available." };
+        }
+
+        // Check if the quest is ready for turn-in
+        if (!_questService.CheckCompletion(questId))
+        {
+            _logger.LogDebug("TurnInQuest failed: Quest {QuestId} objectives not complete", questId);
+            return new QuestRewardResult
+            {
+                Success = false,
+                Message = "Quest objectives are not yet complete."
+            };
+        }
+
+        // Complete the quest and get rewards
+        var result = _questService.CompleteQuest(questId);
+
+        if (result.Success)
+        {
+            // Unregister event bus watches for the completed quest
+            _questEventBus?.UnregisterQuest(questId);
+
+            _logger.LogInformation(
+                "Quest turned in: instance {QuestId} — XP: {XP}, Currency: {Currency}, Items: {ItemCount}, Unlocked: {UnlockedCount}",
+                questId, result.ExperienceGranted, result.CurrencyGranted,
+                result.ItemsGranted.Count, result.UnlockedQuests.Count);
+
+            // Log the completion event
+            _eventLogger?.LogQuest("QuestCompleted", $"Completed quest — earned {result.ExperienceGranted} XP",
+                _currentSession.Player.Id,
+                data: new Dictionary<string, object>
+                {
+                    ["QuestInstanceId"] = questId.ToString(),
+                    ["ExperienceGranted"] = result.ExperienceGranted,
+                    ["CurrencyGranted"] = result.CurrencyGranted
+                });
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Returns all NPCs present in the current room.
+    /// </summary>
+    /// <returns>
+    /// A read-only list of Npc entities in the current room. Returns empty if no session,
+    /// no room, or no NPCs are present.
+    /// </returns>
+    public IReadOnlyList<Npc> GetCurrentRoomNpcs()
+    {
+        if (_currentSession == null)
+        {
+            _logger.LogDebug("GetCurrentRoomNpcs: No active session");
+            return [];
+        }
+
+        var room = _currentSession.CurrentRoom;
+        if (room == null)
+        {
+            _logger.LogDebug("GetCurrentRoomNpcs: No current room");
+            return [];
+        }
+
+        var npcs = room.Npcs;
+        _logger.LogDebug("GetCurrentRoomNpcs: Found {NpcCount} NPC(s) in {RoomName}",
+            npcs.Count, room.Name);
+        return npcs;
+    }
+
+    /// <summary>
+    /// Gets the quest journal data for UI display, including active, completed, and failed quests.
+    /// </summary>
+    /// <returns>
+    /// A QuestJournalData containing categorized quest entries with objective summaries.
+    /// Returns an empty journal if the quest service isn't registered.
+    /// </returns>
+    public QuestJournalData GetQuestJournal()
+    {
+        if (_questService == null)
+        {
+            _logger.LogDebug("GetQuestJournal: Quest service not registered, returning empty journal");
+            return new QuestJournalData();
+        }
+
+        var activeQuests = _questService.GetActiveQuests();
+        var entries = activeQuests.Select(q => new QuestJournalEntry
+        {
+            QuestId = q.Id,
+            DefinitionId = q.DefinitionId,
+            Name = q.Name,
+            Description = q.Description,
+            Category = q.Category.ToString(),
+            CompletionPercentage = q.Objectives.Count > 0
+                ? (int)(q.Objectives.Count(o => o.IsCompleted) / (double)q.Objectives.Count * 100)
+                : 0,
+            TurnsRemaining = q.IsTimed ? q.TurnsRemaining : null,
+            Objectives = q.Objectives.Select(o => new ObjectiveSummary
+            {
+                Description = o.Description,
+                CurrentProgress = o.CurrentProgress,
+                RequiredCount = o.RequiredCount,
+                IsCompleted = o.IsCompleted
+            }).ToList()
+        }).ToList();
+
+        _logger.LogDebug("GetQuestJournal: {ActiveCount} active quest(s)", entries.Count);
+
+        return new QuestJournalData
+        {
+            ActiveQuests = entries
+        };
+    }
+
+    /// <summary>
+    /// Gets quests available from a specific NPC in the current room.
+    /// Filters by player's legend level and completed quest prerequisites.
+    /// </summary>
+    /// <param name="npcDefinitionId">The NPC's definition ID (e.g., "thorvald_guard").</param>
+    /// <returns>
+    /// A list of quest definitions the NPC can currently offer,
+    /// filtered by the player's progress and prerequisites.
+    /// </returns>
+    public IReadOnlyList<QuestDefinitionDto> GetAvailableQuestsFromNpc(string npcDefinitionId)
+    {
+        if (_questService == null || _currentSession == null)
+        {
+            return [];
+        }
+
+        var legendLevel = _currentSession.Player.Level;
+        var completedQuestIds = _questService.GetCompletedQuestIds();
+
+        return _questService.GetAvailableQuestsFromNpc(
+            npcDefinitionId, legendLevel, completedQuestIds);
+    }
+
+    // ===== Private Quest Lifecycle Hooks (v0.21) =====
+
+    /// <summary>
+    /// Ticks all timed quest countdowns by one turn and handles any expirations.
+    /// Called at the end of each turn from ProcessTurnEnd().
+    /// </summary>
+    private void ProcessQuestTimers()
+    {
+        if (_questService == null) return;
+
+        var expired = _questService.TickTimers();
+        foreach (var failure in expired)
+        {
+            _logger.LogInformation("Quest expired: {QuestName} — {Reason}",
+                failure.QuestName, failure.Reason);
+
+            _eventLogger?.LogQuest("QuestExpired", failure.Reason,
+                _currentSession?.Player.Id,
+                data: new Dictionary<string, object>
+                {
+                    ["QuestId"] = failure.QuestId,
+                    ["QuestName"] = failure.QuestName,
+                    ["Reason"] = failure.Reason
+                });
+
+            // Note: QuestService.TickTimers() already removes the quest from its internal tracking.
+            // Event bus watches keyed by the quest instance Guid will be orphaned but harmless —
+            // they simply won't match any future events. A future enhancement can add the instance
+            // Guid to QuestFailureResult for proper cleanup.
+        }
+    }
+
+    /// <summary>
+    /// Evaluates failure conditions (NPC death, item loss, reputation drop, leaving area)
+    /// for all active quests against the current game state.
+    /// Called at the end of each turn from ProcessTurnEnd().
+    /// </summary>
+    private void ProcessQuestFailureConditions()
+    {
+        if (_questService == null || _currentSession == null) return;
+
+        // Build the failure check context from current game state
+        var context = BuildFailureCheckContext();
+        var failures = _questService.EvaluateFailureConditions(context);
+
+        foreach (var failure in failures)
+        {
+            _logger.LogInformation("Quest failed: {QuestName} — {Reason}",
+                failure.QuestName, failure.Reason);
+
+            _eventLogger?.LogQuest("QuestFailed", failure.Reason,
+                _currentSession.Player.Id,
+                data: new Dictionary<string, object>
+                {
+                    ["QuestId"] = failure.QuestId,
+                    ["QuestName"] = failure.QuestName,
+                    ["Reason"] = failure.Reason
+                });
+
+            // Note: QuestService.EvaluateFailureConditions() already removes failed quests
+            // from its internal tracking. See ProcessQuestTimers() for the same pattern.
+        }
+    }
+
+    /// <summary>
+    /// Builds a FailureCheckContext from the current game session state.
+    /// Assembles dead NPC IDs, player inventory item IDs, faction reputations,
+    /// and current area ID for failure condition evaluation.
+    /// </summary>
+    /// <returns>A populated FailureCheckContext for condition checking.</returns>
+    private FailureCheckContext BuildFailureCheckContext()
+    {
+        // Collect dead NPC definition IDs from the current room
+        // (In a full implementation, this would track all known dead NPCs across the dungeon)
+        var deadNpcIds = new HashSet<string>();
+        var room = _currentSession?.CurrentRoom;
+        if (room != null)
+        {
+            foreach (var npc in room.Npcs)
+            {
+                if (!npc.IsAlive)
+                    deadNpcIds.Add(npc.DefinitionId);
+            }
+        }
+
+        // Collect item definition IDs from player inventory
+        var inventoryItemIds = new HashSet<string>();
+        if (_currentSession?.Player.Inventory != null)
+        {
+            foreach (var item in _currentSession.Player.Inventory.Items)
+            {
+                inventoryItemIds.Add(item.Name.ToLowerInvariant().Replace(" ", "_"));
+            }
+        }
+
+        // Faction reputations — currently a stub until the reputation system is implemented
+        // (Open Question #3 in the spec: "Should the reputation system be a simple int-per-faction or a full service?")
+        var factionReputations = new Dictionary<string, int>();
+
+        // Current area ID from the room
+        var currentAreaId = room?.Id.ToString();
+
+        return new FailureCheckContext(
+            deadNpcIds,
+            inventoryItemIds,
+            factionReputations,
+            currentAreaId);
     }
 }

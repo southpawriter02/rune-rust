@@ -98,6 +98,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<RiddleNpc> _riddleNpcs = [];
 
+    // ===== General NPCs (v0.21.0a — Narrative Infrastructure) =====
+
+    /// <summary>
+    /// List of general-purpose NPCs in this room (quest givers, merchants, dialogue NPCs).
+    /// </summary>
+    private readonly List<Npc> _npcs = [];
+
     // ===== Light Sources (v0.4.3b) =====
 
     /// <summary>
@@ -231,6 +238,17 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any unsolved riddle NPCs.
     /// </summary>
     public bool HasUnsolvedRiddleNpcs => _riddleNpcs.Any(n => !n.RiddleSolved);
+
+    // ===== General NPC Properties (v0.21.0a — Narrative Infrastructure) =====
+
+    /// <summary>Gets all general-purpose NPCs in this room.</summary>
+    public IReadOnlyList<Npc> Npcs => _npcs.AsReadOnly();
+
+    /// <summary>Gets whether this room contains any general NPCs.</summary>
+    public bool HasNpcs => _npcs.Count > 0;
+
+    /// <summary>Gets whether this room contains any alive general NPCs.</summary>
+    public bool HasAliveNpcs => _npcs.Any(n => n.IsAlive);
 
     // ===== Light Level Properties (v0.4.3a) =====
 
@@ -1077,6 +1095,62 @@ public class Room : IEntity
     public RiddleNpc? GetBlockingNpc(Direction direction)
     {
         return _riddleNpcs.FirstOrDefault(n => n.IsPassageBlocked(direction));
+    }
+
+    // ===== General NPC Methods (v0.21.0a — Narrative Infrastructure) =====
+
+    /// <summary>
+    /// Adds a general NPC to this room. Duplicate NPCs (by Id) are silently ignored.
+    /// </summary>
+    /// <param name="npc">The NPC to add.</param>
+    public void AddNpc(Npc npc)
+    {
+        ArgumentNullException.ThrowIfNull(npc);
+        if (!_npcs.Any(n => n.Id == npc.Id))
+        {
+            _npcs.Add(npc);
+        }
+    }
+
+    /// <summary>
+    /// Removes a general NPC from this room.
+    /// </summary>
+    /// <param name="npc">The NPC to remove.</param>
+    /// <returns>True if the NPC was found and removed.</returns>
+    public bool RemoveNpc(Npc npc)
+    {
+        ArgumentNullException.ThrowIfNull(npc);
+        return _npcs.Remove(npc);
+    }
+
+    /// <summary>
+    /// Finds a general NPC by keyword (name match, case-insensitive).
+    /// </summary>
+    /// <param name="keyword">The keyword to search for in NPC names.</param>
+    /// <returns>The first matching alive NPC, or null.</returns>
+    public Npc? GetNpcByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return null;
+
+        return _npcs.FirstOrDefault(n =>
+            n.IsAlive &&
+            n.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Finds a general NPC by definition ID.
+    /// </summary>
+    /// <param name="definitionId">The NPC definition ID to search for.</param>
+    /// <returns>The matching NPC, or null.</returns>
+    public Npc? GetNpcByDefinitionId(string definitionId)
+    {
+        if (string.IsNullOrWhiteSpace(definitionId))
+            return null;
+
+        return _npcs.FirstOrDefault(n =>
+            n.IsAlive &&
+            n.DefinitionId.Equals(definitionId, StringComparison.OrdinalIgnoreCase));
     }
 
     // ===== Light Level Methods (v0.4.3a) =====

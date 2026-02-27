@@ -1,0 +1,436 @@
+{
+  "dialogues": {
+    "thorvald_greeting": [
+      {
+        "id": "thorvald_greeting",
+        "text": "Another soul venturing into the deep. You look capable enough — maybe you can help.",
+        "options": [
+          {
+            "text": "What's the situation?",
+            "nextNodeId": "thorvald_situation"
+          },
+          {
+            "text": "Got any work?",
+            "nextNodeId": "thorvald_quests"
+          },
+          {
+            "text": "Just passing through.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "thorvald_situation",
+        "text": "The Roots are getting more dangerous, you know. Servitors are reactivating deeper down. Hasn't been safe to venture past the third seal in weeks.",
+        "options": [
+          {
+            "text": "Tell me more about the servitors",
+            "nextNodeId": "thorvald_servitors"
+          },
+          {
+            "text": "I'll be careful.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "thorvald_servitors",
+        "text": "Automated guardians left behind by the old ones. They don't think like us — just follow their prime directives without mercy. Some say they're waking up because something down there is calling to them. Ancient tech that doesn't rust, doesn't die.",
+        "options": [
+          {
+            "text": "I can handle them.",
+            "nextNodeId": "thorvald_quests"
+          },
+          {
+            "text": "Sounds dangerous.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false,
+        "outcome": {
+          "type": "Information",
+          "data": "Servitors are automated guardians from before the Glitch, capable and relentless."
+        }
+      },
+      {
+        "id": "thorvald_quests",
+        "text": "The Hold needs capable hands. Rust-Horrors are nesting in the lower conduits, and the Iron-Banes want the dead cleared out. Both pay if you prove yourself.",
+        "options": [
+          {
+            "text": "I'll clear the nest.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "quest_clear_nest"
+            }
+          },
+          {
+            "text": "Tell me about the Iron-Banes.",
+            "nextNodeId": "thorvald_ironbanes"
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "thorvald_ironbanes",
+        "text": "Zealots who believe the Undying are an affront to the old gods. They're dangerous, but useful if you can stomach the sermons. They pay well for purges, and the Combine leaves them alone out of fear.",
+        "options": [
+          {
+            "text": "I'll purge for them.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "faction_ironbanes_purge_rust"
+            }
+          },
+          {
+            "text": "Not my fight.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false,
+        "outcome": {
+          "type": "ReputationChange",
+          "affectedFaction": "MidgardCombine",
+          "reputationChange": 5
+        }
+      }
+    ],
+    "sigrun_greeting": [
+      {
+        "id": "sigrun_greeting",
+        "text": "Watch your step — these ruins shift when you're not looking. I'm Sigrun. I know every bolt and rivet in this section.",
+        "options": [
+          {
+            "text": "I need supplies.",
+            "nextNodeId": "sigrun_supplies"
+          },
+          {
+            "text": "Know any good salvage spots?",
+            "nextNodeId": "sigrun_salvage"
+          },
+          {
+            "text": "Farewell.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "sigrun_supplies",
+        "text": "I trade in salvage, not goods. You'll want to talk to Kjartan for supplies — he's got the best stock. I can help you find what you need to trade, though.",
+        "options": [
+          {
+            "text": "What do you need?",
+            "nextNodeId": "sigrun_work"
+          },
+          {
+            "text": "I see.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "sigrun_salvage",
+        "text": "There are structural scrap deposits in the lower conduits, near the old maintenance shafts. The Combine hasn't stripped those yet — they're too deep, and most aren't brave enough to go that far.",
+        "options": [
+          {
+            "text": "I can collect some for you.",
+            "nextNodeId": "sigrun_work"
+          },
+          {
+            "text": "Thanks for the tip.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false,
+        "outcome": {
+          "type": "Information",
+          "data": "Structural scrap deposits exist in lower conduits near maintenance shafts, away from Combine patrols."
+        }
+      },
+      {
+        "id": "sigrun_work",
+        "text": "The Hold's forge needs structural scrap. Bring me three pieces and I'll make it worth your while. High-quality materials are hard to come by these days.",
+        "options": [
+          {
+            "text": "Consider it done.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "quest_scrap_collection"
+            }
+          },
+          {
+            "text": "Maybe later.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      }
+    ],
+    "astrid_greeting": [
+      {
+        "id": "astrid_greeting",
+        "text": "The old data-slates speak, if you know how to listen. Most don't. I'm Astrid.",
+        "options": [
+          {
+            "text": "What do the slates say?",
+            "nextNodeId": "astrid_lore"
+          },
+          {
+            "text": "I have a question.",
+            "nextNodeId": "astrid_question"
+          },
+          {
+            "text": "Farewell.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "astrid_lore",
+        "text": "They speak of a time before the Glitch, when civilization spanned the old world. The Jötun-Forged were the pinnacle — machines designed to outlast humanity itself. But something broke them, corrupted their purpose. Some say the Undying are what remains of that corruption.",
+        "options": [
+          {
+            "text": "Fascinating. Can I help with your research?",
+            "nextNodeId": "astrid_work"
+          },
+          {
+            "text": "That's... unsettling.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false,
+        "outcome": {
+          "type": "Information",
+          "data": "The Jötun-Forged were ancient machines designed to outlast humanity. The Glitch may have corrupted them, creating the Undying."
+        }
+      },
+      {
+        "id": "astrid_question",
+        "text": "I trade in knowledge. What do you want to know?",
+        "options": [
+          {
+            "text": "Tell me about the factions.",
+            "nextNodeId": "astrid_factions"
+          },
+          {
+            "text": "I need work.",
+            "nextNodeId": "astrid_work"
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "astrid_factions",
+        "text": "The MidgardCombine controls the upper reaches — they think structure and order will save us. The RustClans scavenge and fight for survival. The Independents want nothing to do with either. And then there's the GodSleepers, who believe the old gods slumber beneath and will wake to judge us.",
+        "options": [
+          {
+            "text": "I want to help the Readers.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "faction_jotunreaders_data_recovery"
+            }
+          },
+          {
+            "text": "Thanks.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false,
+        "outcome": {
+          "type": "ReputationChange",
+          "affectedFaction": "Independents",
+          "reputationChange": 5
+        }
+      },
+      {
+        "id": "astrid_work",
+        "text": "I need someone to deliver a message to Kjartan — carefully. And there are deeper archives that need exploring. Old vaults where the data runs deeper than anyone has dared venture.",
+        "options": [
+          {
+            "text": "I'll deliver the message.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "quest_diplomatic_errand"
+            }
+          },
+          {
+            "text": "Tell me about the archives.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "quest_schematic_recovery"
+            }
+          }
+        ],
+        "endsConversation": false
+      }
+    ],
+    "gunnar_greeting": [
+      {
+        "id": "gunnar_greeting",
+        "text": "You don't look like Combine. That's either very good or very bad for you.",
+        "options": [
+          {
+            "text": "I'm nobody's soldier.",
+            "nextNodeId": "gunnar_neutral"
+          },
+          {
+            "text": "The Rust-Clans interest me.",
+            "nextNodeId": "gunnar_clans"
+          },
+          {
+            "text": "Watch your tone.",
+            "nextNodeId": "gunnar_hostile"
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "gunnar_neutral",
+        "text": "Smart. The Combine thinks they own these ruins. They don't. Nobody does. The smart ones stay independent, take what they need, and don't ask permission.",
+        "options": [
+          {
+            "text": "What do the Clans want?",
+            "nextNodeId": "gunnar_clans"
+          },
+          {
+            "text": "I'll be on my way.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "gunnar_clans",
+        "text": "Survival. The Combine hoards resources while we scrape by on their scraps. We take what we need, and we don't apologize for it. You could help even the odds — make sure their supply lines get disrupted.",
+        "options": [
+          {
+            "text": "I could help even the odds.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "QuestGiven",
+              "data": "quest_sabotage"
+            }
+          },
+          {
+            "text": "Sounds like raiding to me.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "ReputationChange",
+              "affectedFaction": "RustClans",
+              "reputationChange": -5
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "gunnar_hostile",
+        "text": "Brave. Stupid, but brave. I respect that. Don't cross the Clans again, though. Next time won't be so friendly.",
+        "options": [],
+        "endsConversation": true
+      }
+    ],
+    "kjartan_merchant_greeting": [
+      {
+        "id": "kjartan_merchant_greeting",
+        "text": "Need supplies? I've got the best salvage this side of the Roots. Fair prices for fair trade.",
+        "options": [
+          {
+            "text": "Show me what you have.",
+            "nextNodeId": "kjartan_shop"
+          },
+          {
+            "text": "Any news?",
+            "nextNodeId": "kjartan_news"
+          },
+          {
+            "text": "Just browsing.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          }
+        ],
+        "endsConversation": false
+      },
+      {
+        "id": "kjartan_shop",
+        "text": "Take your time. Everything's marked fair. I stand behind my goods.",
+        "options": [],
+        "endsConversation": false,
+        "outcome": {
+          "type": "OpenShop",
+          "data": "kjartan_merchant"
+        }
+      },
+      {
+        "id": "kjartan_news",
+        "text": "The servitors in Sector 7 have been more active lately. Bad for scavengers, good for my armor repair business. People get torn up down there and they come to me.",
+        "options": [
+          {
+            "text": "Thanks for the warning.",
+            "nextNodeId": null,
+            "outcome": {
+              "type": "EndConversation"
+            }
+          },
+          {
+            "text": "Let me see your wares.",
+            "nextNodeId": "kjartan_shop"
+          }
+        ],
+        "endsConversation": false,
+        "outcome": {
+          "type": "Information",
+          "data": "Servitors in Sector 7 are more active, creating danger for scavengers."
+        }
+      }
+    ]
+  }
+}

@@ -193,6 +193,53 @@
           "abilities": ["the-perfect-hunt"]
         }
       ]
+    },
+    {
+      "id": "skjaldmaer",
+      "name": "Skjaldmær",
+      "displayName": "Shieldmaiden",
+      "tagline": "The Bastion of Coherence",
+      "archetypeId": "warrior",
+      "description": "Living firewalls against both physical trauma and mental breakdown. In a world where reality glitches, the Skjaldmær shields not just bodies but sanity itself. Her power comes from indomitable will channeled through the shield — the Coherent Path's answer to the Berserkr's rage.",
+      "specialResource": {
+        "id": "block-charges",
+        "name": "Block Charges",
+        "maxValue": 5,
+        "startValue": 0,
+        "generationMethod": "blocking",
+        "successfulBlockGain": 1,
+        "restoreOnRest": false
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 0,
+          "abilities": ["shield-wall", "intercept", "bulwark"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["hold-the-line", "counter-shield", "rally"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["unbreakable", "guardians-sacrifice"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["the-wall-lives"]
+        }
+      ]
     }
   ]
 }

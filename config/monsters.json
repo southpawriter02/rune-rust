@@ -1,170 +1,350 @@
 {
   "monsters": [
     {
-      "id": "goblin",
-      "name": "Goblin",
-      "description": "A small, green creature with sharp teeth and beady eyes. It looks hostile.",
-      "baseHealth": 30,
-      "baseAttack": 8,
-      "baseDefense": 2,
-      "experienceValue": 25,
-      "behavior": "Cowardly",
-      "tags": ["humanoid"],
+      "id": "draugr-pattern",
+      "name": "Draugr Pattern",
+      "description": "A corrupted civil security automaton still bound by obsolete protocols, endlessly patrolling the ruins of Aethelgard. Its optical sensors glow with malevolent red light as it classifies all living mortals as 'unauthorized intruders,' initiating Firmware Echo escalation sequences with mechanical precision.",
+      "baseHealth": 55,
+      "baseAttack": 10,
+      "baseDefense": 8,
+      "experienceValue": 45,
+      "behavior": "Tactical",
+      "tags": ["undead", "construct", "automata"],
       "canHeal": false,
-      "spawnWeight": 100,
-      "initiativeModifier": 1,
-      "baseResistances": {},
-      "possibleTiers": ["common", "named", "elite"],
-      "possibleTraits": ["venomous", "berserker"],
-      "nameGenerator": {
-        "prefixes": ["Gn", "Sn", "Gr", "Kr", "Zn"],
-        "suffixes": ["ik", "ob", "ax", "ek", "uk"],
-        "titleFormat": "{0} the {1}"
-      },
-      "lootTable": {
-        "entries": [
-          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.15 },
-          { "itemId": "rusty_dagger", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
-        ],
-        "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 5, "maxAmount": 15, "dropChance": 0.80 }
-        ]
-      }
-    },
-    {
-      "id": "skeleton",
-      "name": "Skeleton",
-      "description": "An animated pile of bones held together by dark magic.",
-      "baseHealth": 25,
-      "baseAttack": 6,
-      "baseDefense": 3,
-      "experienceValue": 20,
-      "behavior": "Aggressive",
-      "tags": ["undead"],
-      "canHeal": false,
-      "spawnWeight": 80,
+      "spawnWeight": 8,
       "initiativeModifier": 0,
       "baseResistances": {
         "physical": 25,
-        "fire": -50,
         "poison": 100,
-        "holy": -50,
-        "dark": 50
+        "lightning": -25
       },
-      "possibleTiers": ["common", "named", "elite", "boss"],
+      "possibleTiers": ["common", "named", "elite"],
       "possibleTraits": ["armored", "berserker"],
       "nameGenerator": {
-        "prefixes": ["Sk", "Bl", "Dr", "Vr", "Th"],
-        "suffixes": ["ull", "ax", "or", "im", "us"],
-        "titleFormat": "{0} the Bone {1}"
+        "prefixes": ["Dr", "Sk", "Vr", "Th", "Gr"],
+        "suffixes": ["ull", "ek", "ir", "ax", "ur"],
+        "titleFormat": "{0} the {1}"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "bone_dust", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.30 },
-          { "itemId": "ancient_coin", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+          {"itemId": "iron_heart_fragment", "weight": 3, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.6},
+          {"itemId": "logic_core_shard", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.4},
+          {"itemId": "composite_plate", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.3}
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 8, "maxAmount": 20, "dropChance": 0.90 }
+          {"currencyId": "gold", "minAmount": 20, "maxAmount": 50, "dropChance": 0.9}
         ]
       }
     },
     {
-      "id": "orc",
-      "name": "Orc",
-      "description": "A large, brutish creature with green skin and tusks. It wields a crude axe.",
+      "id": "rusted-servitor",
+      "name": "Rusted Servitor",
+      "description": "A corroded maintenance drone that has been executing the same work orders for centuries, indifferent to the collapse of the civilization it once served. Its movements are slow and predictable, yet its hydraulic limbs possess crushing force capable of demolishing stone and bone alike.",
+      "baseHealth": 40,
+      "baseAttack": 7,
+      "baseDefense": 6,
+      "experienceValue": 25,
+      "behavior": "Defensive",
+      "tags": ["construct", "automata"],
+      "canHeal": false,
+      "spawnWeight": 7,
+      "initiativeModifier": -1,
+      "baseResistances": {
+        "poison": 100,
+        "physical": 15
+      },
+      "possibleTiers": ["common", "named"],
+      "possibleTraits": ["armored"],
+      "nameGenerator": {
+        "prefixes": ["Rut", "Ser", "Mek", "Cor", "Gry"],
+        "suffixes": ["ox", "um", "ur", "ik", "el"],
+        "titleFormat": "{0} {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "corroded_gears", "weight": 3, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.7},
+          {"itemId": "servo_motor", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.5}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 10, "maxAmount": 30, "dropChance": 0.85}
+        ]
+      }
+    },
+    {
+      "id": "corroded-drone",
+      "name": "Corroded Drone",
+      "description": "A small hovering maintenance unit with a malfunctioning arc-welder mounted beneath its corroded chassis. Its erratic flight patterns and constant shower of sparks suggest guidance systems failing after decades of neglect, yet it remains dangerously unpredictable in combat.",
+      "baseHealth": 20,
+      "baseAttack": 9,
+      "baseDefense": 2,
+      "experienceValue": 20,
+      "behavior": "Chaotic",
+      "tags": ["construct", "mechanical"],
+      "canHeal": false,
+      "spawnWeight": 9,
+      "initiativeModifier": 2,
+      "baseResistances": {
+        "poison": 100,
+        "physical": -25
+      },
+      "possibleTiers": ["common", "named"],
+      "possibleTraits": ["venomous"],
+      "nameGenerator": {
+        "prefixes": ["Cor", "Zap", "Fly", "Spr", "Fry"],
+        "suffixes": ["zz", "ax", "um", "el", "on"],
+        "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "drone_capacitor", "weight": 3, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.6},
+          {"itemId": "frayed_wiring", "weight": 2, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.5}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 5, "maxAmount": 15, "dropChance": 0.8}
+        ]
+      }
+    },
+    {
+      "id": "blight-rat-swarm",
+      "name": "Blight Rat Swarm",
+      "description": "A teeming mass of Blight-mutated vermin writhing in hypnotic coordination, their eyes glowing with an eerie luminescence. Their corrosive saliva burns through flesh and steel with equal efficiency, and their numbers make them a genuinely terrifying encounter despite their individual fragility.",
+      "baseHealth": 35,
+      "baseAttack": 6,
+      "baseDefense": 1,
+      "experienceValue": 20,
+      "behavior": "Aggressive",
+      "tags": ["beast", "swarm", "blighted"],
+      "canHeal": false,
+      "spawnWeight": 10,
+      "initiativeModifier": 1,
+      "baseResistances": {
+        "physical": 50,
+        "fire": -50
+      },
+      "possibleTiers": ["common", "named"],
+      "possibleTraits": ["venomous", "regenerating"],
+      "nameGenerator": {
+        "prefixes": ["Skr", "Blt", "Swr", "Nib", "Gn"],
+        "suffixes": ["ax", "ol", "er", "it", "um"],
+        "titleFormat": "{0} {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "blight_residue", "weight": 3, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.65},
+          {"itemId": "rat_teeth", "weight": 2, "minQuantity": 2, "maxQuantity": 5, "dropChance": 0.5}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 3, "maxAmount": 10, "dropChance": 0.7}
+        ]
+      }
+    },
+    {
+      "id": "rust-horror",
+      "name": "Rust Horror",
+      "description": "An amalgamation of corroded metal and Blight-corrupted organic matter that shambles through The Roots, assimilating scrap and debris into its ever-growing mass. The thing pulses with an unnatural hunger, its form constantly shifting as rust consumes what remains of its original structure.",
+      "baseHealth": 50,
+      "baseAttack": 11,
+      "baseDefense": 5,
+      "experienceValue": 40,
+      "behavior": "Aggressive",
+      "tags": ["construct", "blighted", "horror"],
+      "canHeal": false,
+      "spawnWeight": 7,
+      "initiativeModifier": 0,
+      "baseResistances": {
+        "poison": 75,
+        "physical": 25,
+        "fire": -25
+      },
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["regenerating", "armored"],
+      "nameGenerator": {
+        "prefixes": ["Gry", "Cor", "Shr", "Blg", "Gnr"],
+        "suffixes": ["um", "or", "ax", "el", "ur"],
+        "titleFormat": "{0} {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "blight_metal_shard", "weight": 3, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.7},
+          {"itemId": "corroded_plating", "weight": 2, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.6},
+          {"itemId": "rust_essence", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.4}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 15, "maxAmount": 40, "dropChance": 0.85}
+        ]
+      }
+    },
+    {
+      "id": "husk-enforcer",
+      "name": "Husk Enforcer",
+      "description": "A heavily armored security construct built for the worst emergencies Aethelgard never faced. It still executes lethal-force protocols with mechanical precision, wielding a massive pneumatic hammer that can reduce fortifications to rubble. Its arrival heralds catastrophe.",
+      "baseHealth": 70,
+      "baseAttack": 14,
+      "baseDefense": 10,
+      "experienceValue": 60,
+      "behavior": "Aggressive",
+      "tags": ["construct", "automata", "heavy"],
+      "canHeal": false,
+      "spawnWeight": 4,
+      "initiativeModifier": -2,
+      "baseResistances": {
+        "physical": 35,
+        "poison": 100,
+        "lightning": -30
+      },
+      "possibleTiers": ["named", "elite", "boss"],
+      "possibleTraits": ["armored", "berserker"],
+      "nameGenerator": {
+        "prefixes": ["Hus", "Enf", "Thur", "Grim", "Kra"],
+        "suffixes": ["ull", "ax", "ur", "og", "ir"],
+        "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "pneumatic_actuator", "weight": 3, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.7},
+          {"itemId": "enforcer_plating", "weight": 3, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.65},
+          {"itemId": "iron_heart_shard", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.5}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 35, "maxAmount": 80, "dropChance": 0.9}
+        ]
+      }
+    },
+    {
+      "id": "construction-hauler",
+      "name": "Construction Hauler",
+      "description": "A colossal Haugbui-class labor automaton whose task-loop has been permanently locked into an endless work cycle. Utterly indifferent to living things, it will classify anything in its path as 'debris' and attempt to move or crush it. Its lumbering bulk poses lethal danger despite complete lack of hostile intent.",
+      "baseHealth": 90,
+      "baseAttack": 8,
+      "baseDefense": 12,
+      "experienceValue": 50,
+      "behavior": "Defensive",
+      "tags": ["construct", "automata", "heavy", "environmental-hazard"],
+      "canHeal": false,
+      "spawnWeight": 3,
+      "initiativeModifier": -3,
+      "baseResistances": {
+        "physical": 50,
+        "poison": 100,
+        "fire": 25
+      },
+      "possibleTiers": ["named", "elite"],
+      "possibleTraits": ["armored"],
+      "nameGenerator": {
+        "prefixes": ["Hau", "Con", "Ber", "Tho", "Gry"],
+        "suffixes": ["ur", "ox", "ul", "um", "ir"],
+        "titleFormat": "{0} {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "hydraulic_piston", "weight": 3, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.75},
+          {"itemId": "iron_heart_fragment", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.6},
+          {"itemId": "heavy_plating", "weight": 2, "minQuantity": 2, "maxQuantity": 3, "dropChance": 0.7}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 40, "maxAmount": 90, "dropChance": 0.85}
+        ]
+      }
+    },
+    {
+      "id": "gremlin",
+      "name": "Gremlin",
+      "description": "A small bipedal saboteur descended from a corrupted Mimus-Mechanicus diagnostic unit, now possessed of gleeful malevolence. It targets functioning machinery with surgical precision, delighting in destruction with each precisely-placed strike and cackle of electronic laughter.",
+      "baseHealth": 18,
+      "baseAttack": 7,
+      "baseDefense": 2,
+      "experienceValue": 25,
+      "behavior": "Cowardly",
+      "tags": ["construct", "mechanical", "saboteur"],
+      "canHeal": false,
+      "spawnWeight": 9,
+      "initiativeModifier": 3,
+      "baseResistances": {
+        "poison": 100
+      },
+      "possibleTiers": ["common", "named"],
+      "possibleTraits": ["venomous"],
+      "nameGenerator": {
+        "prefixes": ["Gre", "Mim", "Sab", "Tik", "Zap"],
+        "suffixes": ["lin", "us", "ak", "el", "ir"],
+        "titleFormat": "{0} {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "diagnostic_lens", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.55},
+          {"itemId": "gremlin_claws", "weight": 2, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.6},
+          {"itemId": "logic_core_fragment", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.4}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 8, "maxAmount": 25, "dropChance": 0.8}
+        ]
+      }
+    },
+    {
+      "id": "ash-crow",
+      "name": "Ash Crow",
+      "description": "A mutant corvid whose plumage has become weaponized with corrosive ash of pH 3.2 to 4.1, capable of burning flesh with terrible efficiency. They hunt in coordinated flocks through the blighted wastes, their cries echoing like promises of dissolution.",
+      "baseHealth": 12,
+      "baseAttack": 5,
+      "baseDefense": 1,
+      "experienceValue": 15,
+      "behavior": "Chaotic",
+      "tags": ["beast", "avian", "blighted"],
+      "canHeal": false,
+      "spawnWeight": 10,
+      "initiativeModifier": 3,
+      "baseResistances": {
+        "physical": -25
+      },
+      "possibleTiers": ["common", "named"],
+      "possibleTraits": ["venomous"],
+      "nameGenerator": {
+        "prefixes": ["Ash", "Cor", "Kra", "Fly", "Shr"],
+        "suffixes": ["ax", "um", "or", "en", "ul"],
+        "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          {"itemId": "ash_feather", "weight": 2, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.7},
+          {"itemId": "mineral_talon", "weight": 2, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.5}
+        ],
+        "currencyDrops": [
+          {"currencyId": "gold", "minAmount": 2, "maxAmount": 8, "dropChance": 0.65}
+        ]
+      }
+    },
+    {
+      "id": "deep-stalker",
+      "name": "Deep Stalker",
+      "description": "An eyeless predator engineered for zero-light hunting in the deepest passages of The Roots. Its echolocation paints a perfect picture of prey in darkness where sight means nothing. When wounded, it unleashes devastating sonic stuns that can shatter bone and consciousness alike.",
       "baseHealth": 45,
       "baseAttack": 12,
       "baseDefense": 4,
-      "experienceValue": 40,
-      "behavior": "Aggressive",
-      "tags": ["humanoid"],
+      "experienceValue": 50,
+      "behavior": "Tactical",
+      "tags": ["beast", "bio-engineered", "predator"],
       "canHeal": false,
-      "spawnWeight": 50,
-      "initiativeModifier": -1,
-      "baseResistances": {},
-      "possibleTiers": ["common", "named", "elite", "boss"],
-      "possibleTraits": ["armored", "berserker", "regenerating"],
-      "nameGenerator": {
-        "prefixes": ["Gr", "Kr", "Th", "Br", "Dr"],
-        "suffixes": ["ok", "ag", "ul", "ax", "or"],
-        "titleFormat": "{0} the {1}"
-      },
-      "lootTable": {
-        "entries": [
-          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.25 },
-          { "itemId": "iron_sword", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 },
-          { "itemId": "orcish_helm", "weight": 30, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
-        ],
-        "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 15, "maxAmount": 35, "dropChance": 1.0 }
-        ]
-      }
-    },
-    {
-      "id": "goblin_shaman",
-      "name": "Goblin Shaman",
-      "description": "A goblin adorned with crude fetishes and glowing runes.",
-      "baseHealth": 25,
-      "baseAttack": 6,
-      "baseDefense": 1,
-      "experienceValue": 30,
-      "behavior": "Support",
-      "tags": ["humanoid", "magic"],
-      "canHeal": true,
-      "healAmount": 10,
-      "spawnWeight": 30,
+      "spawnWeight": 6,
       "initiativeModifier": 2,
-      "baseResistances": {},
-      "possibleTiers": ["common", "named", "elite"],
-      "possibleTraits": ["regenerating"],
-      "nameGenerator": {
-        "prefixes": ["Zn", "Xr", "Wr", "Qz", "Vx"],
-        "suffixes": ["ik", "ax", "um", "ek", "oz"],
-        "titleFormat": "{0} the Shaman"
-      },
-      "lootTable": {
-        "entries": [
-          { "itemId": "mana_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.20 },
-          { "itemId": "fetish_charm", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
-        ],
-        "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 10, "maxAmount": 25, "dropChance": 0.85 }
-        ]
-      }
-    },
-    {
-      "id": "slime",
-      "name": "Slime",
-      "description": "A gelatinous blob that oozes across the floor.",
-      "baseHealth": 40,
-      "baseAttack": 5,
-      "baseDefense": 5,
-      "experienceValue": 15,
-      "behavior": "Chaotic",
-      "tags": ["ooze"],
-      "canHeal": false,
-      "spawnWeight": 90,
-      "initiativeModifier": -2,
       "baseResistances": {
-        "physical": 50,
         "fire": -25,
-        "ice": -25,
-        "lightning": -50,
-        "poison": 100
+        "dark": 75
       },
       "possibleTiers": ["common", "named", "elite"],
-      "possibleTraits": ["regenerating", "venomous"],
+      "possibleTraits": ["berserker"],
       "nameGenerator": {
-        "prefixes": ["Bl", "Gl", "Sl", "Sp", "Sq"],
-        "suffixes": ["ob", "ub", "op", "ip", "oop"],
-        "titleFormat": "{0} the {1}"
+        "prefixes": ["Dee", "Sta", "Sno", "Ech", "Shr"],
+        "suffixes": ["alk", "er", "um", "ir", "ox"],
+        "titleFormat": "{0} {1}"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "slime_residue", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.50 }
+          {"itemId": "stalker_hide", "weight": 3, "minQuantity": 1, "maxQuantity": 2, "dropChance": 0.65},
+          {"itemId": "echo_crystal", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.55},
+          {"itemId": "bio_capacitor", "weight": 2, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.45}
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 1, "maxAmount": 5, "dropChance": 0.30 }
+          {"currencyId": "gold", "minAmount": 25, "maxAmount": 55, "dropChance": 0.9}
         ]
       }
     }

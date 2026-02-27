@@ -1,136 +1,102 @@
 {
-    "puzzles": [
-        {
-            "id": "stone-altar-sequence",
-            "name": "Stone Altar Puzzle",
-            "description": "A circular stone altar with four carved symbols around its edge. The symbols appear to represent the four elements: fire, water, earth, and air. They seem to need activation in a specific order.",
-            "type": "Sequence",
-            "difficulty": 3,
-            "maxAttempts": 5,
-            "canReset": true,
-            "resetDelay": 3,
-            "hasHints": true,
-            "keywords": [
-                "altar",
-                "stone",
-                "elements",
-                "sequence"
-            ]
-        },
-        {
-            "id": "combination-lock",
-            "name": "Ancient Combination Lock",
-            "description": "A heavy iron lock embedded in the wall bears four rotating dials, each marked with strange symbols from 1 to 9. A correct combination must be entered to proceed.",
-            "type": "Combination",
-            "difficulty": 2,
-            "maxAttempts": 3,
-            "canReset": true,
-            "resetDelay": 5,
-            "hasHints": false,
-            "keywords": [
-                "lock",
-                "combination",
-                "dials"
-            ]
-        },
-        {
-            "id": "pressure-plate-pattern",
-            "name": "Pressure Plate Pattern",
-            "description": "The floor is covered with a grid of pressure plates. Some glow faintly, suggesting a pattern that must be followed. Step on the wrong plate, and the sequence resets.",
-            "type": "Pattern",
-            "difficulty": 4,
-            "maxAttempts": -1,
-            "canReset": true,
-            "resetDelay": -1,
-            "hasHints": true,
-            "keywords": [
-                "plates",
-                "pressure",
-                "pattern",
-                "floor"
-            ]
-        },
-        {
-            "id": "sphinx-riddle",
-            "name": "The Sphinx's Riddle",
-            "description": "A weathered stone sphinx blocks your path, its eyes glowing with ancient magic. It speaks: 'Answer my riddle, or forever remain.'",
-            "type": "Riddle",
-            "difficulty": 3,
-            "maxAttempts": 3,
-            "canReset": false,
-            "hasHints": true,
-            "rewardId": "sphinx-treasure",
-            "keywords": [
-                "sphinx",
-                "riddle"
-            ]
-        },
-        {
-            "id": "crystal-alignment",
-            "name": "Crystal Alignment Puzzle",
-            "description": "Three crystals float in alcoves around the room, each glowing a different color. Rotating them seems to affect beams of light that crisscross the chamber.",
-            "type": "Logic",
-            "difficulty": 5,
-            "maxAttempts": -1,
-            "canReset": true,
-            "resetDelay": -1,
-            "hasHints": true,
-            "keywords": [
-                "crystal",
-                "crystals",
-                "light",
-                "alignment"
-            ]
-        },
-        {
-            "id": "chained-puzzle-1",
-            "name": "First Lock",
-            "description": "The first of three locks securing the vault door. A simple sliding tile puzzle.",
-            "type": "Logic",
-            "difficulty": 1,
-            "maxAttempts": -1,
-            "canReset": true,
-            "hasHints": false,
-            "keywords": [
-                "lock",
-                "first",
-                "vault"
-            ]
-        },
-        {
-            "id": "chained-puzzle-2",
-            "name": "Second Lock",
-            "description": "The second lock is more complex, requiring a specific sequence of lever pulls.",
-            "type": "Sequence",
-            "difficulty": 2,
-            "maxAttempts": 5,
-            "canReset": true,
-            "resetDelay": 2,
-            "hasHints": true,
-            "prerequisiteId": "chained-puzzle-1",
-            "keywords": [
-                "lock",
-                "second",
-                "vault"
-            ]
-        },
-        {
-            "id": "chained-puzzle-3",
-            "name": "Final Lock",
-            "description": "The final lock requires solving a combination using clues from the previous two puzzles.",
-            "type": "Combination",
-            "difficulty": 4,
-            "maxAttempts": 3,
-            "canReset": true,
-            "resetDelay": 5,
-            "hasHints": true,
-            "prerequisiteId": "chained-puzzle-2",
-            "rewardId": "vault-treasure",
-            "keywords": [
-                "lock",
-                "final",
-                "vault"
-            ]
-        }
-    ]
+  "puzzles": [
+    {
+      "id": "rune-sequence-activation",
+      "name": "Rune Sequence Terminal",
+      "description": "A corroded terminal displays three flickering Elder Futhark runes — Fehu (ᚠ), Ansuz (ᚨ), and Kenaz (ᚲ) — alongside empty activation slots. The corrupted interface demands they be activated in the correct sequence to restore power. A faded Data-Slate nearby hints at the pre-Glitch initialization order. The runes pulse with unstable energy; wrong sequences cause painful Aetheric feedback.",
+      "type": "Sequence",
+      "difficulty": 3,
+      "maxAttempts": 5,
+      "canReset": true,
+      "resetDelay": 3,
+      "hasHints": true,
+      "keywords": ["rune", "sequence", "terminal", "activation", "elder-futhark"]
+    },
+    {
+      "id": "data-slate-decryption",
+      "name": "Corrupted Data-Slate",
+      "description": "A partially intact Data-Slate lies wedged in the wreckage. Its screen flickers between coherent text and cascading corruption artifacts. Three data fragments must be assembled in the correct order to reconstruct the original pre-Glitch message. The corruption fights back — each incorrect assembly degrades the remaining readable data further.",
+      "type": "Logic",
+      "difficulty": 2,
+      "maxAttempts": 3,
+      "canReset": true,
+      "resetDelay": 5,
+      "hasHints": false,
+      "keywords": ["data-slate", "decryption", "corruption", "fragment", "data"]
+    },
+    {
+      "id": "servitor-command-bypass",
+      "name": "Servitor Command Node",
+      "description": "A facility command node still processes requests, but its authentication matrix is corrupted. Three authorization levels must be bypassed in sequence — each requiring a different approach. The node's diagnostic display shows a rotating cipher of Old Aetheric glyphs. Get the sequence right and the servitor network in this section goes dormant. Get it wrong and it goes to high alert.",
+      "type": "Combination",
+      "difficulty": 4,
+      "maxAttempts": 3,
+      "canReset": false,
+      "hasHints": true,
+      "rewardId": "servitor-shutdown",
+      "keywords": ["servitor", "command", "bypass", "authorization", "node"]
+    },
+    {
+      "id": "pressure-plate-conduit",
+      "name": "Power Conduit Routing",
+      "description": "The floor is a grid of pressure-sensitive conduit junction plates, each marked with a faded circuit diagram. Power must be routed from the generator housing to the sealed door by stepping on the correct plates in sequence. The conduits glow faintly when correctly connected, but overloading a junction resets the entire circuit with a shower of sparks.",
+      "type": "Pattern",
+      "difficulty": 4,
+      "maxAttempts": -1,
+      "canReset": true,
+      "resetDelay": -1,
+      "hasHints": true,
+      "keywords": ["conduit", "routing", "circuit", "pressure", "power", "grid"]
+    },
+    {
+      "id": "runic-ward-breach",
+      "name": "Protective Ward Array",
+      "description": "Three concentric rings of Elder Futhark runes guard the passage ahead — Algiz (ᛉ) for protection, Othala (ᛟ) for sanctuary, and Perthro (ᛈ) for concealment. The ward's logic has been corrupted by centuries of Blight exposure, but its protective function remains devastatingly effective. Each ring must be disrupted in the correct order, or the ward retaliates with Aetheric discharge.",
+      "type": "Sequence",
+      "difficulty": 5,
+      "maxAttempts": 3,
+      "canReset": false,
+      "hasHints": true,
+      "rewardId": "ward-breach-treasure",
+      "keywords": ["rune", "ward", "algiz", "othala", "perthro", "protection", "breach"]
+    },
+    {
+      "id": "geothermal-valve-puzzle",
+      "name": "Geothermal Pressure Regulation",
+      "description": "A bank of four massive valves controls the geothermal pressure in this section. Steam hisses from stressed seals. A cracked gauge shows pressure levels rising toward critical — three of the four valves must be turned to the correct positions to equalize pressure and open the sealed blast door. The fourth valve is a decoy wired to the emergency venting system.",
+      "type": "Combination",
+      "difficulty": 2,
+      "maxAttempts": 5,
+      "canReset": true,
+      "resetDelay": 2,
+      "hasHints": true,
+      "keywords": ["valve", "geothermal", "pressure", "steam", "regulation"]
+    },
+    {
+      "id": "corrupted-diagnostics",
+      "name": "Corrupted Diagnostic Array",
+      "description": "A facility diagnostic terminal runs an endless loop of corrupted self-tests. The screen cycles through system status reports — some genuine, some fabricated by the corruption. Separating truth from noise requires identifying patterns in the diagnostic output. Success provides the access codes needed for the adjacent vault lock.",
+      "type": "Logic",
+      "difficulty": 3,
+      "maxAttempts": -1,
+      "canReset": true,
+      "resetDelay": -1,
+      "hasHints": true,
+      "keywords": ["diagnostic", "corrupted", "terminal", "pattern", "analysis"]
+    },
+    {
+      "id": "vault-access-override",
+      "name": "Vault Access Override",
+      "description": "The vault's final security layer — a three-dial combination lock where each dial displays corrupted Dvergar engineering symbols. The diagnostic terminal in the adjacent room provided partial codes, but the final combination must be deduced from the sequence of symbols still visible on the vault's blast-scarred face.",
+      "type": "Combination",
+      "difficulty": 4,
+      "maxAttempts": 3,
+      "canReset": true,
+      "resetDelay": 5,
+      "hasHints": true,
+      "prerequisiteId": "corrupted-diagnostics",
+      "rewardId": "vault-treasure",
+      "keywords": ["vault", "lock", "combination", "dvergar", "override", "code"]
+    }
+  ]
 }

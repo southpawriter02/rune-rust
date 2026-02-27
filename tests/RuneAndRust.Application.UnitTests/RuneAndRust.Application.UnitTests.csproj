@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Core\RuneAndRust.Domain\RuneAndRust.Domain.csproj" />
     <ProjectReference Include="..\..\src\Core\RuneAndRust.Application\RuneAndRust.Application.csproj" />
     <ProjectReference Include="..\..\src\Presentation\RuneAndRust.Presentation.Shared\RuneAndRust.Presentation.Shared.csproj" />
     <ProjectReference Include="..\..\src\Presentation\RuneAndRust.Presentation.Tui\RuneAndRust.Presentation.Tui.csproj" />
