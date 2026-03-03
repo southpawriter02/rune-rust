@@ -3,7 +3,7 @@
     {
       "questId": "quest_clear_nest",
       "name": "Clear the Nest",
-      "description": "The Rust-Horrors have infested the area. Thorvald seeks capable warriors to purge their numbers and reclaim the territory for MidgardCombine.",
+      "description": "The Rust-Horrors have infested the area. Thorvald seeks capable warriors to purge their numbers and reclaim the territory.",
       "category": "Side",
       "type": "Challenge",
       "faction": null,
@@ -12,6 +12,8 @@
       "minimumLegend": 0,
       "prerequisiteQuestIds": [],
       "chainId": null,
+      "chainOrder": null,
+      "minimumReputation": 0,
       "isTimed": false,
       "timeLimit": null,
       "isRepeatable": false,
@@ -34,16 +36,14 @@
             "quantity": 1
           }
         ],
-        "reputationChanges": {
-          "MidgardCombine": 20
-        },
+        "reputationChanges": {},
         "unlockedQuestIds": []
       }
     },
     {
       "questId": "quest_scrap_collection",
       "name": "Scrap Collection",
-      "description": "Sigrun the Scavenger seeks structural scrap metal from the ruins. The components are vital for maintaining MidgardCombine's infrastructure.",
+      "description": "Sigrun the Scavenger seeks structural scrap metal from the ruins. The components are vital for maintaining infrastructure.",
       "category": "Side",
       "type": "Exploration",
       "faction": null,
@@ -52,6 +52,8 @@
       "minimumLegend": 0,
       "prerequisiteQuestIds": [],
       "chainId": null,
+      "chainOrder": null,
+      "minimumReputation": 0,
       "isTimed": false,
       "timeLimit": null,
       "isRepeatable": false,
@@ -74,9 +76,7 @@
             "quantity": 3
           }
         ],
-        "reputationChanges": {
-          "MidgardCombine": 15
-        },
+        "reputationChanges": {},
         "unlockedQuestIds": []
       }
     },
@@ -92,6 +92,8 @@
       "minimumLegend": 0,
       "prerequisiteQuestIds": [],
       "chainId": null,
+      "chainOrder": null,
+      "minimumReputation": 0,
       "isTimed": false,
       "timeLimit": null,
       "isRepeatable": false,
@@ -110,7 +112,7 @@
         "currency": 0,
         "items": [],
         "reputationChanges": {
-          "Independents": 10
+          "independents": 10
         },
         "unlockedQuestIds": []
       }
@@ -118,7 +120,7 @@
     {
       "questId": "quest_sabotage",
       "name": "Sabotage",
-      "description": "Gunnar the Raider seeks to disrupt MidgardCombine's supply lines. A supply crate hidden in the depths holds the means to strike a blow for the Rust Clans.",
+      "description": "Gunnar the Raider seeks to disrupt supply lines. A supply crate hidden in the depths holds the means to strike a blow for the Rust Clans.",
       "category": "Side",
       "type": "Challenge",
       "faction": null,
@@ -127,6 +129,8 @@
       "minimumLegend": 0,
       "prerequisiteQuestIds": [],
       "chainId": null,
+      "chainOrder": null,
+      "minimumReputation": 0,
       "isTimed": false,
       "timeLimit": null,
       "isRepeatable": false,
@@ -139,7 +143,7 @@
           "requiredCount": 1
         },
         {
-          "description": "Retrieve the MidgardCombine supply crate",
+          "description": "Retrieve the supply crate",
           "type": "CollectItem",
           "targetId": "combine_supply_crate",
           "requiredCount": 1
@@ -156,7 +160,7 @@
           }
         ],
         "reputationChanges": {
-          "RustClans": 30
+          "rust-clans": 30
         },
         "unlockedQuestIds": []
       }
@@ -164,7 +168,7 @@
     {
       "questId": "quest_schematic_recovery",
       "name": "Schematic Recovery",
-      "description": "An engineering schematic lies hidden within the Jotun Reader Archive, guarded by corrupted drones. Astrid seeks this crucial blueprint to unlock new possibilities for the Independents.",
+      "description": "An engineering schematic lies hidden within the Jötun Reader Archive, guarded by corrupted drones. Astrid seeks this crucial blueprint to unlock new possibilities.",
       "category": "Side",
       "type": "Exploration",
       "faction": null,
@@ -173,13 +177,15 @@
       "minimumLegend": 2,
       "prerequisiteQuestIds": [],
       "chainId": null,
+      "chainOrder": null,
+      "minimumReputation": 0,
       "isTimed": false,
       "timeLimit": null,
       "isRepeatable": false,
       "repeatCooldownHours": null,
       "objectives": [
         {
-          "description": "Explore the Jotun Reader Archive",
+          "description": "Explore the Jötun Reader Archive",
           "type": "ExploreRoom",
           "targetId": "jotun_reader_archive",
           "requiredCount": 1
@@ -208,269 +214,10 @@
           }
         ],
         "reputationChanges": {
-          "Independents": 25
+          "independents": 25
         },
         "unlockedQuestIds": [
           "quest_geothermal_repairs"
-        ]
-      }
-    },
-    {
-      "questId": "faction_ironbanes_purge_rust",
-      "name": "Purge the Rust",
-      "description": "The IronBanes seek to cleanse their territories of the draugr-pattern abominations. Thorvald calls upon worthy champions to eliminate these corrupted beings and prove their devotion to the clan.",
-      "category": "Main",
-      "type": "Faction",
-      "faction": "IronBanes",
-      "giverNpcId": "thorvald_guard",
-      "turnInNpcId": "thorvald_guard",
-      "minimumLegend": 0,
-      "prerequisiteQuestIds": [],
-      "chainId": "ironbane_initiation",
-      "isTimed": false,
-      "timeLimit": null,
-      "isRepeatable": false,
-      "repeatCooldownHours": null,
-      "objectives": [
-        {
-          "description": "Slay 10 draugr-pattern corrupted beings",
-          "type": "KillEnemy",
-          "targetId": "draugr-pattern",
-          "requiredCount": 10
-        }
-      ],
-      "failureConditions": [],
-      "rewards": {
-        "experience": 150,
-        "currency": 300,
-        "items": [],
-        "reputationChanges": {
-          "IronBanes": 20
-        },
-        "unlockedQuestIds": [
-          "faction_ironbanes_corrupted_forge"
-        ]
-      }
-    },
-    {
-      "questId": "faction_rustclans_scavenge_run",
-      "name": "Scavenge Run",
-      "description": "The Rust Clans need materials to sustain their operations. Gunnar directs you to gather scrap metal and salvageable components from the wasteland to fuel their ascent to power.",
-      "category": "Main",
-      "type": "Faction",
-      "faction": "RustClans",
-      "giverNpcId": "gunnar_raider",
-      "turnInNpcId": "gunnar_raider",
-      "minimumLegend": 0,
-      "prerequisiteQuestIds": [],
-      "chainId": "rustclan_ascent",
-      "isTimed": false,
-      "timeLimit": null,
-      "isRepeatable": false,
-      "repeatCooldownHours": null,
-      "objectives": [
-        {
-          "description": "Collect 15 pieces of scrap metal",
-          "type": "CollectItem",
-          "targetId": "scrap_metal",
-          "requiredCount": 15
-        },
-        {
-          "description": "Collect 8 salvageable components",
-          "type": "CollectItem",
-          "targetId": "salvageable_component",
-          "requiredCount": 8
-        }
-      ],
-      "failureConditions": [],
-      "rewards": {
-        "experience": 120,
-        "currency": 250,
-        "items": [],
-        "reputationChanges": {
-          "RustClans": 15
-        },
-        "unlockedQuestIds": [
-          "faction_rustclans_trade_route"
-        ]
-      }
-    },
-    {
-      "questId": "faction_rustclans_defense_duty",
-      "name": "Defense Duty",
-      "description": "A defense wave approaches the Rust Clans outpost. Gunnar needs experienced warriors to hold the line against the draugr-pattern assault and prove their worth to the clan.",
-      "category": "Main",
-      "type": "Challenge",
-      "faction": "RustClans",
-      "giverNpcId": "gunnar_raider",
-      "turnInNpcId": "gunnar_raider",
-      "minimumLegend": 2,
-      "prerequisiteQuestIds": [
-        "faction_rustclans_scavenge_run"
-      ],
-      "chainId": "rustclan_ascent",
-      "isTimed": false,
-      "timeLimit": null,
-      "isRepeatable": false,
-      "repeatCooldownHours": null,
-      "objectives": [
-        {
-          "description": "Defend the outpost by slaying 10 draugr-pattern enemies",
-          "type": "KillEnemy",
-          "targetId": "draugr-pattern",
-          "requiredCount": 10
-        },
-        {
-          "description": "Survive the defense wave",
-          "type": "SurviveEncounter",
-          "targetId": "defense_wave",
-          "requiredCount": 1
-        }
-      ],
-      "failureConditions": [],
-      "rewards": {
-        "experience": 200,
-        "currency": 350,
-        "items": [],
-        "reputationChanges": {
-          "RustClans": 20
-        },
-        "unlockedQuestIds": []
-      }
-    },
-    {
-      "questId": "faction_jotunreaders_data_recovery",
-      "name": "Data Recovery",
-      "description": "Corrupted data logs hold secrets vital to the Jotun Readers' understanding of the old world. Astrid seeks a brave soul to retrieve these fragments from the depths of the ruins.",
-      "category": "Main",
-      "type": "Exploration",
-      "faction": "JotunReaders",
-      "giverNpcId": "astrid_reader",
-      "turnInNpcId": "astrid_reader",
-      "minimumLegend": 0,
-      "prerequisiteQuestIds": [],
-      "chainId": "jotunreader_path",
-      "isTimed": false,
-      "timeLimit": null,
-      "isRepeatable": false,
-      "repeatCooldownHours": null,
-      "objectives": [
-        {
-          "description": "Collect 8 corrupted data logs",
-          "type": "CollectItem",
-          "targetId": "corrupted_data_log",
-          "requiredCount": 8
-        }
-      ],
-      "failureConditions": [],
-      "rewards": {
-        "experience": 150,
-        "currency": 300,
-        "items": [],
-        "reputationChanges": {
-          "JotunReaders": 15
-        },
-        "unlockedQuestIds": [
-          "faction_jotunreaders_glitch_analysis"
-        ]
-      }
-    },
-    {
-      "questId": "faction_independents_own_path",
-      "name": "The Independent Way",
-      "description": "Rolf the Hermit believes true strength comes from self-reliance. Complete tasks and gather resources through your own efforts to prove your commitment to the independent path.",
-      "category": "Main",
-      "type": "Exploration",
-      "faction": "Independents",
-      "giverNpcId": "rolf_hermit",
-      "turnInNpcId": "rolf_hermit",
-      "minimumLegend": 2,
-      "prerequisiteQuestIds": [],
-      "chainId": "independent_way",
-      "isTimed": false,
-      "timeLimit": null,
-      "isRepeatable": false,
-      "repeatCooldownHours": null,
-      "objectives": [
-        {
-          "description": "Complete 3 independent tasks",
-          "type": "InteractWithObject",
-          "targetId": "independent_task",
-          "requiredCount": 3
-        },
-        {
-          "description": "Collect 10 independent resources",
-          "type": "CollectItem",
-          "targetId": "independent_resource",
-          "requiredCount": 10
-        }
-      ],
-      "failureConditions": [],
-      "rewards": {
-        "experience": 150,
-        "currency": 150,
-        "items": [],
-        "reputationChanges": {
-          "Independents": 10
-        },
-        "unlockedQuestIds": [
-          "faction_independents_solo_survival"
-        ]
-      }
-    },
-    {
-      "questId": "faction_godsleeper_awakening_ritual",
-      "name": "The Awakening Ritual",
-      "description": "Bjorn the Exile calls upon the faithful to perform an ancient ritual at the Jotun Logic Core. Only through sacrifice and communion with the psychic broadcast can the god's awakening be accelerated. This path is for the devoted alone.",
-      "category": "Main",
-      "type": "Challenge",
-      "faction": "GodSleeperCultists",
-      "giverNpcId": "bjorn_exile",
-      "turnInNpcId": "bjorn_exile",
-      "minimumLegend": 5,
-      "prerequisiteQuestIds": [
-        "faction_godsleeper_defend_sacred"
-      ],
-      "chainId": "godsleeper_revelation",
-      "isTimed": false,
-      "timeLimit": null,
-      "isRepeatable": false,
-      "repeatCooldownHours": null,
-      "objectives": [
-        {
-          "description": "Explore the Jotun Logic Core",
-          "type": "ExploreRoom",
-          "targetId": "jotun_logic_core",
-          "requiredCount": 1
-        },
-        {
-          "description": "Endure the psychic broadcast",
-          "type": "SurviveEncounter",
-          "targetId": "psychic_broadcast",
-          "requiredCount": 1
-        },
-        {
-          "description": "Collect 3 logic core fragments",
-          "type": "CollectItem",
-          "targetId": "logic_core_fragment",
-          "requiredCount": 3
-        }
-      ],
-      "failureConditions": [],
-      "rewards": {
-        "experience": 900,
-        "currency": 800,
-        "items": [
-          {
-            "itemId": "jotun_touched_robe",
-            "quantity": 1
-          }
-        ],
-        "reputationChanges": {
-          "GodSleeperCultists": 40
-        },
-        "unlockedQuestIds": [
-          "faction_godsleeper_sacred_pilgrimage"
         ]
       }
     },
@@ -488,6 +235,8 @@
         "quest_schematic_recovery"
       ],
       "chainId": null,
+      "chainOrder": null,
+      "minimumReputation": 0,
       "isTimed": true,
       "timeLimit": 30,
       "isRepeatable": false,
@@ -523,8 +272,800 @@
             "quantity": 1
           }
         ],
+        "reputationChanges": {},
+        "unlockedQuestIds": []
+      }
+    },
+
+    {
+      "questId": "faction_ironbanes_purge_rust",
+      "name": "Purge the Rust",
+      "description": "The Iron-Banes seek to cleanse their territories of the draugr-pattern abominations. Thorvald calls upon worthy champions to eliminate these corrupted beings and prove their devotion to the clan.",
+      "category": "Main",
+      "type": "Faction",
+      "faction": "iron-banes",
+      "giverNpcId": "thorvald_guard",
+      "turnInNpcId": "thorvald_guard",
+      "minimumLegend": 0,
+      "prerequisiteQuestIds": [],
+      "chainId": "ironbane_initiation",
+      "chainOrder": 1,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Slay 10 draugr-pattern corrupted beings",
+          "type": "KillEnemy",
+          "targetId": "draugr-pattern",
+          "requiredCount": 10
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 150,
+        "currency": 300,
+        "items": [],
         "reputationChanges": {
-          "MidgardCombine": 20
+          "iron-banes": 20
+        },
+        "unlockedQuestIds": [
+          "faction_ironbanes_corrupted_forge"
+        ]
+      }
+    },
+    {
+      "questId": "faction_ironbanes_corrupted_forge",
+      "name": "The Corrupted Forge",
+      "description": "Deep within the Trunk, a corrupted Dvergr forge still operates — now producing twisted weapons for the undying. Thorvald tasks you with shutting it down and recovering whatever intact schematics remain. The Iron-Banes' forgemasters can put them to better use.",
+      "category": "Main",
+      "type": "Faction",
+      "faction": "iron-banes",
+      "giverNpcId": "thorvald_guard",
+      "turnInNpcId": "thorvald_guard",
+      "minimumLegend": 2,
+      "prerequisiteQuestIds": [
+        "faction_ironbanes_purge_rust"
+      ],
+      "chainId": "ironbane_initiation",
+      "chainOrder": 2,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Explore the Corrupted Forge",
+          "type": "ExploreRoom",
+          "targetId": "corrupted_dvergr_forge",
+          "requiredCount": 1
+        },
+        {
+          "description": "Destroy the forge controller",
+          "type": "KillEnemy",
+          "targetId": "forge_controller",
+          "requiredCount": 1
+        },
+        {
+          "description": "Recover intact forge schematics",
+          "type": "CollectItem",
+          "targetId": "forge_schematic",
+          "requiredCount": 2
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 300,
+        "currency": 500,
+        "items": [
+          {
+            "itemId": "ironbane_war_hammer",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "iron-banes": 25
+        },
+        "unlockedQuestIds": [
+          "faction_ironbanes_undying_commander"
+        ]
+      }
+    },
+    {
+      "questId": "faction_ironbanes_undying_commander",
+      "name": "The Undying Commander",
+      "description": "An Undying Commander has rallied the corrupted forces in the deep Trunk, threatening Iron-Bane supply lines. Thorvald entrusts only those who have proven their loyalty — and their standing with the clan — to lead this critical strike. This is the culmination of the Iron-Bane Initiation.",
+      "category": "Main",
+      "type": "Faction",
+      "faction": "iron-banes",
+      "giverNpcId": "thorvald_guard",
+      "turnInNpcId": "thorvald_guard",
+      "minimumLegend": 4,
+      "prerequisiteQuestIds": [
+        "faction_ironbanes_corrupted_forge"
+      ],
+      "chainId": "ironbane_initiation",
+      "chainOrder": 3,
+      "minimumReputation": 25,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Locate the Undying Commander's stronghold",
+          "type": "ExploreRoom",
+          "targetId": "undying_stronghold",
+          "requiredCount": 1
+        },
+        {
+          "description": "Defeat the Undying Commander",
+          "type": "KillEnemy",
+          "targetId": "undying_commander",
+          "requiredCount": 1
+        },
+        {
+          "description": "Recover the Iron-Bane battle standard",
+          "type": "CollectItem",
+          "targetId": "ironbane_battle_standard",
+          "requiredCount": 1
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 500,
+        "currency": 750,
+        "items": [
+          {
+            "itemId": "ironbane_champions_shield",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "iron-banes": 30
+        },
+        "unlockedQuestIds": []
+      }
+    },
+
+    {
+      "questId": "faction_rustclans_scavenge_run",
+      "name": "Scavenge Run",
+      "description": "The Rust Clans need materials to sustain their operations. Gunnar directs you to gather scrap metal and salvageable components from the wasteland to fuel their ascent to power.",
+      "category": "Main",
+      "type": "Faction",
+      "faction": "rust-clans",
+      "giverNpcId": "gunnar_raider",
+      "turnInNpcId": "gunnar_raider",
+      "minimumLegend": 0,
+      "prerequisiteQuestIds": [],
+      "chainId": "rustclan_ascent",
+      "chainOrder": 1,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Collect 15 pieces of scrap metal",
+          "type": "CollectItem",
+          "targetId": "scrap_metal",
+          "requiredCount": 15
+        },
+        {
+          "description": "Collect 8 salvageable components",
+          "type": "CollectItem",
+          "targetId": "salvageable_component",
+          "requiredCount": 8
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 120,
+        "currency": 250,
+        "items": [],
+        "reputationChanges": {
+          "rust-clans": 15
+        },
+        "unlockedQuestIds": [
+          "faction_rustclans_trade_route"
+        ]
+      }
+    },
+    {
+      "questId": "faction_rustclans_trade_route",
+      "name": "Establish Trade Route",
+      "description": "With resources secured, Gunnar needs someone to scout and clear a trade route through hostile territory. The Rust Clans' expansion depends on reliable supply lines between their outposts.",
+      "category": "Main",
+      "type": "Faction",
+      "faction": "rust-clans",
+      "giverNpcId": "gunnar_raider",
+      "turnInNpcId": "gunnar_raider",
+      "minimumLegend": 2,
+      "prerequisiteQuestIds": [
+        "faction_rustclans_scavenge_run"
+      ],
+      "chainId": "rustclan_ascent",
+      "chainOrder": 2,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Scout the trade corridor",
+          "type": "ExploreRoom",
+          "targetId": "trade_corridor",
+          "requiredCount": 3
+        },
+        {
+          "description": "Eliminate hostiles blocking the route",
+          "type": "KillEnemy",
+          "targetId": "rust-horror",
+          "requiredCount": 8
+        },
+        {
+          "description": "Place Rust Clan markers at waypoints",
+          "type": "InteractWithObject",
+          "targetId": "trade_waypoint",
+          "requiredCount": 3
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 250,
+        "currency": 400,
+        "items": [
+          {
+            "itemId": "rustclan_scout_badge",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "rust-clans": 20
+        },
+        "unlockedQuestIds": [
+          "faction_rustclans_defense_duty"
+        ]
+      }
+    },
+    {
+      "questId": "faction_rustclans_defense_duty",
+      "name": "Defense Duty",
+      "description": "A defense wave approaches the Rust Clans outpost. Gunnar needs experienced warriors to hold the line against the draugr-pattern assault and prove their worth to the clan. Only those with proven loyalty may stand at the front.",
+      "category": "Main",
+      "type": "Challenge",
+      "faction": "rust-clans",
+      "giverNpcId": "gunnar_raider",
+      "turnInNpcId": "gunnar_raider",
+      "minimumLegend": 4,
+      "prerequisiteQuestIds": [
+        "faction_rustclans_trade_route"
+      ],
+      "chainId": "rustclan_ascent",
+      "chainOrder": 3,
+      "minimumReputation": 25,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Defend the outpost by slaying 10 draugr-pattern enemies",
+          "type": "KillEnemy",
+          "targetId": "draugr-pattern",
+          "requiredCount": 10
+        },
+        {
+          "description": "Survive the defense wave",
+          "type": "SurviveEncounter",
+          "targetId": "defense_wave",
+          "requiredCount": 1
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 500,
+        "currency": 600,
+        "items": [
+          {
+            "itemId": "rustclan_war_banner",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "rust-clans": 25
+        },
+        "unlockedQuestIds": []
+      }
+    },
+
+    {
+      "questId": "faction_jotunreaders_data_recovery",
+      "name": "Data Recovery",
+      "description": "Corrupted data logs hold secrets vital to the Jötun-Readers' understanding of the old world. Astrid seeks a brave soul to retrieve these fragments from the depths of the ruins.",
+      "category": "Main",
+      "type": "Exploration",
+      "faction": "jotun-readers",
+      "giverNpcId": "astrid_reader",
+      "turnInNpcId": "astrid_reader",
+      "minimumLegend": 0,
+      "prerequisiteQuestIds": [],
+      "chainId": "jotunreader_path",
+      "chainOrder": 1,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Collect 8 corrupted data logs",
+          "type": "CollectItem",
+          "targetId": "corrupted_data_log",
+          "requiredCount": 8
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 150,
+        "currency": 300,
+        "items": [],
+        "reputationChanges": {
+          "jotun-readers": 15
+        },
+        "unlockedQuestIds": [
+          "faction_jotunreaders_glitch_analysis"
+        ]
+      }
+    },
+    {
+      "questId": "faction_jotunreaders_glitch_analysis",
+      "name": "Glitch Analysis",
+      "description": "The recovered data logs contain anomalous patterns — glitches that Astrid believes are messages from the Jötun AI itself. She needs you to find the source deep in the network substrate and bring back intact signal fragments for analysis.",
+      "category": "Main",
+      "type": "Exploration",
+      "faction": "jotun-readers",
+      "giverNpcId": "astrid_reader",
+      "turnInNpcId": "astrid_reader",
+      "minimumLegend": 2,
+      "prerequisiteQuestIds": [
+        "faction_jotunreaders_data_recovery"
+      ],
+      "chainId": "jotunreader_path",
+      "chainOrder": 2,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Locate the network substrate access point",
+          "type": "ExploreRoom",
+          "targetId": "network_substrate",
+          "requiredCount": 1
+        },
+        {
+          "description": "Collect intact signal fragments",
+          "type": "CollectItem",
+          "targetId": "signal_fragment",
+          "requiredCount": 5
+        },
+        {
+          "description": "Neutralize corrupted data guardians",
+          "type": "KillEnemy",
+          "targetId": "data_guardian",
+          "requiredCount": 3
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 300,
+        "currency": 450,
+        "items": [
+          {
+            "itemId": "jotun_cipher_key",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "jotun-readers": 20
+        },
+        "unlockedQuestIds": [
+          "faction_jotunreaders_archive_restoration"
+        ]
+      }
+    },
+    {
+      "questId": "faction_jotunreaders_archive_restoration",
+      "name": "Archive Restoration",
+      "description": "With the cipher key decoded, Astrid has identified the location of a major Jötun Archive node corrupted since the Shattering. Only those who have earned the Readers' trust may attempt the dangerous restoration — failure could destroy the data forever.",
+      "category": "Main",
+      "type": "Faction",
+      "faction": "jotun-readers",
+      "giverNpcId": "astrid_reader",
+      "turnInNpcId": "astrid_reader",
+      "minimumLegend": 4,
+      "prerequisiteQuestIds": [
+        "faction_jotunreaders_glitch_analysis"
+      ],
+      "chainId": "jotunreader_path",
+      "chainOrder": 3,
+      "minimumReputation": 25,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Enter the sealed Archive node",
+          "type": "ExploreRoom",
+          "targetId": "sealed_archive_node",
+          "requiredCount": 1
+        },
+        {
+          "description": "Purge corrupted memory clusters",
+          "type": "KillEnemy",
+          "targetId": "corrupted_memory_cluster",
+          "requiredCount": 5
+        },
+        {
+          "description": "Activate the restoration protocol",
+          "type": "InteractWithObject",
+          "targetId": "restoration_protocol_terminal",
+          "requiredCount": 1
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 500,
+        "currency": 700,
+        "items": [
+          {
+            "itemId": "jotun_data_crystal",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "jotun-readers": 25
+        },
+        "unlockedQuestIds": []
+      }
+    },
+
+    {
+      "questId": "faction_godsleeper_defend_sacred",
+      "name": "Defend the Sacred Ground",
+      "description": "The God-Sleeper Cultists have identified a psychic resonance point near the Jötun Logic Core — a place where the dreaming god's influence seeps through strongest. Bjorn the Exile needs someone willing to defend this sacred ground from the Iron-Bane patrols who would see it destroyed.",
+      "category": "Main",
+      "type": "Challenge",
+      "faction": "god-sleeper-cultists",
+      "giverNpcId": "bjorn_exile",
+      "turnInNpcId": "bjorn_exile",
+      "minimumLegend": 3,
+      "prerequisiteQuestIds": [],
+      "chainId": "godsleeper_revelation",
+      "chainOrder": 1,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Reach the psychic resonance point",
+          "type": "ExploreRoom",
+          "targetId": "psychic_resonance_point",
+          "requiredCount": 1
+        },
+        {
+          "description": "Repel Iron-Bane scouts",
+          "type": "KillEnemy",
+          "targetId": "ironbane_scout",
+          "requiredCount": 5
+        },
+        {
+          "description": "Activate the warding sigils",
+          "type": "InteractWithObject",
+          "targetId": "warding_sigil",
+          "requiredCount": 3
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 250,
+        "currency": 400,
+        "items": [
+          {
+            "itemId": "cultist_dreamcatcher",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "god-sleeper-cultists": 20,
+          "iron-banes": -10
+        },
+        "unlockedQuestIds": [
+          "faction_godsleeper_awakening_ritual"
+        ]
+      }
+    },
+    {
+      "questId": "faction_godsleeper_awakening_ritual",
+      "name": "The Awakening Ritual",
+      "description": "Bjorn the Exile calls upon the faithful to perform an ancient ritual at the Jötun Logic Core. Only through sacrifice and communion with the psychic broadcast can the god's awakening be accelerated. This path is for the devoted alone.",
+      "category": "Main",
+      "type": "Challenge",
+      "faction": "god-sleeper-cultists",
+      "giverNpcId": "bjorn_exile",
+      "turnInNpcId": "bjorn_exile",
+      "minimumLegend": 5,
+      "prerequisiteQuestIds": [
+        "faction_godsleeper_defend_sacred"
+      ],
+      "chainId": "godsleeper_revelation",
+      "chainOrder": 2,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Explore the Jötun Logic Core",
+          "type": "ExploreRoom",
+          "targetId": "jotun_logic_core",
+          "requiredCount": 1
+        },
+        {
+          "description": "Endure the psychic broadcast",
+          "type": "SurviveEncounter",
+          "targetId": "psychic_broadcast",
+          "requiredCount": 1
+        },
+        {
+          "description": "Collect 3 logic core fragments",
+          "type": "CollectItem",
+          "targetId": "logic_core_fragment",
+          "requiredCount": 3
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 900,
+        "currency": 800,
+        "items": [
+          {
+            "itemId": "jotun_touched_robe",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "god-sleeper-cultists": 40
+        },
+        "unlockedQuestIds": [
+          "faction_godsleeper_sacred_pilgrimage"
+        ]
+      }
+    },
+    {
+      "questId": "faction_godsleeper_sacred_pilgrimage",
+      "name": "The Sacred Pilgrimage",
+      "description": "The final trial of the God-Sleeper Revelation. Bjorn reveals that the Jötun Logic Core holds a chamber accessible only to those the dreaming god deems worthy. You must make a pilgrimage through the deepest reaches, enduring psychic visions, to reach the Dreaming Chamber and receive the god's blessing — or its wrath.",
+      "category": "Main",
+      "type": "Challenge",
+      "faction": "god-sleeper-cultists",
+      "giverNpcId": "bjorn_exile",
+      "turnInNpcId": "bjorn_exile",
+      "minimumLegend": 7,
+      "prerequisiteQuestIds": [
+        "faction_godsleeper_awakening_ritual"
+      ],
+      "chainId": "godsleeper_revelation",
+      "chainOrder": 3,
+      "minimumReputation": 25,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Navigate the Pilgrimage Corridor",
+          "type": "ExploreRoom",
+          "targetId": "pilgrimage_corridor",
+          "requiredCount": 1
+        },
+        {
+          "description": "Survive 3 psychic visions",
+          "type": "SurviveEncounter",
+          "targetId": "psychic_vision",
+          "requiredCount": 3
+        },
+        {
+          "description": "Enter the Dreaming Chamber",
+          "type": "ExploreRoom",
+          "targetId": "dreaming_chamber",
+          "requiredCount": 1
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 1200,
+        "currency": 1000,
+        "items": [
+          {
+            "itemId": "godsleeper_blessing_amulet",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "god-sleeper-cultists": 30
+        },
+        "unlockedQuestIds": []
+      }
+    },
+
+    {
+      "questId": "faction_independents_own_path",
+      "name": "The Independent Way",
+      "description": "Rolf the Hermit believes true strength comes from self-reliance. Complete tasks and gather resources through your own efforts to prove your commitment to the independent path.",
+      "category": "Main",
+      "type": "Exploration",
+      "faction": "independents",
+      "giverNpcId": "rolf_hermit",
+      "turnInNpcId": "rolf_hermit",
+      "minimumLegend": 2,
+      "prerequisiteQuestIds": [],
+      "chainId": "independent_way",
+      "chainOrder": 1,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Complete 3 independent tasks",
+          "type": "InteractWithObject",
+          "targetId": "independent_task",
+          "requiredCount": 3
+        },
+        {
+          "description": "Collect 10 independent resources",
+          "type": "CollectItem",
+          "targetId": "independent_resource",
+          "requiredCount": 10
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 150,
+        "currency": 150,
+        "items": [],
+        "reputationChanges": {
+          "independents": 10
+        },
+        "unlockedQuestIds": [
+          "faction_independents_solo_survival"
+        ]
+      }
+    },
+    {
+      "questId": "faction_independents_solo_survival",
+      "name": "Solo Survival",
+      "description": "Rolf challenges you to survive alone in the most dangerous reaches of the Trunk. No allies, no faction support — just your wits and whatever you can scavenge. Return alive to prove that independence is not weakness, but a different kind of strength.",
+      "category": "Main",
+      "type": "Challenge",
+      "faction": "independents",
+      "giverNpcId": "rolf_hermit",
+      "turnInNpcId": "rolf_hermit",
+      "minimumLegend": 3,
+      "prerequisiteQuestIds": [
+        "faction_independents_own_path"
+      ],
+      "chainId": "independent_way",
+      "chainOrder": 2,
+      "minimumReputation": 0,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Explore 5 dangerous rooms solo",
+          "type": "ExploreRoom",
+          "targetId": "dangerous_room",
+          "requiredCount": 5
+        },
+        {
+          "description": "Survive 3 solo encounters",
+          "type": "SurviveEncounter",
+          "targetId": "solo_encounter",
+          "requiredCount": 3
+        },
+        {
+          "description": "Scavenge 5 survival supplies",
+          "type": "CollectItem",
+          "targetId": "survival_supply",
+          "requiredCount": 5
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 300,
+        "currency": 350,
+        "items": [
+          {
+            "itemId": "hermits_survival_kit",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "independents": 15
+        },
+        "unlockedQuestIds": [
+          "faction_independents_lone_wolf_trial"
+        ]
+      }
+    },
+    {
+      "questId": "faction_independents_lone_wolf_trial",
+      "name": "The Lone Wolf Trial",
+      "description": "The final test of the Independent Way. Rolf reveals a hidden challenge deep in the Trunk — a gauntlet designed by the old-world Dvergr to test individual prowess. Only those who have truly earned their independence through reputation and deed may enter. Complete the gauntlet alone and emerge as a true lone wolf.",
+      "category": "Main",
+      "type": "Challenge",
+      "faction": "independents",
+      "giverNpcId": "rolf_hermit",
+      "turnInNpcId": "rolf_hermit",
+      "minimumLegend": 5,
+      "prerequisiteQuestIds": [
+        "faction_independents_solo_survival"
+      ],
+      "chainId": "independent_way",
+      "chainOrder": 3,
+      "minimumReputation": 20,
+      "isTimed": false,
+      "timeLimit": null,
+      "isRepeatable": false,
+      "repeatCooldownHours": null,
+      "objectives": [
+        {
+          "description": "Enter the Dvergr Proving Grounds",
+          "type": "ExploreRoom",
+          "targetId": "dvergr_proving_grounds",
+          "requiredCount": 1
+        },
+        {
+          "description": "Complete the combat gauntlet",
+          "type": "SurviveEncounter",
+          "targetId": "combat_gauntlet",
+          "requiredCount": 1
+        },
+        {
+          "description": "Claim the Lone Wolf trophy",
+          "type": "CollectItem",
+          "targetId": "lone_wolf_trophy",
+          "requiredCount": 1
+        }
+      ],
+      "failureConditions": [],
+      "rewards": {
+        "experience": 500,
+        "currency": 500,
+        "items": [
+          {
+            "itemId": "lone_wolf_insignia",
+            "quantity": 1
+          }
+        ],
+        "reputationChanges": {
+          "independents": 25
         },
         "unlockedQuestIds": []
       }

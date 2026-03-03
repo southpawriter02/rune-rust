@@ -2231,5 +2231,381 @@ public class Player : IEntity
         }
         return total;
     }
+
+    // ===== Rust-Witch (Entropy Debuffer) Specialization Properties (SPEC-MYSTIC-SPECS-001) =====
+
+    /// <summary>
+    /// Backing store for unlocked Rust-Witch abilities.
+    /// </summary>
+    private readonly HashSet<RustWitchAbilityId> _unlockedRustWitchAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Rust-Witch abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<RustWitchAbilityId> UnlockedRustWitchAbilities
+        => _unlockedRustWitchAbilities;
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Rust-Witch ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasRustWitchAbilityUnlocked(RustWitchAbilityId abilityId)
+    {
+        return _unlockedRustWitchAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Rust-Witch ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockRustWitchAbility(RustWitchAbilityId abilityId)
+    {
+        _unlockedRustWitchAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Rust-Witch abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 3 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetRustWitchPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedRustWitchAbilities)
+        {
+            total += ability switch
+            {
+                RustWitchAbilityId.PhilosopherOfDust or
+                RustWitchAbilityId.CorrosiveCurse or
+                RustWitchAbilityId.EntropicField => 3,            // Tier 1: 3 PP each
+                RustWitchAbilityId.SystemShock or
+                RustWitchAbilityId.FlashRust or
+                RustWitchAbilityId.AcceleratedEntropy => 4,       // Tier 2: 4 PP each
+                RustWitchAbilityId.UnmakingWord or
+                RustWitchAbilityId.CascadeReaction => 5,          // Tier 3: 5 PP each
+                RustWitchAbilityId.EntropicCascade => 6,          // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
+
+    // ===== Blót-Priest (Sacrificial Healer) Specialization Properties (SPEC-MYSTIC-SPECS-001) =====
+
+    /// <summary>
+    /// Backing store for unlocked Blót-Priest abilities.
+    /// </summary>
+    private readonly HashSet<BlotPriestAbilityId> _unlockedBlotPriestAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Blót-Priest abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<BlotPriestAbilityId> UnlockedBlotPriestAbilities
+        => _unlockedBlotPriestAbilities;
+
+    /// <summary>
+    /// Gets or sets whether the Heartstopper capstone ability has been used this combat.
+    /// Reset to false at combat end via <see cref="ResetHeartstopperCooldown"/>.
+    /// </summary>
+    /// <remarks>
+    /// Heartstopper (Crimson Deluge OR Final Anathema) is a once-per-combat ability.
+    /// Uses per-specialization naming consistent with <c>HasUsedUnravelingThisCombat</c>.
+    /// </remarks>
+    public bool HasUsedHeartstopperThisCombat { get; set; }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Blót-Priest ability.
+    /// </summary>
+    /// <param name="abilityId">The ability to check.</param>
+    /// <returns>True if the ability has been unlocked.</returns>
+    public bool HasBlotPriestAbilityUnlocked(BlotPriestAbilityId abilityId)
+    {
+        return _unlockedBlotPriestAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Blót-Priest ability for this player.
+    /// </summary>
+    /// <param name="abilityId">The ability to unlock.</param>
+    public void UnlockBlotPriestAbility(BlotPriestAbilityId abilityId)
+    {
+        _unlockedBlotPriestAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Resets the Heartstopper per-combat cooldown, allowing the capstone to be used again.
+    /// Called at the end of a combat encounter.
+    /// </summary>
+    public void ResetHeartstopperCooldown()
+    {
+        HasUsedHeartstopperThisCombat = false;
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Blót-Priest abilities.
+    /// </summary>
+    /// <returns>Total PP invested based on unlocked abilities and their tier costs.</returns>
+    /// <remarks>
+    /// PP costs per tier: T1 = 3 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetBlotPriestPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedBlotPriestAbilities)
+        {
+            total += ability switch
+            {
+                BlotPriestAbilityId.SanguinePact or
+                BlotPriestAbilityId.BloodSiphon or
+                BlotPriestAbilityId.GiftOfVitae => 3,             // Tier 1: 3 PP each
+                BlotPriestAbilityId.BloodWard or
+                BlotPriestAbilityId.Exsanguinate or
+                BlotPriestAbilityId.CrimsonVigor => 4,            // Tier 2: 4 PP each
+                BlotPriestAbilityId.HemorrhagingCurse or
+                BlotPriestAbilityId.MartyrsResolve => 5,          // Tier 3: 5 PP each
+                BlotPriestAbilityId.Heartstopper => 6,            // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
+
+    // ===== Echo-Caller (Psychic Artillery) Specialization Properties (SPEC-MYSTIC-SPECS-001) =====
+
+    /// <summary>
+    /// Backing store for unlocked Echo-Caller abilities.
+    /// </summary>
+    private readonly HashSet<EchoCallerAbilityId> _unlockedEchoCallerAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Echo-Caller abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<EchoCallerAbilityId> UnlockedEchoCallerAbilities
+        => _unlockedEchoCallerAbilities;
+
+    /// <summary>
+    /// Gets or sets whether the Silence Made Weapon capstone has been used this combat.
+    /// Reset to false at combat end via <see cref="ResetSilenceMadeWeaponCooldown"/>.
+    /// </summary>
+    public bool HasUsedSilenceMadeWeaponThisCombat { get; set; }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Echo-Caller ability.
+    /// </summary>
+    public bool HasEchoCallerAbilityUnlocked(EchoCallerAbilityId abilityId)
+    {
+        return _unlockedEchoCallerAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks an Echo-Caller ability for this player.
+    /// </summary>
+    public void UnlockEchoCallerAbility(EchoCallerAbilityId abilityId)
+    {
+        _unlockedEchoCallerAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Resets the Silence Made Weapon per-combat cooldown.
+    /// </summary>
+    public void ResetSilenceMadeWeaponCooldown()
+    {
+        HasUsedSilenceMadeWeaponThisCombat = false;
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Echo-Caller abilities.
+    /// </summary>
+    /// <remarks>
+    /// PP costs per tier: T1 = 3 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetEchoCallerPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedEchoCallerAbilities)
+        {
+            total += ability switch
+            {
+                EchoCallerAbilityId.EchoAttunement or
+                EchoCallerAbilityId.ScreamOfSilence or
+                EchoCallerAbilityId.PhantomMenace => 3,           // Tier 1: 3 PP each
+                EchoCallerAbilityId.EchoCascade or
+                EchoCallerAbilityId.RealityFracture or
+                EchoCallerAbilityId.TerrorFeedback => 4,          // Tier 2: 4 PP each
+                EchoCallerAbilityId.FearCascade or
+                EchoCallerAbilityId.EchoDisplacement => 5,        // Tier 3: 5 PP each
+                EchoCallerAbilityId.SilenceMadeWeapon => 6,       // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
+
+    // ===== Varð-Warden (Defensive Caster) Specialization Properties (SPEC-MYSTIC-SPECS-001) =====
+
+    /// <summary>
+    /// Backing store for unlocked Varð-Warden abilities.
+    /// </summary>
+    private readonly HashSet<VardWardenAbilityId> _unlockedVardWardenAbilities = [];
+
+    /// <summary>
+    /// Gets the collection of unlocked Varð-Warden abilities as a read-only set.
+    /// </summary>
+    public IReadOnlyCollection<VardWardenAbilityId> UnlockedVardWardenAbilities
+        => _unlockedVardWardenAbilities;
+
+    /// <summary>
+    /// Gets or sets whether the Indomitable Bastion capstone has been used this expedition.
+    /// Reset to false at expedition end via <see cref="ResetIndomitableBastionCooldown"/>.
+    /// Unlike other capstones (per-combat), this is ONCE PER EXPEDITION.
+    /// </summary>
+    public bool HasUsedIndomitableBastionThisExpedition { get; set; }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific Varð-Warden ability.
+    /// </summary>
+    public bool HasVardWardenAbilityUnlocked(VardWardenAbilityId abilityId)
+    {
+        return _unlockedVardWardenAbilities.Contains(abilityId);
+    }
+
+    /// <summary>
+    /// Unlocks a Varð-Warden ability for this player.
+    /// </summary>
+    public void UnlockVardWardenAbility(VardWardenAbilityId abilityId)
+    {
+        _unlockedVardWardenAbilities.Add(abilityId);
+    }
+
+    /// <summary>
+    /// Resets the Indomitable Bastion per-expedition cooldown.
+    /// Called when a new expedition begins.
+    /// </summary>
+    public void ResetIndomitableBastionCooldown()
+    {
+        HasUsedIndomitableBastionThisExpedition = false;
+    }
+
+    /// <summary>
+    /// Calculates the total Progression Points invested in Varð-Warden abilities.
+    /// </summary>
+    /// <remarks>
+    /// PP costs per tier: T1 = 3 PP each, T2 = 4 PP each, T3 = 5 PP each, Capstone = 6 PP.
+    /// </remarks>
+    public int GetVardWardenPPInvested()
+    {
+        var total = 0;
+        foreach (var ability in _unlockedVardWardenAbilities)
+        {
+            total += ability switch
+            {
+                VardWardenAbilityId.SanctifiedResolve or
+                VardWardenAbilityId.RunicBarrier or
+                VardWardenAbilityId.ConsecrateGround => 3,        // Tier 1: 3 PP each
+                VardWardenAbilityId.RuneOfShielding or
+                VardWardenAbilityId.ReinforceWard or
+                VardWardenAbilityId.WardensVigil => 4,            // Tier 2: 4 PP each
+                VardWardenAbilityId.GlyphOfSanctuary or
+                VardWardenAbilityId.AegisOfSanctity => 5,         // Tier 3: 5 PP each
+                VardWardenAbilityId.IndomitableBastion => 6,      // Capstone: 6 PP
+                _ => 0
+            };
+        }
+        return total;
+    }
+
+    // ===== Faction Reputation Properties (SPEC-REPUTATION-001) =====
+
+    /// <summary>
+    /// Backing field for faction reputation tracking.
+    /// Keys are faction IDs (case-insensitive), values are immutable <see cref="FactionReputation"/> objects.
+    /// </summary>
+    private readonly Dictionary<string, FactionReputation> _factionReputations = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets a read-only view of the player's faction reputations.
+    /// </summary>
+    /// <remarks>
+    /// Factions not present in the dictionary are implicitly Neutral (value = 0).
+    /// Use <see cref="GetFactionReputation(string)"/> for safe access with default fallback.
+    /// </remarks>
+    public IReadOnlyDictionary<string, FactionReputation> FactionReputations => _factionReputations;
+
+    // ===== Faction Reputation Methods (SPEC-REPUTATION-001) =====
+
+    /// <summary>
+    /// Gets the player's reputation with a specific faction.
+    /// </summary>
+    /// <param name="factionId">The faction ID to look up (case-insensitive).</param>
+    /// <returns>
+    /// The <see cref="FactionReputation"/> for the faction, or a Neutral reputation
+    /// (value = 0) if no reputation has been established with that faction.
+    /// </returns>
+    /// <remarks>
+    /// This method never returns null or throws for unknown factions — unknown factions
+    /// are treated as having Neutral standing. This ensures backward compatibility with
+    /// save states that predate the reputation system.
+    /// </remarks>
+    public FactionReputation GetFactionReputation(string factionId)
+    {
+        if (string.IsNullOrWhiteSpace(factionId))
+            return FactionReputation.Neutral(string.Empty);
+
+        return _factionReputations.TryGetValue(factionId, out var reputation)
+            ? reputation
+            : FactionReputation.Neutral(factionId);
+    }
+
+    /// <summary>
+    /// Sets the reputation for a faction to a specific value object.
+    /// </summary>
+    /// <param name="reputation">The <see cref="FactionReputation"/> to store.</param>
+    /// <remarks>
+    /// Used by <c>ReputationService</c> after calculating reputation changes.
+    /// Overwrites any existing reputation for the faction.
+    /// </remarks>
+    /// <exception cref="ArgumentException">Thrown when the reputation's FactionId is null or whitespace.</exception>
+    public void SetFactionReputation(FactionReputation reputation)
+    {
+        if (string.IsNullOrWhiteSpace(reputation.FactionId))
+            throw new ArgumentException("FactionId cannot be null or whitespace.", nameof(reputation));
+
+        _factionReputations[reputation.FactionId] = reputation;
+    }
+
+    /// <summary>
+    /// Gets the reputation tier for a specific faction.
+    /// </summary>
+    /// <param name="factionId">The faction ID to look up (case-insensitive).</param>
+    /// <returns>
+    /// The <see cref="ReputationTier"/> for the faction, or <see cref="ReputationTier.Neutral"/>
+    /// if no reputation has been established.
+    /// </returns>
+    public ReputationTier GetFactionTier(string factionId)
+    {
+        return GetFactionReputation(factionId).Tier;
+    }
+
+    /// <summary>
+    /// Gets faction reputations as a simple int-valued dictionary.
+    /// </summary>
+    /// <returns>
+    /// A read-only dictionary of faction ID → reputation value, suitable for use
+    /// with <c>FailureCheckContext.FactionReputations</c>.
+    /// </returns>
+    /// <remarks>
+    /// Only includes factions where the player has an explicit reputation entry.
+    /// Factions not in the dictionary are implicitly 0 (Neutral).
+    /// </remarks>
+    public IReadOnlyDictionary<string, int> GetFactionReputationValues()
+    {
+        return _factionReputations.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Value,
+            StringComparer.OrdinalIgnoreCase);
+    }
 }
 

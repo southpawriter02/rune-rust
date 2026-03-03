@@ -1,0 +1,49 @@
+{
+  "factions": [
+    {
+      "factionId": "iron-banes",
+      "name": "Iron-Banes",
+      "philosophy": "The Undying are corrupted processes that must be purged.",
+      "location": "Trunk/Roots patrols",
+      "allies": ["rust-clans"],
+      "enemies": ["god-sleeper-cultists"],
+      "defaultReputation": 0
+    },
+    {
+      "factionId": "god-sleeper-cultists",
+      "name": "God-Sleeper Cultists",
+      "philosophy": "The Jötun-Forged are sleeping gods awaiting the signal to awaken.",
+      "location": "Jötunheim temples",
+      "allies": [],
+      "enemies": ["iron-banes"],
+      "defaultReputation": 0
+    },
+    {
+      "factionId": "jotun-readers",
+      "name": "Jötun-Readers",
+      "philosophy": "Knowledge is the only path to understanding the Glitch.",
+      "location": "Alfheim, terminals",
+      "allies": ["rust-clans"],
+      "enemies": [],
+      "defaultReputation": 0
+    },
+    {
+      "factionId": "rust-clans",
+      "name": "Rust-Clans",
+      "philosophy": "Survival first. No ideology, no worship, no grand theories.",
+      "location": "Midgard, trade outposts",
+      "allies": ["iron-banes", "jotun-readers"],
+      "enemies": [],
+      "defaultReputation": 0
+    },
+    {
+      "factionId": "independents",
+      "name": "Independents",
+      "philosophy": "Factions are chains. We walk our own path.",
+      "location": "Anywhere",
+      "allies": [],
+      "enemies": [],
+      "defaultReputation": 0
+    }
+  ]
+}

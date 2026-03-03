@@ -254,6 +254,172 @@
       ]
     },
     {
+      "id": "rust-witch",
+      "name": "Rust-Witch",
+      "displayName": "Rust-Witch",
+      "tagline": "Entropy's Herald",
+      "archetypeId": "mystic",
+      "description": "Masters of entropic decay who apply stacking [Corroded] debuffs to weaken and destroy enemies. A Heretical path that trades deterministic self-Corruption for devastating damage-over-time and the ability to execute heavily corroded targets.",
+      "specialResource": null,
+      "corruptionModel": {
+        "type": "deterministic",
+        "description": "Fixed self-Corruption per active ability cast, reduced at Rank 3 for Tier 1-2 abilities"
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 3,
+          "abilities": ["philosopher-of-dust", "corrosive-curse", "entropic-field"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["system-shock", "flash-rust", "accelerated-entropy"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["unmaking-word", "cascade-reaction"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["entropic-cascade"]
+        }
+      ]
+    },
+    {
+      "id": "blot-priest",
+      "name": "Blót-Priest",
+      "displayName": "Sacrifice-Priest",
+      "tagline": "The Conduit of a Sick World",
+      "archetypeId": "mystic",
+      "description": "Practitioners of bio-Aetheric transduction who use their own life force as a casting medium. The most Corruption-intensive specialization — every act of healing is a willing acceptance of the world's sickness, a sacrificial transference of suffering.",
+      "specialResource": null,
+      "corruptionModel": {
+        "type": "deterministic",
+        "description": "Fixed self-Corruption per action (+1 standard, +2 Hemorrhaging Curse, +10/+15 Heartstopper). Also transfers Corruption to allies via Blight Transference."
+      },
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 3,
+          "abilities": ["sanguine-pact", "blood-siphon", "gift-of-vitae"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["blood-ward", "exsanguinate", "crimson-vigor"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["hemorrhaging-curse", "martyrs-resolve"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["heartstopper"]
+        }
+      ]
+    },
+    {
+      "id": "echo-caller",
+      "name": "Echo-Caller",
+      "displayName": "Echo-Caller",
+      "tagline": "Psychic Artillery",
+      "archetypeId": "mystic",
+      "description": "Reality manipulators who weaponize the Great Silence's eternal psychic scream. Psychic artillery that projects traumatic memories as weapons, creates cascading fear, and chains effects between clustered enemies via the [Echo] system.",
+      "specialResource": null,
+      "corruptionModel": null,
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 3,
+          "abilities": ["echo-attunement", "scream-of-silence", "phantom-menace"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["echo-cascade", "reality-fracture", "terror-feedback"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["fear-cascade", "echo-displacement"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["silence-made-weapon"]
+        }
+      ]
+    },
+    {
+      "id": "vard-warden",
+      "name": "Varð-Warden",
+      "displayName": "Ward-Keeper",
+      "tagline": "Not While I Stand",
+      "archetypeId": "mystic",
+      "description": "Firewall architects who create pockets of stable reality in a corrupted world. Where chaos spreads, they inscribe barriers of solidified Aether. Where Blight advances, they consecrate ground. The Coherent defensive Mystic who controls the battlefield through walls and zones.",
+      "specialResource": null,
+      "corruptionModel": null,
+      "tiers": [
+        {
+          "tier": 1,
+          "name": "Foundation",
+          "ppRequired": 0,
+          "ppCostPerAbility": 3,
+          "abilities": ["sanctified-resolve", "runic-barrier", "consecrate-ground"]
+        },
+        {
+          "tier": 2,
+          "name": "Discipline",
+          "ppRequired": 8,
+          "ppCostPerAbility": 4,
+          "abilities": ["rune-of-shielding", "reinforce-ward", "wardens-vigil"]
+        },
+        {
+          "tier": 3,
+          "name": "Mastery",
+          "ppRequired": 16,
+          "ppCostPerAbility": 5,
+          "abilities": ["glyph-of-sanctuary", "aegis-of-sanctity"]
+        },
+        {
+          "tier": 4,
+          "name": "Capstone",
+          "ppRequired": 24,
+          "ppCostPerAbility": 6,
+          "abilities": ["indomitable-bastion"]
+        }
+      ]
+    },
+    {
       "id": "skjaldmaer",
       "name": "Skjaldmær",
       "displayName": "Shieldmaiden",

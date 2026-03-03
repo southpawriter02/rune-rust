@@ -109,4 +109,10 @@ public record GameEvent
     /// </summary>
     public static GameEvent Inventory(string eventType, string message, Guid? playerId = null) =>
         new() { Category = EventCategory.Inventory, EventType = eventType, Message = message, PlayerId = playerId };
+
+    /// <summary>
+    /// Creates a faction reputation event.
+    /// </summary>
+    public static GameEvent Reputation(string eventType, string message, Guid? playerId = null) =>
+        new() { Category = EventCategory.Reputation, EventType = eventType, Message = message, PlayerId = playerId };
 }

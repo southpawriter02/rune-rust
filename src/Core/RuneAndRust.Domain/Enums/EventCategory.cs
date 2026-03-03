@@ -42,5 +42,8 @@ public enum EventCategory
     Environment,
 
     /// <summary>Session and persistence events.</summary>
-    Session
+    Session,
+
+    /// <summary>Faction reputation change events.</summary>
+    Reputation
 }

@@ -39,6 +39,27 @@ public record QuestDefinitionDto
     /// <summary>Optional chain ID grouping related quests into a narrative sequence.</summary>
     public string? ChainId { get; init; }
 
+    /// <summary>
+    /// Order within the quest chain (1-based). Null if not part of a chain.
+    /// </summary>
+    /// <remarks>
+    /// Used to present quests in sequence in the quest journal and to determine
+    /// the "next quest" in a chain. Quests with the same ChainId are ordered
+    /// by this field. Added in SPEC-FACTION-QUESTS-001.
+    /// </remarks>
+    public int? ChainOrder { get; init; }
+
+    /// <summary>
+    /// Minimum reputation value required with the quest's <see cref="Faction"/> to accept this quest.
+    /// 0 = no reputation requirement (default). Requires <see cref="Faction"/> to be set for the check to apply.
+    /// </summary>
+    /// <remarks>
+    /// <para>Examples: 0 (Neutral, chain opener), 25 (Friendly, mid-chain), 50 (Allied, late-chain).</para>
+    /// <para>Used by <c>QuestChainService</c> to filter available quests based on player reputation.
+    /// Added in SPEC-FACTION-QUESTS-001.</para>
+    /// </remarks>
+    public int MinimumReputation { get; init; } = 0;
+
     /// <summary>Whether this quest has a turn limit.</summary>
     public bool IsTimed { get; init; }
 

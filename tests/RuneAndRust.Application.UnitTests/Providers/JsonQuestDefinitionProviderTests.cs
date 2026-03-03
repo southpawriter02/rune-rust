@@ -81,7 +81,7 @@ namespace RuneAndRust.Application.UnitTests.Providers
         public void GetQuestsByFaction_ExistingFaction_ReturnsFilteredList()
         {
             // Arrange
-            var faction = "RustClans";
+            var faction = "rust-clans";
 
             // Act
             var quests = _provider.GetQuestsByFaction(faction);

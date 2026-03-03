@@ -287,6 +287,26 @@ public static class DependencyInjection
         // Note: IComboProvider is registered in AddInfrastructure as it loads from JSON config
         services.AddScoped<IComboService, ComboService>();
 
+        // ===== Mystic Specialization Services (SPEC-MYSTIC-SPECS-001) =====
+
+        // Rust-Witch corruption service (deterministic self-Corruption evaluation)
+        services.AddScoped<IRustWitchCorruptionService, RustWitchCorruptionService>();
+
+        // Rust-Witch ability service (Heretical Debuffer/DoT path)
+        services.AddScoped<IRustWitchAbilityService, RustWitchAbilityService>();
+
+        // Blót-Priest corruption service (deterministic self-Corruption + Blight Transfer)
+        services.AddScoped<IBlotPriestCorruptionService, BlotPriestCorruptionService>();
+
+        // Blót-Priest ability service (Heretical Sacrificial Healer path)
+        services.AddScoped<IBlotPriestAbilityService, BlotPriestAbilityService>();
+
+        // Echo-Caller ability service (Coherent Psychic Artillery path — no corruption service)
+        services.AddScoped<IEchoCallerAbilityService, EchoCallerAbilityService>();
+
+        // Varð-Warden ability service (Coherent Defensive Caster path — no corruption service)
+        services.AddScoped<IVardWardenAbilityService, VardWardenAbilityService>();
+
         // ===== Narrative Infrastructure Services (v0.21.0a) =====
         // Note: IQuestDefinitionProvider, INpcDefinitionProvider, IDialogueProvider
         //       are registered in AddInfrastructure as they load from JSON config
