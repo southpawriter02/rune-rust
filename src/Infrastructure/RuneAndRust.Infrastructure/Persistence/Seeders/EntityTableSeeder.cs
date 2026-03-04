@@ -114,7 +114,7 @@ public static class EntityTableSeeder
 
         // Grunt units
         var scavengerDrone = EntityTemplate.CreateGrunt(
-            "scavenger_drone", "Scavenger Drone", factionId, Biome.TheRoots,
+            "scavenger_drone", "Scavenger Sky-Spirit", factionId, Biome.TheRoots,
             cost: 15, EntityRole.Melee, new Stats(35, 12, 6, 8));
         scavengerDrone.AddTags(["Mechanical", "Salvager", "Melee"]);
         yield return scavengerDrone;
@@ -126,14 +126,14 @@ public static class EntityTableSeeder
         yield return fungalStalker;
 
         var spitterNode = EntityTemplate.CreateGrunt(
-            "spitter_node", "Spitter Node", factionId, Biome.TheRoots,
+            "spitter_node", "Spitter Bulb", factionId, Biome.TheRoots,
             cost: 20, EntityRole.Ranged, new Stats(30, 15, 4, 6));
         spitterNode.AddTags(["Organic", "Stationary", "Ranged", "Toxic"]);
         yield return spitterNode;
 
         // Elite unit
         var heavyLoader = EntityTemplate.CreateElite(
-            "heavy_loader", "Heavy Loader Bot", factionId, Biome.TheRoots,
+            "heavy_loader", "Heavy Loader Iron-Hulk", factionId, Biome.TheRoots,
             cost: 55, new Stats(90, 20, 18, 6));
         heavyLoader.AddTags(["Mechanical", "Heavy", "Melee", "Armored"]);
         yield return heavyLoader;

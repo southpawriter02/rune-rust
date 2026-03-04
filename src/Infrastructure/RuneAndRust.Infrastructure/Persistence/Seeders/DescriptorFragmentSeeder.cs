@@ -80,19 +80,19 @@ public static class DescriptorFragmentSeeder
     {
         // Wall subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Corroded metal plates form the walls, held together by massive rivets",
+            "Rusted metal plates form the walls, held together by massive rivets",
             ArchitecturalSubcategory.Wall,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
 
         yield return DescriptorFragment.CreateArchitectural(
-            "The walls are reinforced with massive girders and support struts",
+            "The walls are reinforced with massive iron ribs and support pillars",
             ArchitecturalSubcategory.Wall,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
 
         yield return DescriptorFragment.CreateArchitectural(
-            "Smooth, seamless walls suggest advanced pre-Glitch fabrication",
+            "Smooth, seamless walls suggest advanced Old World craft",
             ArchitecturalSubcategory.Wall,
             weight: 2);
 
@@ -128,7 +128,7 @@ public static class DescriptorFragmentSeeder
 
         // Ceiling subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Pipes snake across the ceiling like mechanical serpents",
+            "Pipes snake across the ceiling like iron serpents",
             ArchitecturalSubcategory.Ceiling,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -159,7 +159,7 @@ public static class DescriptorFragmentSeeder
 
         // Floor subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Grated flooring reveals machinery churning below",
+            "Grated flooring reveals iron-works churning below",
             ArchitecturalSubcategory.Floor,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -203,13 +203,13 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateDetail(
-            "Corrosion has eaten through many of the structural supports",
+            "Rust and rot have eaten through many of the structural supports",
             DetailSubcategory.Decay,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
 
         yield return DescriptorFragment.CreateDetail(
-            "Everything here shows signs of advanced degradation",
+            "Everything here shows signs of the long rot",
             DetailSubcategory.Decay,
             weight: 3);
 
@@ -367,7 +367,7 @@ public static class DescriptorFragmentSeeder
             weight: 3);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "sharp with the tang of metal and machine oil",
+            "sharp with the tang of iron and black-blood oil",
             AtmosphericSubcategory.Smell,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -420,7 +420,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "tinged with ozone and electricity",
+            "tinged with ozone and invisible fire",
             AtmosphericSubcategory.Smell,
             weight: 2);
 
@@ -449,7 +449,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "chemical and wrong, like nothing natural",
+            "alchemical and wrong, like nothing natural",
             AtmosphericSubcategory.Smell,
             biomeAffinity: Biome.Surface,
             weight: 2);
@@ -469,7 +469,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Distant machinery rumbles like a sleeping beast",
+            "Distant iron-works rumble like a sleeping beast",
             AtmosphericSubcategory.Sound,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -560,7 +560,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "An electrical buzz fills the air",
+            "A humming of invisible fire fills the air",
             AtmosphericSubcategory.Sound,
             weight: 2);
 
@@ -584,7 +584,7 @@ public static class DescriptorFragmentSeeder
             weight: 3);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Emergency lighting flickers weakly",
+            "Red warning-runes flicker weakly",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -675,7 +675,7 @@ public static class DescriptorFragmentSeeder
             weight: 1);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Sparks of static electricity dance in the shadows",
+            "Sparks of ghost-lightning dance in the shadows",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.Surface,
             weight: 2);

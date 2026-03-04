@@ -39,7 +39,7 @@ public static class InteractionDescriptorSeeder
         // Levers
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Lever", "Active",
-            "A lever locked in the up position, mechanism still engaged");
+            "A lever locked in the up position, inner-bones still engaged");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Lever", "Inactive",
@@ -51,7 +51,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Lever", "Unknown",
-            "A lever. No markings. No indication of what it controls");
+            "A lever. No markings. No indication of what it wakes");
 
         // Doors
         yield return new InteractionDescriptor(NextId(),
@@ -60,7 +60,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Door", "Closed",
-            "A sealed door. The mechanism might still function");
+            "A sealed door. The lock-spirits might still listen");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.MechanicalObject, "Door", "Locked",
@@ -76,23 +76,23 @@ public static class InteractionDescriptorSeeder
 
         // Terminals (Oracle-Boxes)
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.MechanicalObject, "Terminal", "Active",
-            "The oracle-box hums with power, glass face swimming with ghost-light");
+            InteractionCategory.MechanicalObject, "Spirit-Slate", "Active",
+            "The oracle-box hums with invisible fire, glass face swimming with ghost-light");
 
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.MechanicalObject, "Terminal", "Dormant",
-            "The screen is dark. But the box still ticks, waiting");
+            InteractionCategory.MechanicalObject, "Spirit-Slate", "Dormant",
+            "The glass face is dark. But the box still ticks, waiting");
 
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.MechanicalObject, "Terminal", "Corrupted",
-            "Static crawls across the display. Symbols writhe, half-formed");
+            InteractionCategory.MechanicalObject, "Spirit-Slate", "Corrupted",
+            "Ghost-snow crawls across the glass face. Symbols writhe, half-formed");
 
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.MechanicalObject, "Terminal", "Dead",
+            InteractionCategory.MechanicalObject, "Spirit-Slate", "Dead",
             "Nothing. The box is cold, its purpose long since ended");
 
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.MechanicalObject, "Terminal", "Glitched",
+            InteractionCategory.MechanicalObject, "Spirit-Slate", "Glitched",
             "The oracle-box shows things that shouldn't be. Images from when?");
     }
 
@@ -174,7 +174,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.WitsSuccess, "WitsCheck", "Medium",
-            "Details emerge. The mechanism here isn't quite what it seems");
+            "Details emerge. The device here isn't quite what it seems");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.WitsSuccess, "WitsCheck", "High",
@@ -213,11 +213,11 @@ public static class InteractionDescriptorSeeder
         // Technology Examination
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.WitsSuccess, "Technology", "Function",
-            "The mechanism reveals its purpose. Here is where you interact");
+            "The construct reveals its purpose. Here is where you interact");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.WitsSuccess, "Technology", "Status",
-            "You assess its condition. Damaged, but repairable. Maybe");
+            "You assess its condition. Damaged, but healable. Maybe");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.WitsSuccess, "Technology", "Origin",
@@ -271,7 +271,7 @@ public static class InteractionDescriptorSeeder
         // Secret Discovery
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.Discovery, "Secret", "Minor",
-            "You find a hidden compartment. Someone wanted this overlooked");
+            "You find a hidden hollow. Someone wanted this overlooked");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.Discovery, "Secret", "Minor2",
@@ -295,11 +295,11 @@ public static class InteractionDescriptorSeeder
 
         // Lore Discovery
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.Discovery, "Lore", "DataSlate",
-            "A data-slate, still readable. Someone left a record");
+            InteractionCategory.Discovery, "Lore", "Spirit-Slate",
+            "A spirit-slate, still readable. Someone left a record");
 
         yield return new InteractionDescriptor(NextId(),
-            InteractionCategory.Discovery, "Lore", "DataSlate2",
+            InteractionCategory.Discovery, "Lore", "Spirit-Slate2",
             "Words from the past. The dead speak, if you're willing to listen");
 
         yield return new InteractionDescriptor(NextId(),
@@ -361,7 +361,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.ContainerInteraction, "Opening", "Bypass",
-            "The mechanism clicks. You're in without triggering anything");
+            "The inner-lock clicks. You're in without triggering anything");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.ContainerInteraction, "Opening", "Fail",
@@ -426,7 +426,7 @@ public static class InteractionDescriptorSeeder
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Trade", "FieldMedicine",
-            "Medical supplies. Some expired, some contaminated, some... usable");
+            "Healing supplies. Some rotted, some cursed, some... usable");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Trade", "FieldMedicine2",
@@ -443,11 +443,11 @@ public static class InteractionDescriptorSeeder
         // Specializations
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "JotunReader",
-            "The mechanism is Old World — pre-Glitch architecture. You recognize the patterns");
+            "The device is Old World — Ancients' architecture. You recognize the patterns");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "JotunReader2",
-            "This is Giant-tech. Original. Unmolested since the Glitch");
+            "This is Giant-craft. Original. Unmolested since the Glitch");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.SkillSpecific, "Specialization", "RuinStalker",
@@ -484,7 +484,7 @@ public static class InteractionDescriptorSeeder
         // Disabling/Repair
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.Environmental, "Repair", "DisableTrap",
-            "The mechanism is neutralized. Safe, now");
+            "The trap is neutralized. Safe, now");
 
         yield return new InteractionDescriptor(NextId(),
             InteractionCategory.Environmental, "Repair", "Repair",
