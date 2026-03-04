@@ -128,7 +128,7 @@ public static class DescriptorFragmentSeeder
 
         // Ceiling subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Pipes snake across the ceiling like mechanical serpents",
+            "Pipes snake across the ceiling like iron serpents",
             ArchitecturalSubcategory.Ceiling,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -159,7 +159,7 @@ public static class DescriptorFragmentSeeder
 
         // Floor subcategory
         yield return DescriptorFragment.CreateArchitectural(
-            "Grated flooring reveals machinery churning below",
+            "Grated flooring reveals great engines churning below",
             ArchitecturalSubcategory.Floor,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -242,7 +242,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateDetail(
-            "Glowing inscriptions trace paths of forgotten power",
+            "Glowing inscriptions trace paths of forgotten might",
             DetailSubcategory.Runes,
             weight: 2);
 
@@ -367,7 +367,7 @@ public static class DescriptorFragmentSeeder
             weight: 3);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "sharp with the tang of metal and machine oil",
+            "sharp with the tang of metal and black blood",
             AtmosphericSubcategory.Smell,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -420,7 +420,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "tinged with ozone and electricity",
+            "tinged with ozone and the breath of storms",
             AtmosphericSubcategory.Smell,
             weight: 2);
 
@@ -469,7 +469,7 @@ public static class DescriptorFragmentSeeder
             weight: 2);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Distant machinery rumbles like a sleeping beast",
+            "Distant iron rumbles like a sleeping beast",
             AtmosphericSubcategory.Sound,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -584,7 +584,7 @@ public static class DescriptorFragmentSeeder
             weight: 3);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Emergency lighting flickers weakly",
+            "Warning-runes flicker weakly",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.TheRoots,
             weight: 2);
@@ -675,7 +675,7 @@ public static class DescriptorFragmentSeeder
             weight: 1);
 
         yield return DescriptorFragment.CreateAtmospheric(
-            "Sparks of static electricity dance in the shadows",
+            "Sparks of angry light dance in the shadows",
             AtmosphericSubcategory.Light,
             biomeAffinity: Biome.Surface,
             weight: 2);

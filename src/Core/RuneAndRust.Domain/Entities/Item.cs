@@ -494,8 +494,8 @@ public class Item : IEntity
     /// </summary>
     /// <returns>A new health potion item.</returns>
     public static Item CreateHealthPotion() => new(
-        "Health Potion",
-        "A vial of red liquid that restores health when consumed.",
+        "Alchemical Mending",
+        "A vial of crimson fluid that knits flesh and bone.",
         ItemType.Consumable,
         value: 25,
         effect: ItemEffect.Heal,
