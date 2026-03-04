@@ -357,7 +357,7 @@ public static class RoomTemplateSeeder
             "Mist Tunnel",
             RoomArchetype.Corridor,
             Biome.Niflheim,
-            "Cold mist fills this {ADJ_SIZE} passage, limiting visibility to mere feet. Ice crystals form on everything, including you.",
+            "Cold mist fills this {ADJ_SIZE} passage, limiting visibility to arm's reach. Ice crystals form on everything, including you.",
             minExits: 2, maxExits: 2, weight: 2);
         corridor2.AddTags(["Cold", "Mist", "LowVisibility"]);
         corridor2.AddFeature(new RoomFeature(RoomFeatureType.Hazard, "freezing_mist", 0.6));

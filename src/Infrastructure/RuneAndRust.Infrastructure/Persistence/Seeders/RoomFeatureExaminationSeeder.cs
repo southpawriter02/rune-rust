@@ -327,7 +327,7 @@ public static class RoomFeatureExaminationSeeder
             "The venting is predictable. Watch the rhythm and time your passage.", revealsHint: true);
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Machinery, "heat_vent",
-            "Geothermal pressure release. The intervals are regular - exactly 12 seconds safe.");
+            "Geothermal pressure release. The intervals are regular - safe for only a few heartbeats.");
 
         // lava_pool
         yield return ExaminationDescriptor.CreateCursory(
@@ -384,7 +384,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Muspelheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "walls",
-            "Ice several feet thick. Shadows move within.",
+            "Ice thick and unyielding. Shadows move within.",
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "walls",
@@ -414,7 +414,7 @@ public static class RoomFeatureExaminationSeeder
             Biome.Muspelheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "wall",
-            "Ice several feet thick. Shadows move within.",
+            "Ice thick and unyielding. Shadows move within.",
             Biome.Niflheim);
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Structural, "wall",
